@@ -24,10 +24,10 @@ __all__ = [
 
 
 class EnterpriseRBACBackend(BaseRBACBackend):
-    def get_resolver_for_resource_type(resource_type):
+    def get_resolver_for_resource_type(self, resource_type):
         return resolvers.get_resolver_for_resource_type(resource_type=resource_type)
 
-    def get_resolver_for_permission_type(permission_type):
+    def get_resolver_for_permission_type(self, permission_type):
         return resolvers.get_resolver_for_permission_type(permission_type=permission_type)
 
     def get_remote_group_to_role_syncer(self):

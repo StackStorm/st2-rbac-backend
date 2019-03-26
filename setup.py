@@ -60,7 +60,7 @@ setup(
     test_suite='tests',
     entry_points={
         'st2common.rbac.backend': [
-            'enterprise = st2rbac_enterprise_backend.backend.EnterpriseRBACBackend',
+            'enterprise = st2rbac_enterprise_backend.backend:EnterpriseRBACBackend',
         ],
     },
     zip_safe=False
