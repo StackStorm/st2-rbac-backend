@@ -4,7 +4,26 @@ VIRTUALENV_DIR ?= virtualenv
 ST2_REPO_PATH ?= /tmp/st2
 ST2_REPO_BRANCH ?= master
 
-export ST2_REPO_PATH
+ifneq (,$(wildcard /etc/debian_version))
+	DEBIAN := 1
+	DEB_DISTRO := $(shell lsb_release -cs)
+else
+	REDHAT := 1
+	DEB_DISTRO := unstable
+endif
+
+ifeq ($(DEB_DISTRO),bionic)
+	PYTHON_BINARY := /usr/bin/python3
+	PIP_BINARY := /usr/local/bin/pip3
+else
+	PYTHON_BINARY := python
+	PIP_BINARY := pip
+endif
+
+# NOTE: We remove trailing "0" which is added at the end by newer versions of pip
+# For example: 3.0.dev0 -> 3.0.dev
+PKG_VERSION := $(shell $(PYTHON_BINARY) setup.py --version 2> /dev/null | sed 's/\.dev[0-9]$$/dev/')
+CHANGELOG_COMMENT ?= "automated build, version: $(PKG_VERSION)"
 
 # nasty hack to get a space into a variable
 colon := :
@@ -46,16 +65,18 @@ endif
 # Target for debugging Makefile variable assembly
 .PHONY: play
 play:
+	@echo "DEBIAN=$(DEBIAN)"
+	@echo "REDHAT=$(REDHAT)"
+	@echo "DEB_DISTRO=$(DEB_DISTRO)"
+	@echo "PYTHON_BINARY=$(PYTHON_BINARY)"
+	@echo "PIP_BINARY=$(PIP_BINARY)"
+	@echo "PKG_VERSION=$(PKG_VERSION)"
+	@echo
 	@echo COMPONENTS=$(COMPONENTS)
-	@echo
 	@echo COMPONENTS_RUNNERS=$(COMPONENTS_RUNNERS)
-	@echo
 	@echo COMPONENTS_WITH_RUNNERS=$(COMPONENTS_WITH_RUNNERS)
-	@echo
 	@echo COMPONENT_PYTHONPATH=$(COMPONENT_PYTHONPATH)
-	@echo
 	@echo TRAVIS_PULL_REQUEST=$(TRAVIS_PULL_REQUEST)
-	@echo
 	@echo NOSE_OPTS=$(NOSE_OPTS)
 	@echo
 
