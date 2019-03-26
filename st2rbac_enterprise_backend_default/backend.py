@@ -16,6 +16,7 @@
 from st2common.rbac.backends.base import BaseRBACBackend
 
 from st2rbac_enterprise_backend_default import resolvers
+from st2rbac_enterprise_backend_default.syncer import RBACRemoteGroupToRoleSyncer
 
 __all__ = [
     'EnterpriseRBACBackend'
@@ -28,3 +29,6 @@ class EnterpriseRBACBackend(BaseRBACBackend):
 
     def get_resolver_for_permission_type(permission_type):
         return resolvers.get_resolver_for_permission_type(permission_type=permission_type)
+
+    def get_remote_group_to_role_syncer(self):
+        return RBACRemoteGroupToRoleSyncer()

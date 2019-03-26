@@ -42,6 +42,7 @@ from st2common.persistence.rbac import UserRoleAssignment
 from st2common.persistence.rbac import PermissionGrant
 from st2common.persistence.rbac import GroupToRoleMapping
 from st2common.services import rbac as rbac_services
+from st2common.rbac.backends.base import BaseRBACRemoteGroupToRoleSyncer
 from st2common.util.uid import parse_uid
 
 
@@ -366,7 +367,7 @@ class RBACDefinitionsDBSyncer(object):
         return (created_role_assignment_dbs, role_assignment_dbs_to_delete)
 
 
-class RBACRemoteGroupToRoleSyncer(object):
+class RBACRemoteGroupToRoleSyncer(BaseRBACRemoteGroupToRoleSyncer):
     """
     Class which writes remote user role assignments based on the user group membership information
     provided by the auth backend and based on the group to role mapping definitions on disk.
