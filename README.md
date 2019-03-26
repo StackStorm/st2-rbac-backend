@@ -1,30 +1,25 @@
-# StackStorm Lint Configs
+# StackStorm Enterprise RBAC Backend
 
-This repository contains lint configs for different programming languages and
-tools (flake8, pylint, etc.) used by different StackStorm repositories.
+StackStorm RBAC backend for enterprise version which contains all the proprietary RBAC
+(permission resolving) business logic.
 
-Configs are grouped in sub-directories by programming language.
+NOTE: Due to the original code structure and code originally living as part of the
+open source StackStorm/st2 repo, some of the utility RBAC code is still part of the open
+source repo (that code is of little use without the permission resolving classes which
+contain majority of the business logic though).
 
-## Usage
+## Installation
 
-To use those configs, add this repository as a git subtree to the repository
-where you want to utilize those configs. After that is done, update make
-targets (or similar) to correctly pass path to the configs to the tools
-in question.
+NOTE: This happens automatically as part of the bwc-enterprise package post install step.
 
-```bash
-git subtree add --prefix lint-configs https://github.com/StackStorm/lint-configs.git master --squash
-```
+1. Make sure the backend Python package is installed inside StackStorm virtualenv
+   (``/opt/stackstorm/st2/``)
+2: Edit StackStorm config (``/etc/st2/st2.conf``):
 
-To use it (example with pylint)
-
-```bash
-pylint -E --rcfile=./lint-configs/python/.pylintrc
+```ini
 ...
-```
-
-And once you want to pull changes / updates from the lint-configs repository:
-
-```bash
-git subtree pull --prefix lint-configs https://github.com/StackStorm/lint-configs.git master --squash
-```
+[rbac]
+enable = True
+backend = enterprise
+...
+3. Restart all the services - ``sudo st2ctl restart``
