@@ -16,8 +16,9 @@ space_char +=
 
 # All components are prefixed by st2
 COMPONENTS = $(wildcard $(ST2_REPO_PATH)/st2*)
-COMPONENTS_RUNNERS := $(wildcard $(ST2_REPO_PATH)/st2/contrib/runners/*)
-COMPONENT_PYTHONPATH = $(subst $(space_char),:,$(realpath $(COMPONENTS)))
+COMPONENTS_RUNNERS := $(wildcard $(ST2_REPO_PATH)/contrib/runners/*)
+COMPONENTS_WITH_RUNNERS := $(COMPONENTS) $(COMPONENTS_RUNNERS)
+COMPONENT_PYTHONPATH = $(subst $(space_char),:,$(realpath $(COMPONENTS_WITH_RUNNERS)))
 COMPONENTS_TEST := $(foreach component,$(filter-out $(COMPONENT_SPECIFIC_TESTS),$(COMPONENTS_WITH_RUNNERS)),$(component))
 COMPONENTS_TEST_COMMA := $(subst $(slash),$(dot),$(subst $(space_char),$(comma),$(COMPONENTS_TEST)))
 COMPONENTS_TEST_MODULES := $(subst $(slash),$(dot),$(COMPONENTS_TEST_DIRS))
@@ -47,17 +48,9 @@ endif
 play:
 	@echo COMPONENTS=$(COMPONENTS)
 	@echo
+	@echo COMPONENTS_RUNNERS=$(COMPONENTS_RUNNERS)
+	@echo
 	@echo COMPONENTS_WITH_RUNNERS=$(COMPONENTS_WITH_RUNNERS)
-	@echo
-	@echo COMPONENTS_TEST=$(COMPONENTS_TEST)
-	@echo
-	@echo COMPONENTS_TEST_COMMA=$(COMPONENTS_TEST_COMMA)
-	@echo
-	@echo COMPONENTS_TEST_DIRS=$(COMPONENTS_TEST_DIRS)
-	@echo
-	@echo COMPONENTS_TEST_MODULES=$(COMPONENTS_TEST_MODULES)
-	@echo
-	@echo COMPONENTS_TEST_MODULES_COMMA=$(COMPONENTS_TEST_MODULES_COMMA)
 	@echo
 	@echo COMPONENT_PYTHONPATH=$(COMPONENT_PYTHONPATH)
 	@echo
@@ -76,7 +69,7 @@ all-ci: compile .flake8 .pylint
 lint: requirements flake8 pylint
 
 .PHONY: .lint
-.lint: .flake8 .pylint
+.lint: compile .flake8 .pylint
 
 .PHONY: flake8
 flake8: requirements .clone_st2_repo .flake8
@@ -109,6 +102,28 @@ compilepy3:
 	@echo "==================== pylint ===================="
 	@echo
 	. $(VIRTUALENV_DIR)/bin/activate; pylint -j $(PYLINT_CONCURRENCY) -E --rcfile=./lint-configs/python/.pylintrc --load-plugins=pylint_plugins.api_models --load-plugins=pylint_plugins.db_models st2rbac_enterprise_backend_default/
+
+.PHONY: .unit-tests
+.unit-tests:
+	@echo
+	@echo "==================== unit-tests ===================="
+	@echo
+	. $(VIRTUALENV_DIR)/bin/activate; nosetests $(NOSE_OPTS) -s -v tests/unit/
+	. $(VIRTUALENV_DIR)/bin/activate; nosetests $(NOSE_OPTS) -s -v tests/unit/controllers/v1/
+
+.PHONY: .integration-tests
+.integration-tests:
+	@echo
+	@echo "==================== integration-tests ===================="
+	@echo
+	. $(VIRTUALENV_DIR)/bin/activate; nosetests $(NOSE_OPTS) -s -v tests/integration/
+
+.PHONY: .unit-tests-py3
+.unit-tests-py3:
+	@echo
+	@echo "==================== unit-tests-py3 ===================="
+	@echo
+	NOSE_WITH_TIMER=$(NOSE_WITH_TIMER) tox -e py36-unit -vv
 
 .PHONY: .clone_st2_repo
 .clone_st2_repo: /tmp/st2
@@ -163,3 +178,22 @@ $(VIRTUALENV_DIR)/bin/activate:
 	@echo "==================== virtualenv ===================="
 	@echo
 	test -d $(VIRTUALENV_DIR) || virtualenv --no-site-packages $(VIRTUALENV_DIR)
+
+	# Setup PYTHONPATH in bash activate script...
+	# Delete existing entries (if any)
+ifeq ($(OS),Darwin)
+	echo 'Setting up virtualenv on $(OS)...'
+	sed -i '' '/_OLD_PYTHONPATHp/d' $(VIRTUALENV_DIR)/bin/activate
+	sed -i '' '/PYTHONPATH=/d' $(VIRTUALENV_DIR)/bin/activate
+	sed -i '' '/export PYTHONPATH/d' $(VIRTUALENV_DIR)/bin/activate
+else
+	echo 'Setting up virtualenv on $(OS)...'
+	sed -i '/_OLD_PYTHONPATHp/d' $(VIRTUALENV_DIR)/bin/activate
+	sed -i '/PYTHONPATH=/d' $(VIRTUALENV_DIR)/bin/activate
+	sed -i '/export PYTHONPATH/d' $(VIRTUALENV_DIR)/bin/activate
+endif
+
+	echo '_OLD_PYTHONPATH=$$PYTHONPATH' >> $(VIRTUALENV_DIR)/bin/activate
+	echo 'PYTHONPATH=$(COMPONENT_PYTHONPATH)' >> $(VIRTUALENV_DIR)/bin/activate
+	echo 'export PYTHONPATH' >> $(VIRTUALENV_DIR)/bin/activate
+	touch $(VIRTUALENV_DIR)/bin/activate
