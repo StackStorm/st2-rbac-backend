@@ -1,4 +1,4 @@
-# StackStorm Enterprise RBAC Backend
+# StackStorm Enterprise RBAC Backend for StackStorm Enterprise Edition
 
 StackStorm RBAC backend for enterprise version which contains all the proprietary RBAC
 (permission resolving) business logic.
