@@ -23,8 +23,8 @@ from st2common import config
 from st2common.script_setup import setup as common_setup
 from st2common.script_setup import teardown as common_teardown
 
-from st2rbac_enterprise_backend_default.loader import RBACDefinitionsLoader
-from st2rbac_enterprise_backend_default.syncer import RBACDefinitionsDBSyncer
+from st2rbac_enterprise_backend.loader import RBACDefinitionsLoader
+from st2rbac_enterprise_backend.syncer import RBACDefinitionsDBSyncer
 
 __all__ = [
     'main'

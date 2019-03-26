@@ -30,8 +30,8 @@ from st2common.services.rbac import get_role_assignments_for_user
 from st2common.services.rbac import create_role
 from st2common.services.rbac import assign_role_to_user
 from st2common.services.rbac import create_group_to_role_map
-from st2rbac_enterprise_backend_default.syncer import RBACDefinitionsDBSyncer
-from st2rbac_enterprise_backend_default.syncer import RBACRemoteGroupToRoleSyncer
+from st2rbac_enterprise_backend.syncer import RBACDefinitionsDBSyncer
+from st2rbac_enterprise_backend.syncer import RBACRemoteGroupToRoleSyncer
 
 __all__ = [
     'RBACDefinitionsDBSyncerTestCase',
