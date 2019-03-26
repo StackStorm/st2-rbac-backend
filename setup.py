@@ -59,7 +59,7 @@ setup(
     dependency_links=dep_links,
     test_suite='tests',
     entry_points={
-        'st2rbac.backends.backend': [
+        'st2common.rbac.backend': [
             'enterprise = st2rbac_enterprise_backend.backend.EnterpriseRBACBackend',
         ],
     },
