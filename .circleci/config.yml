@@ -6,7 +6,7 @@
 defaults: &defaults
   working_directory: ~/st2-rbac-backend
   docker:
-    - image: python:3.6.8
+    - image: ruby:2.4.4
 
 version: 2
 jobs:
@@ -29,7 +29,7 @@ jobs:
           command: |
             curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add -
             apt-get -qq update
-            apt-get install -y ruby ruby-dev rubygems rake jq software-properties-common libsasl2-dev python-pip python-virtualenv python-dev libldap2-dev apt-transport-https
+            apt-get install -y jq software-properties-common libsasl2-dev python-pip python-virtualenv python-dev libldap2-dev apt-transport-https
             add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/debian $(lsb_release -cs) stable"
             apt-get -qq update
             apt-get install -y docker-ce
@@ -117,7 +117,7 @@ jobs:
           command: |
             set -x
             apt-get -qq update
-            apt-get -y install jq ruby ruby-dev rubygems rake
+            apt-get -y install jq
             wget -qO - https://github.com/StackStorm/st2-packages/raw/master/.circle/packagecloud.sh > .circle/packagecloud.sh
             chmod 755 .circle/packagecloud.sh
             gem install package_cloud
