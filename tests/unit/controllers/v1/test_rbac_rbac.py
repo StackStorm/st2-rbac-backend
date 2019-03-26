@@ -23,7 +23,7 @@ from st2common.models.db.rbac import RoleDB
 from st2common.models.db.rbac import UserRoleAssignmentDB
 
 from st2tests import config as tests_config
-from tests.base import APIControllerWithRBACTestCase
+from st2tests.api import APIControllerWithRBACTestCase
 
 tests_config.parse_args()
 

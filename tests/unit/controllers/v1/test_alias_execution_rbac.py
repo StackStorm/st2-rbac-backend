@@ -19,7 +19,7 @@ from st2common.constants.action import LIVEACTION_STATUS_SUCCEEDED
 from st2common.models.db.execution import ActionExecutionDB
 from st2common.services import action as action_service
 from st2tests.fixturesloader import FixturesLoader
-from tests.base import APIControllerWithRBACTestCase
+from st2tests.api import APIControllerWithRBACTestCase
 
 FIXTURES_PACK = 'aliases'
 

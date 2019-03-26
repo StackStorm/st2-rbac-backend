@@ -31,8 +31,8 @@ from st2common.persistence.rbac import UserRoleAssignment
 from st2common.persistence.rbac import Role
 from st2common.persistence.rbac import PermissionGrant
 from st2common.transport.publishers import PoolPublisher
-from tests.base import APIControllerWithRBACTestCase
-from tests.base import BaseActionExecutionControllerTestCase
+from st2tests.api import APIControllerWithRBACTestCase
+from st2tests.api import BaseActionExecutionControllerTestCase
 from st2tests.fixturesloader import FixturesLoader
 
 

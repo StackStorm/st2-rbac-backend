@@ -20,7 +20,7 @@ from st2common.services import coordination
 
 from st2tests import config as tests_config
 
-from tests.base import APIControllerWithRBACTestCase
+from st2tests.api import APIControllerWithRBACTestCase
 
 http_client = six.moves.http_client
 

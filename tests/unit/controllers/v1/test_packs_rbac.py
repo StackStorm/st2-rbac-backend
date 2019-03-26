@@ -19,7 +19,7 @@ import six
 from st2common.router import Response
 from st2common.services import packs as pack_service
 from st2api.controllers.v1.actionexecutions import ActionExecutionsControllerMixin
-from tests.base import APIControllerWithRBACTestCase
+from st2tests.api import APIControllerWithRBACTestCase
 from tests.unit.controllers.v1.test_packs import PACK_INDEX
 
 http_client = six.moves.http_client

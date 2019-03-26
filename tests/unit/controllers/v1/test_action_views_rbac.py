@@ -29,7 +29,7 @@ from st2common.models.db.rbac import PermissionGrantDB
 from st2common.content import utils as content_utils
 from st2tests.fixturesloader import FixturesLoader
 from st2common.util.compat import mock_open_name
-from tests.base import APIControllerWithRBACTestCase
+from st2tests.api import APIControllerWithRBACTestCase
 
 http_client = six.moves.http_client
 
