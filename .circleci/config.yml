@@ -198,8 +198,8 @@ workflows:
   # Workflow which runs on each posh
   build_test_deploy_on_push:
     jobs:
-      #- build_and_test_python27
-      #- build_and_test_python36
+      - build_and_test_python27
+      - build_and_test_python36
       - build_deb_and_rpm_packages
       - deploy:
           requires:
