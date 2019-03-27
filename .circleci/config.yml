@@ -83,7 +83,7 @@ jobs:
       - image: ruby:2.4.4
     environment:
       DISTROS: trusty xenial bionic el6 el7
-      ARTIFACTS: /artifacts
+      ARTIFACTS: ~/packages
       docker_distros: trusty bionic centos6 centos7
       docker_run: |-
         docker run -w /code/ldap --volumes-from st2-rbac-backend-vol
@@ -116,17 +116,17 @@ jobs:
               docker pull stackstorm/buildpack:$dist
             done
       - run:
-          name: Setup circlerc_env
+          name: Setup ~/.circlerc environment variables
           command: |
             set -e
-            .circle/circlerc.sh
             source ~/.circlerc
             wget -qO - https://github.com/StackStorm/st2-packages/raw/master/.circle/packagecloud.sh > .circle/packagecloud.sh
             chmod 755 .circle/packagecloud.sh
-            source virtualenv/bin/activate
             PKG_VERSION=$(python setup.py --version 2> /dev/null | sed 's/\.dev[0-9]$/dev/')
             PKG_RELEASE=$(.circle/packagecloud.sh next-revision trusty ${PKG_VERSION} st2-rbac-backend)
-            circlerc_env PKG_VERSION PKG_RELEASE
+            echo "export PKG_VERSION=${PKG_VERSION}" >> ~/.circlerc
+            echo "export PKG_RELEASE=${PKG_RELEASE}" >> ~/.circlerc
+            echo "export DISTRO=${DISTRO}" >> ~/.circlerc
       - run:
           # Workaround for CircleCI docker-compose limitation where volumes don't work
           # See detailed explanation: https://circleci.com/docs/2.0/building-docker-images/#mounting-folders
@@ -157,9 +157,9 @@ jobs:
             eval ${docker_run} stackstorm/buildpack:centos7 make play rpm
             docker cp st2-rbac-backend-vol:/code/ldap/build/x86_64/st2-rbac-backend-${PKG_VERSION}-${PKG_RELEASE}.x86_64.rpm $ARTIFACTS/el7
       - store_artifacts:
-          path: /artifacts
+          path: ~/packages
       - persist_to_workspace:
-          root: /artifacts
+          root: ~/packages
           paths:
             - trusty
             - xenial
@@ -172,8 +172,8 @@ workflows:
   # Workflow which runs on each posh
   build_test_deploy_on_push:
     jobs:
-      - build_and_test_python27
-      - build_and_test_python36
+      #- build_and_test_python27
+      #- build_and_test_python36
       - build_deb_and_rpm_packages
   build_test_nightly:
     jobs:
