@@ -108,7 +108,6 @@ jobs:
             apt-get -qq update
             apt-get install -y docker-ce
             gem install package_cloud
-            mkdir ${ARTIFACTS} && cd ${ARTIFACTS} && mkdir ${DISTROS}
       - run:
           name: Pull buildpacks
           command: |
@@ -127,6 +126,9 @@ jobs:
             echo "export PKG_VERSION=${PKG_VERSION}" >> ~/.circlerc
             echo "export PKG_RELEASE=${PKG_RELEASE}" >> ~/.circlerc
             echo "export DISTRO=${DISTRO}" >> ~/.circlerc
+            # Create required directories
+            mkdir -p ${ARTIFACTS} && cd ${ARTIFACTS} && mkdir ${DISTROS}
+            #
       - run:
           # Workaround for CircleCI docker-compose limitation where volumes don't work
           # See detailed explanation: https://circleci.com/docs/2.0/building-docker-images/#mounting-folders
@@ -143,21 +145,22 @@ jobs:
             # 1. Build Trusty and Xenial packages
             # NOTE: We can re-use the same packages because both distros use same Python 2.7 version
             eval ${docker_run} stackstorm/buildpack:trusty make play deb
-            docker cp st2-rbac-backend-vol:/code/st2-rbac-backend_${PKG_VERSION}-${PKG_RELEASE}_amd64.deb $ARTIFACTS/trusty
-            docker cp st2-rbac-backend-vol:/code/st2-rbac-backend_${PKG_VERSION}-${PKG_RELEASE}_amd64.changes $ARTIFACTS/trusty
-            cp $ARTIFACTS/trusty/* $ARTIFACTS/xenial
+            docker cp st2-rbac-backend-vol:/code/st2-rbac-backend_${PKG_VERSION}-${PKG_RELEASE}_amd64.deb ${ARTIFACTS}/trusty
+            docker cp st2-rbac-backend-vol:/code/st2-rbac-backend_${PKG_VERSION}-${PKG_RELEASE}_amd64.changes ${ARTIFACTS}/trusty
+            cp ${ARTIFACTS}/trusty/* ${ARTIFACTS}/xenial
             # 2. Build Bionic packages
             eval ${docker_run} stackstorm/buildpack:bionic make play deb
-            docker cp st2-rbac-backend-vol:/code/st2-rbac-backend_${PKG_VERSION}-${PKG_RELEASE}_amd64.deb $ARTIFACTS/bionic
-            docker cp st2-rbac-backend-vol:/code/st2-rbac-backend_${PKG_VERSION}-${PKG_RELEASE}_amd64.changes $ARTIFACTS/bionic
+            docker cp st2-rbac-backend-vol:/code/st2-rbac-backend_${PKG_VERSION}-${PKG_RELEASE}_amd64.deb ${ARTIFACTS}/bionic
+            docker cp st2-rbac-backend-vol:/code/st2-rbac-backend_${PKG_VERSION}-${PKG_RELEASE}_amd64.changes ${ARTIFACTS}/bionic
             # 3. Build RHEL 6 packages
             eval ${docker_run} stackstorm/buildpack:centos6 make play rpm
-            docker cp st2-rbac-backend-vol:/code/ldap/build/x86_64/st2-rbac-backend-${PKG_VERSION}-${PKG_RELEASE}.x86_64.rpm $ARTIFACTS/el6
+            docker cp st2-rbac-backend-vol:/code/ldap/build/x86_64/st2-rbac-backend-${PKG_VERSION}-${PKG_RELEASE}.x86_64.rpm ${ARTIFACTS}/el6
             # 4. Build RHEL 7 packages
             eval ${docker_run} stackstorm/buildpack:centos7 make play rpm
-            docker cp st2-rbac-backend-vol:/code/ldap/build/x86_64/st2-rbac-backend-${PKG_VERSION}-${PKG_RELEASE}.x86_64.rpm $ARTIFACTS/el7
+            docker cp st2-rbac-backend-vol:/code/ldap/build/x86_64/st2-rbac-backend-${PKG_VERSION}-${PKG_RELEASE}.x86_64.rpm ${ARTIFACTS}/el7
       - store_artifacts:
           path: ~/packages
+          destination: packages
       - persist_to_workspace:
           root: ~/packages
           paths:
