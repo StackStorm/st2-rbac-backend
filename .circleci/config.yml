@@ -81,7 +81,7 @@ jobs:
   build_deb_and_rpm_packages:
     <<: *defaults
     environment:
-      ARTIFACTS: ~/packages
+      ARTIFACTS: /artifacts
       DISTROS: trusty xenial bionic el6 el7
       docker_distros: trusty bionic centos6 centos7
       docker_run: |-
@@ -157,12 +157,15 @@ jobs:
             eval ${docker_run} stackstorm/buildpack:centos7 make play rpm
             docker cp st2-rbac-backend-vol:/code/st2-rbac-backend/build/x86_64/st2-rbac-backend-${PKG_VERSION}-${PKG_RELEASE}.x86_64.rpm ${ARTIFACTS}/el7
       - store_artifacts:
-          path: ~/packages
-          destination: packages
+          path: /artifacts
       - persist_to_workspace:
-          root: ~/
+          root: /artifacts
           paths:
-            - packages
+            - trusty
+            - xenial
+            - bionic
+            - el6
+            - el7
   deploy_packages:
     <<: *defaults
     environment:
@@ -209,6 +212,7 @@ workflows:
         #          - master
         #          - /v[0-9]+\.[0-9]+/
         #          - feature/circleci
+        #          - add_initial_implementation
   build_test_nightly:
     jobs:
         - build_and_test_python27
