@@ -53,7 +53,7 @@ jobs:
             chmod 755 .circle/packagecloud.sh
             source virtualenv/bin/activate
             PKG_VERSION=$(python setup.py --version 2> /dev/null | sed 's/\.dev[0-9]$/dev/')
-            PKG_RELEASE=$(.circle/packagecloud.sh next-revision trusty ${PKG_VERSION} st2-auth-ldap)
+            PKG_RELEASE=$(.circle/packagecloud.sh next-revision trusty ${PKG_VERSION} st2-rbac-enterprise-backend)
             circlerc_env PKG_VERSION PKG_RELEASE
       - run:
           name: Make lint and unit tests
@@ -77,19 +77,19 @@ jobs:
             #            # 1. Build Trusty and Xenial packages
             #            # NOTE: We can re-use the same packages because both distros use same Python 2.7 version
             #            eval ${docker_run} stackstorm/buildpack:trusty make play deb
-            #            docker cp st2-rbac-backend-vol:/code/st2-auth-ldap_${PKG_VERSION}-${PKG_RELEASE}_amd64.deb $ARTIFACTS/trusty
-            #            docker cp st2-rbac-backend-vol:/code/st2-auth-ldap_${PKG_VERSION}-${PKG_RELEASE}_amd64.changes $ARTIFACTS/trusty
+            #            docker cp st2-rbac-backend-vol:/code/st2-rbac-backend_${PKG_VERSION}-${PKG_RELEASE}_amd64.deb $ARTIFACTS/trusty
+            #            docker cp st2-rbac-backend-vol:/code/st2-rbac-backend_${PKG_VERSION}-${PKG_RELEASE}_amd64.changes $ARTIFACTS/trusty
             #            cp $ARTIFACTS/trusty/* $ARTIFACTS/xenial
             #            # 2. Build Bionic packages
             #            eval ${docker_run} stackstorm/buildpack:bionic make play deb
-            #            docker cp st2-rbac-backend-vol:/code/st2-auth-ldap_${PKG_VERSION}-${PKG_RELEASE}_amd64.deb $ARTIFACTS/bionic
-            #            docker cp st2-rbac-backend-vol:/code/st2-auth-ldap_${PKG_VERSION}-${PKG_RELEASE}_amd64.changes $ARTIFACTS/bionic
+            #            docker cp st2-rbac-backend-vol:/code/st2-rbac-backend_${PKG_VERSION}-${PKG_RELEASE}_amd64.deb $ARTIFACTS/bionic
+            #            docker cp st2-rbac-backend-vol:/code/st2-rbac-backend_${PKG_VERSION}-${PKG_RELEASE}_amd64.changes $ARTIFACTS/bionic
             #            # 3. Build RHEL 6 packages
             #            eval ${docker_run} stackstorm/buildpack:centos6 make play rpm
-            #            docker cp st2-rbac-backend-vol:/code/ldap/build/x86_64/st2-auth-ldap-${PKG_VERSION}-${PKG_RELEASE}.x86_64.rpm $ARTIFACTS/el6
+            #            docker cp st2-rbac-backend-vol:/code/ldap/build/x86_64/st2-rbac-backend-${PKG_VERSION}-${PKG_RELEASE}.x86_64.rpm $ARTIFACTS/el6
             #            # 4. Build RHEL 7 packages
             #            eval ${docker_run} stackstorm/buildpack:centos7 make play rpm
-            #            docker cp st2-rbac-backend-vol:/code/ldap/build/x86_64/st2-auth-ldap-${PKG_VERSION}-${PKG_RELEASE}.x86_64.rpm $ARTIFACTS/el7
+            #            docker cp st2-rbac-backend-vol:/code/ldap/build/x86_64/st2-rbac-backend-${PKG_VERSION}-${PKG_RELEASE}.x86_64.rpm $ARTIFACTS/el7
             #      - store_artifacts:
             #          path: /artifacts
             #      - persist_to_workspace:
