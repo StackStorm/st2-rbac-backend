@@ -8,7 +8,7 @@ defaults: &defaults
   docker:
     - image: ruby:2.4.4
   environment:
-    ST2_REPO_PATH: "/tmp/st2"
+    DISTROS: trusty xenial bionic el6 el7
 
 version: 2
 jobs:
@@ -158,14 +158,37 @@ jobs:
             docker cp st2-rbac-backend-vol:/code/st2-rbac-backend/build/x86_64/st2-rbac-backend-${PKG_VERSION}-${PKG_RELEASE}.x86_64.rpm ${ARTIFACTS}/el7
       - store_artifacts:
           path: ~/packages
+          destination: packages
       - persist_to_workspace:
-          root: ~/packages
+          root: ~/
           paths:
-            - trusty
-            - xenial
-            - bionic
-            - el6
-            - el7
+            - packages
+  deploy_packages:
+    <<: *defaults
+    environment:
+      ARTIFACTS: ~/packages
+      DISTROS: trusty xenial bionic el6 el7
+    steps:
+      - checkout
+      - attach_workspace:
+          at: /artifacts
+      - run:
+          name: List workspace files
+          command: find ${ARTIFACTS} | sed 's|[^/]*/|  |g'
+      - run:
+          name: Install dependencies
+          command: |
+            set -x
+            apt-get -qq update
+            apt-get -y install jq
+            mkdir .circle
+            wget -qO - https://github.com/StackStorm/st2-packages/raw/master/.circle/packagecloud.sh > .circle/packagecloud.sh
+            chmod 755 .circle/packagecloud.sh
+            gem install package_cloud
+      - run:
+          name: Deploy to packagecloud
+          command: |
+            parallel -v -j0 --line-buffer .circle/packagecloud.sh deploy {} ${ARTIFACTS}/{} ::: ${DISTROS}
 
 workflows:
   version: 2
