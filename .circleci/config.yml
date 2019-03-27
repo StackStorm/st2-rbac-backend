@@ -20,12 +20,15 @@ jobs:
 
     steps:
       - checkout
+      - run:
+          name: Clone StackStorm/st2 repo
+          command: |
+            make .clone_st2_repo
       - restore_cache:
           key: v1-dependency-cache-py27-{{ checksum "/tmp/st2/requirements.txt" }}
       - run:
           name: Download and install dependencies
           command: |
-            make .clone_st2_repo
             make requirements
       - run:
           name: Run lint and tests (Python 2.7)
@@ -46,12 +49,15 @@ jobs:
 
     steps:
       - checkout
+      - run:
+          name: Clone StackStorm/st2 repo
+          command: |
+            make .clone_st2_repo
       - restore_cache:
           key: v1-dependency-cache-py36-{{ checksum "/tmp/st2/requirements.txt" }}
       - run:
           name: Download and install dependencies
           command: |
-            make .clone_st2_repo
             make requirements
       - run:
           name: Run lint and tests (Python 3.6)
