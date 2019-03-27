@@ -231,6 +231,10 @@ endif
 	touch $(VIRTUALENV_DIR)/bin/activate
 
 # Package build tasks
+
+.PHONY: all install install_wheel install_deps deb rpm
+all:
+
 install: install_wheel install_deps
 
 install_wheel:
