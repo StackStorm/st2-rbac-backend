@@ -7,6 +7,10 @@ defaults: &defaults
   working_directory: ~/st2-rbac-backend
   docker:
     - image: ruby:2.4.4
+  docker_run: |-
+    docker run -w /code/st2-rbac-backend --volumes-from st2-rbac-backend-vol
+      -e PKG_VERSION=$PKG_VERSION
+      -e PKG_RELEASE=$PKG_RELEASE
   environment:
     ST2_REPO_PATH: "/tmp/st2"
 
@@ -79,16 +83,11 @@ jobs:
             - ~/.cache/pip
             - ~/.apt-cache
   build_deb_and_rpm_packages:
-    docker:
-      - image: ruby:2.4.4
+    <<: *defaults
     environment:
-      DISTROS: trusty xenial bionic el6 el7
       ARTIFACTS: ~/packages
+      DISTROS: trusty xenial bionic el6 el7
       docker_distros: trusty bionic centos6 centos7
-      docker_run: |-
-        docker run -w /code/st2-rbac-backend --volumes-from st2-rbac-backend-vol
-          -e PKG_VERSION=$PKG_VERSION
-          -e PKG_RELEASE=$PKG_RELEASE
     steps:
       - checkout
       # NOTE: Private key to be able to access StackStorm/st2-private repo.
