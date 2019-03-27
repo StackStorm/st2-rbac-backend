@@ -13,13 +13,9 @@ import six
 from itertools import chain
 
 if six.PY3:
-    # pylint: disable=no-name-in-module
-    # pylint: disable-msg=E0611
-    from itertools import zip_longest as izip_longest  # NOQA
+    from itertools import zip_longest as izip_longest  # pylint: disable=no-name-in-module
 else:
-    # pylint: disable=no-name-in-module
-    # pylint: disable-msg=E0611
-    from itertools import izip_longest  # NOQA
+    from itertools import izip_longest    # pylint: disable=no-name-in-module
 
 from collections import defaultdict
 
