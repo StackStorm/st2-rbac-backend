@@ -98,12 +98,6 @@ jobs:
             - "9a:1c:32:83:03:69:59:e4:73:7e:be:80:dc:52:4c:11"
       - setup_remote_docker:
           docker_layer_caching: true
-    - run:
-          name: Clone StackStorm/st2 repo
-          command: |
-            make .clone_st2_repo
-      - restore_cache:
-          key: v1-dependency-cache-py27-{{ checksum "/tmp/st2/requirements.txt" }}
       - run:
           name: Install dependencies
           command: |
@@ -114,7 +108,6 @@ jobs:
             apt-get -qq update
             apt-get install -y docker-ce
             gem install package_cloud
-            make requirements
             mkdir ${ARTIFACTS} && cd ${ARTIFACTS} && mkdir ${DISTROS}
       - run:
           name: Pull buildpacks
@@ -134,12 +127,6 @@ jobs:
             PKG_VERSION=$(python setup.py --version 2> /dev/null | sed 's/\.dev[0-9]$/dev/')
             PKG_RELEASE=$(.circle/packagecloud.sh next-revision trusty ${PKG_VERSION} st2-rbac-backend)
             circlerc_env PKG_VERSION PKG_RELEASE
-      - run:
-          name: Run lint and tests (Python 2.7)
-          command: |
-            source virtualenv/bin/activate
-            make .lint
-            make .unit-tests
       - run:
           # Workaround for CircleCI docker-compose limitation where volumes don't work
           # See detailed explanation: https://circleci.com/docs/2.0/building-docker-images/#mounting-folders
