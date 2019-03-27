@@ -10,13 +10,33 @@ from st2common.services import packs as pack_service
 from st2api.controllers.v1.actionexecutions import ActionExecutionsControllerMixin
 
 from tests.base import APIControllerWithRBACTestCase
-from tests.unit.controllers.v1.test_packs import PACK_INDEX
 
 http_client = six.moves.http_client
 
 __all__ = [
     'PackControllerRBACTestCase'
 ]
+
+PACK_INDEX = {
+    "test": {
+        "version": "0.4.0",
+        "name": "test",
+        "repo_url": "https://github.com/StackStorm-Exchange/stackstorm-test",
+        "author": "st2-dev",
+        "keywords": ["some", "search", "another", "terms"],
+        "email": "info@stackstorm.com",
+        "description": "st2 pack to test package management pipeline"
+    },
+    "test2": {
+        "version": "0.5.0",
+        "name": "test2",
+        "repo_url": "https://github.com/StackStorm-Exchange/stackstorm-test2",
+        "author": "stanley",
+        "keywords": ["some", "special", "terms"],
+        "email": "info@stackstorm.com",
+        "description": "another st2 pack to test package management pipeline"
+    }
+}
 
 
 class PackControllerRBACTestCase(APIControllerWithRBACTestCase):

@@ -20,6 +20,10 @@ from st2common.models.db.rbac import RoleDB
 from st2common.models.db.rbac import UserRoleAssignmentDB
 from st2common.models.db.rbac import PermissionGrantDB
 from st2common.models.db.webhook import WebhookDB
+from st2common.constants.triggers import WEBHOOK_TRIGGER_TYPES
+from st2common.models.api.trigger import TriggerAPI
+from st2common.models.db.trigger import TriggerDB
+
 from st2tests.fixturesloader import FixturesLoader
 
 from tests.base import APIControllerWithRBACTestCase
