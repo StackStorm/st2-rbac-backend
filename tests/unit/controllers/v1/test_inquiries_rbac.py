@@ -15,8 +15,10 @@ from st2common.services import action as action_service
 from st2common.transport import publishers
 from st2common.validators.api import action as action_validator
 from st2tests import fixturesloader
+from st2tests.api import BaseInquiryControllerTestCase
 
-from tests import base as api_tests_base
+from tests.base import APIControllerWithRBACTestCase
+
 
 
 FIXTURES_PACK = 'generic'
@@ -39,8 +41,7 @@ SCHEMA_DEFAULT = {
 
 
 @mock.patch.object(publishers.PoolPublisher, 'publish', mock.MagicMock())
-class InquiryRBACControllerTestCase(api_tests_base.APIControllerWithRBACTestCase,
-                                    api_tests_base.BaseInquiryControllerTestCase):
+class InquiryRBACControllerTestCase(APIControllerWithRBACTestCase, BaseInquiryControllerTestCase):
 
     fixtures_loader = fixturesloader.FixturesLoader()
 
