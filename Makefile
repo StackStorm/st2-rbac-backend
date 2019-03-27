@@ -163,8 +163,8 @@ compilepy3:
 # NOTE: We pass --no-deps to the script so we don't install all the
 # package dependencies which are already installed as part of "requirements"
 # make targets. This speeds up the build
-.PHONY: .install-runners
-.install-runners:
+.PHONY: .install-runners-and-deps
+.install-runners-and-deps:
 	@echo ""
 	@echo "================== install runners ===================="
 	@echo ""
@@ -181,8 +181,14 @@ compilepy3:
 	# Install st2common to register metrics drivers
 	(. $(VIRTUALENV_DIR)/bin/activate; cd $(ST2_REPO_PATH)/st2common; python setup.py develop --no-deps)
 
+	@echo ""
+	@echo "================== register rbac backend ======================"
+	@echo ""
+	(. $(VIRTUALENV_DIR)/bin/activate; python setup.py develop --no-deps)
+
+
 .PHONY: requirements
-requirements: virtualenv .clone_st2_repo .install-runners
+requirements: virtualenv .clone_st2_repo .install-runners-and-deps
 	@echo
 	@echo "==================== requirements ===================="
 	@echo
