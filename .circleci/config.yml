@@ -78,7 +78,7 @@ jobs:
           paths:
             - ~/.cache/pip
             - ~/.apt-cache
-  build_deb_and_rpm_packages:
+  build_packages:
     <<: *defaults
     environment:
       ARTIFACTS: /artifacts
@@ -200,12 +200,12 @@ workflows:
     jobs:
       - build_and_test_python27
       - build_and_test_python36
-      - build_deb_and_rpm_packages
-      - deploy:
+      - build_packages
+      - deploy_packages:
           requires:
             - build_and_test_python27
             - build_and_test_python36
-            - build_deb_and_rpm_packages
+            - build_packages
           filters:
             branches:
               only:
