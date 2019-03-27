@@ -83,8 +83,8 @@ jobs:
     environment:
       ARTIFACTS: /artifacts
       DISTROS: trusty xenial bionic el6 el7
-      docker_distros: trusty bionic centos6 centos7
-      docker_run: |-
+      DOCKER_DISTROS: trusty bionic centos6 centos7
+      DOCKER_RUN: |-
         docker run -w /code/st2-rbac-backend --volumes-from st2-rbac-backend-vol
             -e PKG_VERSION=$PKG_VERSION
             -e PKG_RELEASE=$PKG_RELEASE
@@ -110,7 +110,7 @@ jobs:
       - run:
           name: Pull buildpacks
           command: |
-            for dist in $docker_distros; do
+            for dist in $DOCKER_DISTROS; do
               docker pull stackstorm/buildpack:$dist
             done
       - run:
@@ -142,19 +142,19 @@ jobs:
             source ~/.circlerc
             # 1. Build Trusty and Xenial packages
             # NOTE: We can re-use the same packages because both distros use same Python 2.7 version
-            eval ${docker_run} stackstorm/buildpack:trusty make play deb
+            eval ${DOCKER_RUN} stackstorm/buildpack:trusty make play deb
             docker cp st2-rbac-backend-vol:/code/st2-rbac-backend_${PKG_VERSION}-${PKG_RELEASE}_amd64.deb ${ARTIFACTS}/trusty
             docker cp st2-rbac-backend-vol:/code/st2-rbac-backend_${PKG_VERSION}-${PKG_RELEASE}_amd64.changes ${ARTIFACTS}/trusty
             cp ${ARTIFACTS}/trusty/* ${ARTIFACTS}/xenial
             # 2. Build Bionic packages
-            eval ${docker_run} stackstorm/buildpack:bionic make play deb
+            eval ${DOCKER_RUN} stackstorm/buildpack:bionic make play deb
             docker cp st2-rbac-backend-vol:/code/st2-rbac-backend_${PKG_VERSION}-${PKG_RELEASE}_amd64.deb ${ARTIFACTS}/bionic
             docker cp st2-rbac-backend-vol:/code/st2-rbac-backend_${PKG_VERSION}-${PKG_RELEASE}_amd64.changes ${ARTIFACTS}/bionic
             # 3. Build RHEL 6 packages
-            eval ${docker_run} stackstorm/buildpack:centos6 make play rpm
+            eval ${DOCKER_RUN} stackstorm/buildpack:centos6 make play rpm
             docker cp st2-rbac-backend-vol:/code/st2-rbac-backend/build/x86_64/st2-rbac-backend-${PKG_VERSION}-${PKG_RELEASE}.x86_64.rpm ${ARTIFACTS}/el6
             # 4. Build RHEL 7 packages
-            eval ${docker_run} stackstorm/buildpack:centos7 make play rpm
+            eval ${DOCKER_RUN} stackstorm/buildpack:centos7 make play rpm
             docker cp st2-rbac-backend-vol:/code/st2-rbac-backend/build/x86_64/st2-rbac-backend-${PKG_VERSION}-${PKG_RELEASE}.x86_64.rpm ${ARTIFACTS}/el7
       - store_artifacts:
           path: /artifacts
@@ -169,7 +169,7 @@ jobs:
   deploy_packages:
     <<: *defaults
     environment:
-      ARTIFACTS: ~/packages
+      ARTIFACTS: /artifacts
       DISTROS: trusty xenial bionic el6 el7
     steps:
       - checkout
