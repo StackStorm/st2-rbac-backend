@@ -4,6 +4,9 @@
 
 ROOT_DIR ?= $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 
+PKG_NAME := st2-rbac-backend
+PKG_RELEASE ?= 1
+WHEELSDIR ?= opt/stackstorm/share/wheels
 VIRTUALENV_DIR ?= virtualenv
 ST2_REPO_PATH ?= /tmp/st2
 ST2_REPO_URL ?= git@github.com:StackStorm/st2-private.git
@@ -231,7 +234,6 @@ endif
 	touch $(VIRTUALENV_DIR)/bin/activate
 
 # Package build tasks
-
 .PHONY: all install install_wheel install_deps deb rpm
 all:
 
