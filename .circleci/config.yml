@@ -158,7 +158,6 @@ jobs:
             docker cp st2-rbac-backend-vol:/code/st2-rbac-backend/build/x86_64/st2-rbac-backend-${PKG_VERSION}-${PKG_RELEASE}.x86_64.rpm ${ARTIFACTS}/el7
       - store_artifacts:
           path: ~/packages
-          destination: packages
       - persist_to_workspace:
           root: ~/packages
           paths:
