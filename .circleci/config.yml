@@ -7,138 +7,81 @@ defaults: &defaults
   working_directory: ~/st2-rbac-backend
   docker:
     - image: ruby:2.4.4
+  environment:
+    ST2_REPO_PATH: "/tmp/st2"
 
 version: 2
 jobs:
-  build:
-    <<: *defaults
-    environment:
-      DISTROS: trusty xenial bionic el6 el7
-      ARTIFACTS: /artifacts
-      docker_distros: trusty bionic centos6 centos7
-      docker_run: |-
-        docker run -w /code/ldap --volumes-from st2-rbac-backend-vol
-          -e PKG_VERSION=$PKG_VERSION
-          -e PKG_RELEASE=$PKG_RELEASE
+  build_and_test_python27:
+    docker:
+      - image: circleci/python:2.7
+      - image: rabbitmq:3
+      - image: mongo:3.4
+
     steps:
       - checkout
-      - setup_remote_docker:
-          docker_layer_caching: true
+      - restore_cache:
+          key: v1-dependency-cache-py27-{{ checksum "/tmp/st2/requirements.txt" }}
       - run:
-          name: Install dependencies
+          name: Download and install dependencies
           command: |
-            curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add -
-            apt-get -qq update
-            apt-get install -y jq software-properties-common libsasl2-dev python-pip python-virtualenv python-dev libldap2-dev apt-transport-https
-            add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/debian $(lsb_release -cs) stable"
-            apt-get -qq update
-            apt-get install -y docker-ce
-            gem install package_cloud
             make .clone_st2_repo
             make requirements
-            mkdir ${ARTIFACTS} && cd ${ARTIFACTS} && mkdir ${DISTROS}
       - run:
-          name: Pull buildpacks
-          command: |
-            for dist in $docker_distros; do
-              docker pull stackstorm/buildpack:$dist
-            done
-      - run:
-          name: Setup circlerc_env
-          command: |
-            set -e
-            .circle/circlerc.sh
-            source ~/.circlerc
-            wget -qO - https://github.com/StackStorm/st2-packages/raw/master/.circle/packagecloud.sh > .circle/packagecloud.sh
-            chmod 755 .circle/packagecloud.sh
-            source virtualenv/bin/activate
-            PKG_VERSION=$(python setup.py --version 2> /dev/null | sed 's/\.dev[0-9]$/dev/')
-            PKG_RELEASE=$(.circle/packagecloud.sh next-revision trusty ${PKG_VERSION} st2-rbac-enterprise-backend)
-            circlerc_env PKG_VERSION PKG_RELEASE
-      - run:
-          name: Make lint and unit tests
+          name: Run lint and tests (Python 2.7)
           command: |
             source virtualenv/bin/activate
             make .lint
             make .unit-tests
-            #      - run:
-            #          # Workaround for CircleCI docker-compose limitation where volumes don't work
-            #          # See detailed explanation: https://circleci.com/docs/2.0/building-docker-images/#mounting-folders
-            #          name: Copy st2-packages files to build containers
-            #          command: |
-            #            # creating dummy container which will hold a volume with data files
-            #            docker create -v /code --name st2-rbac-backend-vol alpine:3.4 /bin/true
-            #            # copy st2-packages data files into this volume
-            #            docker cp ~/ldap st2-rbac-backend-vol:/code
-            #      - run:
-            #          name: Build packages for supported distros on native OS inside stackstorm/buildpack container
-            #          command: |
-            #            source ~/.circlerc
-            #            # 1. Build Trusty and Xenial packages
-            #            # NOTE: We can re-use the same packages because both distros use same Python 2.7 version
-            #            eval ${docker_run} stackstorm/buildpack:trusty make play deb
-            #            docker cp st2-rbac-backend-vol:/code/st2-rbac-backend_${PKG_VERSION}-${PKG_RELEASE}_amd64.deb $ARTIFACTS/trusty
-            #            docker cp st2-rbac-backend-vol:/code/st2-rbac-backend_${PKG_VERSION}-${PKG_RELEASE}_amd64.changes $ARTIFACTS/trusty
-            #            cp $ARTIFACTS/trusty/* $ARTIFACTS/xenial
-            #            # 2. Build Bionic packages
-            #            eval ${docker_run} stackstorm/buildpack:bionic make play deb
-            #            docker cp st2-rbac-backend-vol:/code/st2-rbac-backend_${PKG_VERSION}-${PKG_RELEASE}_amd64.deb $ARTIFACTS/bionic
-            #            docker cp st2-rbac-backend-vol:/code/st2-rbac-backend_${PKG_VERSION}-${PKG_RELEASE}_amd64.changes $ARTIFACTS/bionic
-            #            # 3. Build RHEL 6 packages
-            #            eval ${docker_run} stackstorm/buildpack:centos6 make play rpm
-            #            docker cp st2-rbac-backend-vol:/code/ldap/build/x86_64/st2-rbac-backend-${PKG_VERSION}-${PKG_RELEASE}.x86_64.rpm $ARTIFACTS/el6
-            #            # 4. Build RHEL 7 packages
-            #            eval ${docker_run} stackstorm/buildpack:centos7 make play rpm
-            #            docker cp st2-rbac-backend-vol:/code/ldap/build/x86_64/st2-rbac-backend-${PKG_VERSION}-${PKG_RELEASE}.x86_64.rpm $ARTIFACTS/el7
-            #      - store_artifacts:
-            #          path: /artifacts
-            #      - persist_to_workspace:
-            #          root: /artifacts
-            #          paths:
-            #            - trusty
-            #            - xenial
-            #            - bionic
-            #            - el6
-            #            - el7
-  deploy:
-    <<: *defaults
-    environment:
-      ARTIFACTS: /artifacts
-      DISTROS: trusty xenial bionic el6 el7
+      - save_cache:
+          key: v1-dependency-cache-py27-{{ checksum "/tmp/st2/requirements.txt" }}
+          paths:
+            - ~/.cache/pip
+            - ~/.apt-cache
+  build_and_test_python36:
+    docker:
+      - image: circleci/python:3.6
+      - image: rabbitmq:3
+      - image: mongo:3.4
+
     steps:
       - checkout
-      - attach_workspace:
-          at: /artifacts
+      - restore_cache:
+          key: v1-dependency-cache-py36-{{ checksum "/tmp/st2/requirements.txt" }}
       - run:
-          name: List workspace files
-          command: find $ARTIFACTS | sed 's|[^/]*/|  |g'
-      - run:
-          name: Install dependencies
+          name: Download and install dependencies
           command: |
-            set -x
-            apt-get -qq update
-            apt-get -y install jq
-            wget -qO - https://github.com/StackStorm/st2-packages/raw/master/.circle/packagecloud.sh > .circle/packagecloud.sh
-            chmod 755 .circle/packagecloud.sh
-            gem install package_cloud
+            make .clone_st2_repo
+            make requirements
       - run:
-          name: Deploy to packagecloud
+          name: Run lint and tests (Python 3.6)
           command: |
-            for distro in ${DISTROS}; do
-              .circle/packagecloud.sh deploy $distro $ARTIFACTS/$distro
-            done
+            source virtualenv/bin/activate
+            make .lint
+            make .unit-tests
+      - save_cache:
+          key: v1-dependency-cache-py36-{{ checksum "/tmp/st2/requirements.txt" }}
+          paths:
+            - ~/.cache/pip
+            - ~/.apt-cache
 
 workflows:
   version: 2
-  build-deploy-workflow:
+  # Workflow which runs on each posh
+  build_test_deploy_on_push:
     jobs:
-      - build
-        #      - deploy:
-        #          requires:
-        #            - build
-        #  filters:
-        #    branches:
-        #      only:
-        #        - master
-        #        - /v[0-9]+\.[0-9]+/
-        #        - feature/circleci
+      - build_and_test_python27
+      - build_and_test_python36
+  build_test_nightly:
+    jobs:
+        - build_and_test_python27
+        - build_and_test_python36
+    triggers:
+      # Run nightly build for the pack
+      - schedule:
+          # NOTE: We run it at 1 am UTC every day
+          cron: "0 1 * * *"
+          filters:
+            branches:
+              only:
+                - master
