@@ -33,10 +33,6 @@ jobs:
       - run:
           name: Run lint and tests (Python 2.7)
           command: |
-            source virtualenv/bin/activate
-            ls -la /tmp/st2
-            echo $PYTHONPATH
-            make play
             make .lint
             make .unit-tests
       - save_cache:
@@ -65,8 +61,6 @@ jobs:
       - run:
           name: Run lint and tests (Python 3.6)
           command: |
-            source virtualenv/bin/activate
-            make play
             make .lint
             make .unit-tests
       - save_cache:

@@ -6,7 +6,8 @@ ROOT_DIR ?= $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 
 VIRTUALENV_DIR ?= virtualenv
 ST2_REPO_PATH ?= /tmp/st2
-ST2_REPO_BRANCH ?= master
+ST2_REPO_URL ?= git@github.com:StackStorm/st2-private.git
+ST2_REPO_BRANCH ?= pluggable_rbac_backends_v30
 
 ifneq (,$(wildcard /etc/debian_version))
 	DEBIAN := 1
@@ -157,7 +158,7 @@ compilepy3:
 	@echo "==================== cloning st2 repo ===================="
 	@echo
 	@rm -rf /tmp/st2
-	@git clone https://github.com/StackStorm/st2.git --depth 1 --single-branch --branch $(ST2_REPO_BRANCH) $(ST2_REPO_PATH)
+	@git clone $(ST2_REPO_URL)  --depth 1 --single-branch --branch $(ST2_REPO_BRANCH) $(ST2_REPO_PATH)
 
 # NOTE: We pass --no-deps to the script so we don't install all the
 # package dependencies which are already installed as part of "requirements"
