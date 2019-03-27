@@ -136,7 +136,7 @@ jobs:
             # creating dummy container which will hold a volume with data files
             docker create -v /code --name st2-rbac-backend-vol alpine:3.4 /bin/true
             # copy st2-packages data files into this volume
-            docker cp ~/ldap st2-rbac-backend-vol:/code
+            docker cp ~/st2-rbac-backend st2-rbac-backend-vol:/code
       - run:
           name: Build packages for supported distros on native OS inside stackstorm/buildpack container
           command: |
@@ -153,10 +153,10 @@ jobs:
             docker cp st2-rbac-backend-vol:/code/st2-rbac-backend_${PKG_VERSION}-${PKG_RELEASE}_amd64.changes ${ARTIFACTS}/bionic
             # 3. Build RHEL 6 packages
             eval ${docker_run} stackstorm/buildpack:centos6 make play rpm
-            docker cp st2-rbac-backend-vol:/code/ldap/build/x86_64/st2-rbac-backend-${PKG_VERSION}-${PKG_RELEASE}.x86_64.rpm ${ARTIFACTS}/el6
+            docker cp st2-rbac-backend-vol:/code/st2-rbac-backend/build/x86_64/st2-rbac-backend-${PKG_VERSION}-${PKG_RELEASE}.x86_64.rpm ${ARTIFACTS}/el6
             # 4. Build RHEL 7 packages
             eval ${docker_run} stackstorm/buildpack:centos7 make play rpm
-            docker cp st2-rbac-backend-vol:/code/ldap/build/x86_64/st2-rbac-backend-${PKG_VERSION}-${PKG_RELEASE}.x86_64.rpm ${ARTIFACTS}/el7
+            docker cp st2-rbac-backend-vol:/code/st2-rbac-backend/build/x86_64/st2-rbac-backend-${PKG_VERSION}-${PKG_RELEASE}.x86_64.rpm ${ARTIFACTS}/el7
       - store_artifacts:
           path: ~/packages
           destination: packages
