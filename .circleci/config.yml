@@ -127,7 +127,6 @@ jobs:
             echo "export DISTRO=${DISTRO}" >> ~/.circlerc
             # Create required directories
             mkdir -p ${ARTIFACTS} && cd ${ARTIFACTS} && mkdir ${DISTROS}
-            #
       - run:
           # Workaround for CircleCI docker-compose limitation where volumes don't work
           # See detailed explanation: https://circleci.com/docs/2.0/building-docker-images/#mounting-folders
