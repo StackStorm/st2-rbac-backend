@@ -1,19 +1,7 @@
-# Licensed to the StackStorm, Inc ('StackStorm') under one or more
-# contributor license agreements.  See the NOTICE file distributed with
-# this work for additional information regarding copyright ownership.
-# The ASF licenses this file to You under the Apache License, Version 2.0
-# (the "License"); you may not use this file except in compliance with
-# the License.  You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+# Copyright (c) Extreme Networks, Inc - All Rights Reserved
+# Unauthorized copying of this file, via any medium is strictly prohibited
+# Proprietary and confidential
 
-import copy
 import mock
 
 from six.moves import http_client
@@ -29,14 +17,24 @@ from st2common.validators.api import action as action_validator
 from st2tests import fixturesloader
 
 from tests import base as api_tests_base
-from tests.unit.controllers.v1 import test_inquiries
 
 
-SCHEMA_DEFAULT = copy.deepcopy(test_inquiries.SCHEMA_DEFAULT)
 FIXTURES_PACK = 'generic'
 TEST_FIXTURES = {
     'runners': ['inquirer.yaml', 'actionchain.yaml'],
     'actions': ['ask.yaml', 'inquiry_workflow.yaml'],
+}
+
+SCHEMA_DEFAULT = {
+    "title": "response_data",
+    "type": "object",
+    "properties": {
+        "continue": {
+            "type": "boolean",
+            "description": "Would you like to continue the workflow?",
+            "required": True
+        }
+    },
 }
 
 

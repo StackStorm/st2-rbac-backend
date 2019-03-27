@@ -23,3 +23,7 @@ enable = True
 backend = enterprise
 ...
 3. Restart all the services - ``sudo st2ctl restart``
+
+## Copyright
+
+Copyright (c) Extreme Networks, Inc - All Rights Reserved.

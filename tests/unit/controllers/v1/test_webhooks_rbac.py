@@ -1,17 +1,6 @@
-# Licensed to the StackStorm, Inc ('StackStorm') under one or more
-# contributor license agreements.  See the NOTICE file distributed with
-# this work for additional information regarding copyright ownership.
-# The ASF licenses this file to You under the Apache License, Version 2.0
-# (the "License"); you may not use this file except in compliance with
-# the License.  You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+# Copyright (c) Extreme Networks, Inc - All Rights Reserved
+# Unauthorized copying of this file, via any medium is strictly prohibited
+# Proprietary and confidential
 
 import six
 import mock
@@ -32,16 +21,22 @@ from st2common.models.db.rbac import UserRoleAssignmentDB
 from st2common.models.db.rbac import PermissionGrantDB
 from st2common.models.db.webhook import WebhookDB
 from st2tests.fixturesloader import FixturesLoader
-from st2tests.api import APIControllerWithRBACTestCase
 
-from tests.unit.controllers.v1.test_webhooks import DUMMY_TRIGGER_DB
-from tests.unit.controllers.v1.test_webhooks import DUMMY_TRIGGER_API
+from tests.base import APIControllerWithRBACTestCase
 
 http_client = six.moves.http_client
 
 __all__ = [
     'WebhookControllerRBACTestCase'
 ]
+
+# 1. Trigger which references a system webhook trigger type
+DUMMY_TRIGGER_DB = TriggerDB(name='pr-merged', pack='git')
+DUMMY_TRIGGER_DB.type = list(WEBHOOK_TRIGGER_TYPES.keys())[0]
+
+
+DUMMY_TRIGGER_API = TriggerAPI.from_model(DUMMY_TRIGGER_DB)
+DUMMY_TRIGGER_DICT = vars(DUMMY_TRIGGER_API)
 
 
 class WebhookControllerRBACTestCase(APIControllerWithRBACTestCase):
