@@ -20,6 +20,9 @@ jobs:
 
     steps:
       - checkout
+      - add_ssh_keys:
+          fingerprints:
+            - "9a:1c:32:83:03:69:59:e4:73:7e:be:80:dc:52:4c:11"
       - run:
           name: Clone StackStorm/st2 repo
           command: |
@@ -48,6 +51,9 @@ jobs:
 
     steps:
       - checkout
+      - add_ssh_keys:
+          fingerprints:
+            - "9a:1c:32:83:03:69:59:e4:73:7e:be:80:dc:52:4c:11"
       - run:
           name: Clone StackStorm/st2 repo
           command: |
