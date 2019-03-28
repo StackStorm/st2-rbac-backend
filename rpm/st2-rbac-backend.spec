@@ -29,9 +29,6 @@ Requires: st2 openldap
   rm -rf %{buildroot}
   mkdir -p %{buildroot}
 
-%post
-  %include rpm/postinst_script.spec
-
 %build
   make
 
@@ -42,12 +39,10 @@ Requires: st2 openldap
   rm -rf %{buildroot}
 
 %post
-  %{pip} install --find-links %{st2wheels} --no-index --quiet --upgrade st2-enterprise-rbac-backend
+  %include rpm/postinst_script.spec
 
 %postun
-  if [ $1 -eq 0 ]; then
-    echo y | %{pip} uninstall st2-enterprise-rbac-backend 1>/dev/null || :
-  fi
+  %include rpm/postinst_script.spec
 
 %files
   %doc rpm/LICENSE
