@@ -185,7 +185,7 @@ jobs:
       - run:
           name: Deploy to packagecloud
           command: |
-            parallel -v -j0 --line-buffer .circle/packagecloud.sh deploy {} {} ::: ${DISTROS}
+            parallel -v -j0 --line-buffer .circle/packagecloud.sh deploy {} build/{} ::: ${DISTROS}
 
 workflows:
   version: 2
