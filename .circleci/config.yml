@@ -102,6 +102,9 @@ jobs:
             sudo apt-get install -y jq software-properties-common libsasl2-dev python-pip python-virtualenv apt-transport-https
             gem install package_cloud
       - run:
+          name: Ensure Docker running
+          command: 'sudo docker info >/dev/null 2>&1 || sudo service docker start; '
+      - run:
           name: Pull buildpacks
           command: |
             for dist in $DOCKER_DISTROS; do
