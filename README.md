@@ -10,7 +10,7 @@ contain majority of the business logic though).
 
 ## Installation
 
-NOTE: This happens automatically as part of the ``bwc-enterprise`` package post install step.
+NOTE: This happens automatically when using bwc installer script.
 
 1. Make sure the backend Python package is installed inside StackStorm virtualenv
    (``/opt/stackstorm/st2/``)
