@@ -42,7 +42,7 @@ Requires: crudini st2
   %include rpm/postinst_script.spec
 
 %postun
-  %include rpm/postinst_script.spec
+  %include rpm/postun_script.spec
 
 %files
   %doc rpm/LICENSE
