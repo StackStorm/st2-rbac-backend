@@ -211,7 +211,6 @@ workflows:
                 - master
                 - /v[0-9]+\.[0-9]+/
                 - feature/circleci
-                - add_initial_implementation
   build_test_nightly:
     jobs:
         - build_and_test_python27
