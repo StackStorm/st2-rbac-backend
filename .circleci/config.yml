@@ -6,9 +6,10 @@
 defaults: &defaults
   working_directory: ~/st2-rbac-backend
   docker:
-    - image: ruby:2.4.4
+    - image: circleci/ruby:2.4
   environment:
     DISTROS: trusty xenial bionic el6 el7
+    ARTIFACTS: ~/packages
 
 version: 2
 jobs:
@@ -81,7 +82,6 @@ jobs:
   build_packages:
     <<: *defaults
     environment:
-      ARTIFACTS: /artifacts
       DISTROS: trusty xenial bionic el6 el7
       DOCKER_DISTROS: trusty bionic centos6 centos7
       DOCKER_RUN: |-
@@ -100,12 +100,8 @@ jobs:
       - run:
           name: Install dependencies
           command: |
-            curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add -
-            apt-get -qq update
-            apt-get install -y jq software-properties-common libsasl2-dev python-pip python-virtualenv apt-transport-https
-            add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/debian $(lsb_release -cs) stable"
-            apt-get -qq update
-            apt-get install -y docker-ce
+            sudo apt-get -qq update
+            sudo pt-get install -y jq software-properties-common libsasl2-dev python-pip python-virtualenv apt-transport-https
             gem install package_cloud
       - run:
           name: Pull buildpacks
@@ -155,10 +151,12 @@ jobs:
             # 4. Build RHEL 7 packages
             eval ${DOCKER_RUN} stackstorm/buildpack:centos7 make play rpm
             docker cp st2-rbac-backend-vol:/code/st2-rbac-backend/build/x86_64/st2-rbac-backend-${PKG_VERSION}-${PKG_RELEASE}.x86_64.rpm ${ARTIFACTS}/el7
+            echo ${ARTIFACTS}
+            ls -la ${ARTIFACTS}
       - store_artifacts:
-          path: /artifacts
+          path: ~/packages
       - persist_to_workspace:
-          root: /artifacts
+          root: ~/packages
           paths:
             - trusty
             - xenial
@@ -167,13 +165,13 @@ jobs:
             - el7
   deploy_packages:
     <<: *defaults
+    working_directory: ~/packages
     environment:
-      ARTIFACTS: /artifacts
       DISTROS: trusty xenial bionic el6 el7
     steps:
       - checkout
       - attach_workspace:
-          at: /artifacts
+          at: /home/circleci
       - run:
           name: List workspace files
           command: find ${ARTIFACTS} | sed 's|[^/]*/|  |g'
@@ -181,8 +179,8 @@ jobs:
           name: Install dependencies
           command: |
             set -x
-            apt-get -qq update
-            apt-get -y install jq parallel
+            sudo apt-get -qq update
+            sudo apt-get -y install jq
             mkdir .circle
             wget -qO - https://github.com/StackStorm/st2-packages/raw/master/.circle/packagecloud.sh > .circle/packagecloud.sh
             chmod 755 .circle/packagecloud.sh
@@ -197,13 +195,13 @@ workflows:
   # Workflow which runs on each posh
   build_test_deploy_on_push:
     jobs:
-      - build_and_test_python27
-      - build_and_test_python36
+        #- build_and_test_python27
+        #- build_and_test_python36
       - build_packages
       - deploy_packages:
           requires:
-            - build_and_test_python27
-            - build_and_test_python36
+              #- build_and_test_python27
+              #- build_and_test_python36
             - build_packages
           filters:
             branches:
