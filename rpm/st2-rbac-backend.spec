@@ -17,7 +17,7 @@ Summary:        LDAP auth backend for st2
 URL:            https://stackstorm.com/
 Source0:        st2-enterprise-auth-backend-ldap
 
-Requires: st2 openldap
+Requires: crudini st2
 
 %define _builddir %(pwd)
 %define _rpmdir %(pwd)/build
