@@ -99,6 +99,7 @@ jobs:
           name: Install dependencies
           command: |
             sudo apt-get install -y jq rpm
+      - setup_remote_docker
       - run:
           name: Ensure Docker running
           command: 'sudo docker info >/dev/null 2>&1 || sudo service docker start; '
