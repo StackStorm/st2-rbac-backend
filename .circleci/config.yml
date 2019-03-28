@@ -95,13 +95,11 @@ jobs:
       - add_ssh_keys:
           fingerprints:
             - "9a:1c:32:83:03:69:59:e4:73:7e:be:80:dc:52:4c:11"
-      - setup_remote_docker:
-          docker_layer_caching: true
       - run:
           name: Install dependencies
           command: |
             sudo apt-get -qq update
-            sudo pt-get install -y jq software-properties-common libsasl2-dev python-pip python-virtualenv apt-transport-https
+            sudo apt-get install -y jq software-properties-common libsasl2-dev python-pip python-virtualenv apt-transport-https
             gem install package_cloud
       - run:
           name: Pull buildpacks
