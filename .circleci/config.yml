@@ -117,7 +117,6 @@ jobs:
             PKG_RELEASE=$(.circle/packagecloud.sh next-revision trusty ${PKG_VERSION} st2-rbac-backend)
             echo "export PKG_VERSION=${PKG_VERSION}" >> ~/.circlerc
             echo "export PKG_RELEASE=${PKG_RELEASE}" >> ~/.circlerc
-
             # Create directories
             mkdir -p ~/st2-rbac-backend/build/
             cd  ~/st2-rbac-backend/build/ && mkdir ${DISTROS}
@@ -143,7 +142,6 @@ jobs:
             source ~/.circlerc
             # 1. Build Trusty and Xenial packages
             # NOTE: We can re-use the same packages because both distros use same Python 2.7 version
-            mkdir ~/st2-rbac-backend/build/
             eval ${DOCKER_RUN} stackstorm/buildpack:trusty make play deb
             docker cp st2-rbac-backend-vol:/code/st2-rbac-backend_${PKG_VERSION}-${PKG_RELEASE}_amd64.deb ${ARTIFACTS}/trusty
             docker cp st2-rbac-backend-vol:/code/st2-rbac-backend_${PKG_VERSION}-${PKG_RELEASE}_amd64.changes ${ARTIFACTS}/trusty
@@ -188,8 +186,7 @@ jobs:
           name: Install dependencies
           command: |
             set -x
-            sudo apt-get -qq update
-            sudo apt-get -y install jq
+            sudo apt-get -y install parallel jq
             mkdir .circle
             wget -qO - https://github.com/StackStorm/st2-packages/raw/master/.circle/packagecloud.sh > .circle/packagecloud.sh
             chmod 755 .circle/packagecloud.sh
