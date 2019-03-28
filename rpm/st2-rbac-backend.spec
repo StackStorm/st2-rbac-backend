@@ -29,6 +29,9 @@ Requires: st2 openldap
   rm -rf %{buildroot}
   mkdir -p %{buildroot}
 
+%post
+  %include rpm/postinst_script.spec
+
 %build
   make
 

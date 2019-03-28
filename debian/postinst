@@ -22,9 +22,15 @@ install_pacakge() {
   $PIP install --find-links $WHEELSDIR --no-index --quiet --upgrade st2-enterprise-rbac-backend
 }
 
+enable_rbac() {
+  crudini --set /etc/st2/st2.conf rbac enable 'True'
+  crudini --set /etc/st2/st2.conf rbac backend 'enterprise'
+}
+
 case "$1" in
     configure)
       install_pacakge
+      enable_rbac
     ;;
     abort-upgrade|abort-remove|abort-deconfigure)
     ;;
