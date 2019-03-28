@@ -5,8 +5,6 @@
 # PACKAGECLOUD_TOKEN
 defaults: &defaults
   working_directory: ~/st2-rbac-backend
-  docker:
-    - image: circleci/ruby:2.4
   environment:
     DISTROS: trusty xenial bionic el6 el7
     ARTIFACTS: ~/packages
@@ -99,7 +97,7 @@ jobs:
           name: Install dependencies
           command: |
             sudo apt-get -qq update
-            sudo apt-get install -y jq software-properties-common libsasl2-dev python-pip python-virtualenv apt-transport-https
+            sudo apt-get install -y jq rpm software-properties-common libsasl2-dev python-pip python-virtualenv apt-transport-https
             gem install package_cloud
       - run:
           name: Ensure Docker running
@@ -166,6 +164,8 @@ jobs:
             - el7
   deploy_packages:
     <<: *defaults
+    docker:
+      - image: circleci/ruby:2.4
     working_directory: ~/packages
     environment:
       DISTROS: trusty xenial bionic el6 el7
