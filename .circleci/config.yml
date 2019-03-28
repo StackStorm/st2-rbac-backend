@@ -79,7 +79,8 @@ jobs:
             - ~/.apt-cache
   build_packages:
     <<: *defaults
-    machine: true
+    docker:
+      - image: circleci/python:2.7
     environment:
       DISTROS: trusty xenial bionic el6 el7
       DOCKER_DISTROS: trusty bionic centos6 centos7
@@ -97,9 +98,7 @@ jobs:
       - run:
           name: Install dependencies
           command: |
-            sudo apt-get -qq update
-            sudo apt-get install -y jq rpm software-properties-common libsasl2-dev python-pip python-virtualenv apt-transport-https
-            gem install package_cloud
+            sudo apt-get install -y jq rpm
       - run:
           name: Ensure Docker running
           command: 'sudo docker info >/dev/null 2>&1 || sudo service docker start; '
