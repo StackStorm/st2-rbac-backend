@@ -7,7 +7,7 @@ defaults: &defaults
   working_directory: ~/st2-rbac-backend
   environment:
     DISTROS: trusty xenial bionic el6 el7
-    ARTIFACTS: ~/packages
+    ARTIFACTS: ~/st2-rbac-backend/build/
 
 version: 2
 jobs:
@@ -117,8 +117,10 @@ jobs:
             PKG_RELEASE=$(.circle/packagecloud.sh next-revision trusty ${PKG_VERSION} st2-rbac-backend)
             echo "export PKG_VERSION=${PKG_VERSION}" >> ~/.circlerc
             echo "export PKG_RELEASE=${PKG_RELEASE}" >> ~/.circlerc
-            # Create required directories
-            mkdir -p ${ARTIFACTS} && cd ${ARTIFACTS} && mkdir ${DISTROS}
+
+            # Create directories
+            mkdir -p ~/st2-rbac-backend/build/
+            cd  ~/st2-rbac-backend/build/ && mkdir ${DISTROS}
       - run:
           name: Pre Docker cleanup
           command: |
@@ -141,6 +143,7 @@ jobs:
             source ~/.circlerc
             # 1. Build Trusty and Xenial packages
             # NOTE: We can re-use the same packages because both distros use same Python 2.7 version
+            mkdir ~/st2-rbac-backend/build/
             eval ${DOCKER_RUN} stackstorm/buildpack:trusty make play deb
             docker cp st2-rbac-backend-vol:/code/st2-rbac-backend_${PKG_VERSION}-${PKG_RELEASE}_amd64.deb ${ARTIFACTS}/trusty
             docker cp st2-rbac-backend-vol:/code/st2-rbac-backend_${PKG_VERSION}-${PKG_RELEASE}_amd64.changes ${ARTIFACTS}/trusty
@@ -158,9 +161,9 @@ jobs:
             echo ${ARTIFACTS}
             ls -la ${ARTIFACTS}
       - store_artifacts:
-          path: ~/packages
+          path: ${ARTIFACTS}
       - persist_to_workspace:
-          root: ~/packages
+          root: ${ARTIFACTS}
           paths:
             - trusty
             - xenial
