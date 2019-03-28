@@ -79,7 +79,6 @@ jobs:
     docker:
       - image: circleci/python:2.7
     environment:
-      ARTIFACTS: ~/st2-rbac-backend/build/
       DISTROS: trusty xenial bionic el6 el7
       DOCKER_DISTROS: trusty bionic centos6 centos7
       DOCKER_RUN: |-
@@ -141,59 +140,52 @@ jobs:
             # 1. Build Trusty and Xenial packages
             # NOTE: We can re-use the same packages because both distros use same Python 2.7 version
             eval ${DOCKER_RUN} stackstorm/buildpack:trusty make play deb
-            docker cp st2-rbac-backend-vol:/code/st2-rbac-backend_${PKG_VERSION}-${PKG_RELEASE}_amd64.deb ${ARTIFACTS}/trusty
-            docker cp st2-rbac-backend-vol:/code/st2-rbac-backend_${PKG_VERSION}-${PKG_RELEASE}_amd64.changes ${ARTIFACTS}/trusty
-            cp ${ARTIFACTS}/trusty/* ${ARTIFACTS}/xenial
+            docker cp st2-rbac-backend-vol:/code/st2-rbac-backend_${PKG_VERSION}-${PKG_RELEASE}_amd64.deb ~/st2-rbac-backend/build/trusty
+            docker cp st2-rbac-backend-vol:/code/st2-rbac-backend_${PKG_VERSION}-${PKG_RELEASE}_amd64.changes ~/st2-rbac-backend/build/trusty
+            cp ~/st2-rbac-backend/build/trusty/* ~/st2-rbac-backend/build/xenial
             # 2. Build Bionic packages
             eval ${DOCKER_RUN} stackstorm/buildpack:bionic make play deb
-            docker cp st2-rbac-backend-vol:/code/st2-rbac-backend_${PKG_VERSION}-${PKG_RELEASE}_amd64.deb ${ARTIFACTS}/bionic
-            docker cp st2-rbac-backend-vol:/code/st2-rbac-backend_${PKG_VERSION}-${PKG_RELEASE}_amd64.changes ${ARTIFACTS}/bionic
+            docker cp st2-rbac-backend-vol:/code/st2-rbac-backend_${PKG_VERSION}-${PKG_RELEASE}_amd64.deb ~/st2-rbac-backend/build/bionic
+            docker cp st2-rbac-backend-vol:/code/st2-rbac-backend_${PKG_VERSION}-${PKG_RELEASE}_amd64.changes ~/st2-rbac-backend/build/bionic
             # 3. Build RHEL 6 packages
             eval ${DOCKER_RUN} stackstorm/buildpack:centos6 make play rpm
-            docker cp st2-rbac-backend-vol:/code/st2-rbac-backend/build/x86_64/st2-rbac-backend-${PKG_VERSION}-${PKG_RELEASE}.x86_64.rpm ${ARTIFACTS}/el6
+            docker cp st2-rbac-backend-vol:/code/st2-rbac-backend/build/x86_64/st2-rbac-backend-${PKG_VERSION}-${PKG_RELEASE}.x86_64.rpm ~/st2-rbac-backend/build/el6
             # 4. Build RHEL 7 packages
             eval ${DOCKER_RUN} stackstorm/buildpack:centos7 make play rpm
-            docker cp st2-rbac-backend-vol:/code/st2-rbac-backend/build/x86_64/st2-rbac-backend-${PKG_VERSION}-${PKG_RELEASE}.x86_64.rpm ${ARTIFACTS}/el7
-            echo ${ARTIFACTS}
-            ls -la ${ARTIFACTS}
+            docker cp st2-rbac-backend-vol:/code/st2-rbac-backend/build/x86_64/st2-rbac-backend-${PKG_VERSION}-${PKG_RELEASE}.x86_64.rpm ~/st2-rbac-backend/build//el7
+            ls -la ~/st2-rbac-backend/build
       - store_artifacts:
-          path: ${ARTIFACTS}
+          path: ~/st2-rbac-backend/build
+          destination: packages
       - persist_to_workspace:
-          root: ${ARTIFACTS}
+          root: ~/st2-rbac-backend
           paths:
-            - trusty
-            - xenial
-            - bionic
-            - el6
-            - el7
+            - .circle/packagecloud.sh
+            - build
   deploy_packages:
     <<: *defaults
     docker:
       - image: circleci/ruby:2.4
-    working_directory: ~/packages
+    working_directory: /tmp/deploy
     environment:
-      ARTIFACTS: ~/st2-rbac-backend/build/
       DISTROS: trusty xenial bionic el6 el7
     steps:
       - checkout
       - attach_workspace:
-          at: /home/circleci
+          at: .
       - run:
           name: List workspace files
-          command: find ${ARTIFACTS} | sed 's|[^/]*/|  |g'
+          command: find . | sed 's|[^/]*/|  |g'
       - run:
           name: Install dependencies
           command: |
             set -x
             sudo apt-get -y install parallel jq
-            mkdir .circle
-            wget -qO - https://github.com/StackStorm/st2-packages/raw/master/.circle/packagecloud.sh > .circle/packagecloud.sh
-            chmod 755 .circle/packagecloud.sh
             gem install package_cloud
       - run:
           name: Deploy to packagecloud
           command: |
-            parallel -v -j0 --line-buffer .circle/packagecloud.sh deploy {} ${ARTIFACTS}/{} ::: ${DISTROS}
+            parallel -v -j0 --line-buffer .circle/packagecloud.sh deploy {} {} ::: ${DISTROS}
 
 workflows:
   version: 2
