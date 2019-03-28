@@ -101,9 +101,6 @@ jobs:
             sudo apt-get install -y jq rpm
       - setup_remote_docker
       - run:
-          name: Ensure Docker running
-          command: 'sudo docker info >/dev/null 2>&1 || sudo service docker start; '
-      - run:
           name: Pull buildpacks
           command: |
             for dist in $DOCKER_DISTROS; do
@@ -123,9 +120,16 @@ jobs:
             # Create required directories
             mkdir -p ${ARTIFACTS} && cd ${ARTIFACTS} && mkdir ${DISTROS}
       - run:
+          name: Pre Docker cleanup
+          command: |
+            set -x
+            # Cleanup any existing volumes
+            docker rm -v --force st2-rbac-backend-vol || true
+            docker volume prune --force
+      - run:
           # Workaround for CircleCI docker-compose limitation where volumes don't work
           # See detailed explanation: https://circleci.com/docs/2.0/building-docker-images/#mounting-folders
-          name: Copy st2-packages files to build containers
+          name: Copy packages files to build containers
           command: |
             # creating dummy container which will hold a volume with data files
             docker create -v /code --name st2-rbac-backend-vol alpine:3.4 /bin/true
