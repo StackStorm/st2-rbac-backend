@@ -9,6 +9,6 @@ Homepage: https://stackstorm.com/
 Package: st2-rbac-backend
 Architecture: amd64
 Pre-Depends: st2
-Depends: ${misc:Depends}, st2, bwc-enterprise
+Depends: ${misc:Depends}, st2
 Description: RBAC backend for StackStorm
   RBAC backend for StackStorm Enterprise Edition
