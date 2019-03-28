@@ -5,9 +5,6 @@
 # PACKAGECLOUD_TOKEN
 defaults: &defaults
   working_directory: ~/st2-rbac-backend
-  environment:
-    DISTROS: trusty xenial bionic el6 el7
-    ARTIFACTS: ~/st2-rbac-backend/build/
 
 version: 2
 jobs:
@@ -82,6 +79,7 @@ jobs:
     docker:
       - image: circleci/python:2.7
     environment:
+      ARTIFACTS: ~/st2-rbac-backend/build/
       DISTROS: trusty xenial bionic el6 el7
       DOCKER_DISTROS: trusty bionic centos6 centos7
       DOCKER_RUN: |-
@@ -174,6 +172,7 @@ jobs:
       - image: circleci/ruby:2.4
     working_directory: ~/packages
     environment:
+      ARTIFACTS: ~/st2-rbac-backend/build/
       DISTROS: trusty xenial bionic el6 el7
     steps:
       - checkout
