@@ -139,7 +139,8 @@ compilepy3:
 	@echo "==================== unit-tests ===================="
 	@echo
 	. $(VIRTUALENV_DIR)/bin/activate; nosetests $(NOSE_OPTS) -s -v tests/unit/
-	. $(VIRTUALENV_DIR)/bin/activate; nosetests $(NOSE_OPTS) -s -v tests/unit/controllers/v1/
+	. $(VIRTUALENV_DIR)/bin/activate; nosetests $(NOSE_OPTS) -s -v tests/unit/controllers/api/v1/
+	. $(VIRTUALENV_DIR)/bin/activate; nosetests $(NOSE_OPTS) -s -v tests/unit/controllers/stream/v1/
 
 .PHONY: .integration-tests
 .integration-tests:
