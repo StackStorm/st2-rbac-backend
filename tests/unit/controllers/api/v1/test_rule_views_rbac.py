@@ -3,7 +3,7 @@
 # Proprietary and confidential.
 # See the LICENSE file included with this work for details.
 
-from tests.unit.controllers.v1.test_rules_rbac import BaseRuleControllerRBACTestCase
+from tests.unit.controllers.api.v1.test_rules_rbac import BaseRuleControllerRBACTestCase
 
 __all__ = [
     'RuleViewsControllerRBACTestCase'
