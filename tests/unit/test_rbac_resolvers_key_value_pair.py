@@ -14,11 +14,13 @@
 # limitations under the License.
 
 from __future__ import absolute_import
+
 from st2common.rbac.types import PermissionType
 from st2common.rbac.types import ResourceType
 from st2common.persistence.keyvalue import KeyValuePair
 from st2common.models.db.keyvalue import KeyValuePairDB
-from st2common.rbac.resolvers import KeyValuePermissionsResolver
+
+from st2rbac_enterprise_backend.resolvers import KeyValuePermissionsResolver
 from tests.unit.test_rbac_resolvers import BasePermissionsResolverTestCase
 
 __all__ = [

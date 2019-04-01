@@ -14,9 +14,6 @@
 # limitations under the License.
 
 from __future__ import absolute_import
-__all__ = [
-    'RuleEnforcementPermissionsResolverTestCase'
-]
 
 import bson
 
@@ -35,8 +32,13 @@ from st2common.models.db.rbac import UserRoleAssignmentDB
 from st2common.models.db.rbac import PermissionGrantDB
 from st2common.models.db.rule import RuleDB
 from st2common.models.db.rule_enforcement import RuleEnforcementDB
-from st2common.rbac.resolvers import RuleEnforcementPermissionsResolver
+
+from st2rbac_enterprise_backend.resolvers import RuleEnforcementPermissionsResolver
 from tests.unit.test_rbac_resolvers import BasePermissionsResolverTestCase
+
+__all__ = [
+    'RuleEnforcementPermissionsResolverTestCase'
+]
 
 
 class RuleEnforcementPermissionsResolverTestCase(BasePermissionsResolverTestCase):

@@ -14,6 +14,7 @@
 # limitations under the License.
 
 from __future__ import absolute_import
+
 from st2common.constants import action as action_constants
 from st2common.rbac.types import PermissionType
 from st2common.rbac.types import ResourceType
@@ -29,7 +30,8 @@ from st2common.models.db.rbac import UserRoleAssignmentDB
 from st2common.models.db.rbac import PermissionGrantDB
 from st2common.models.db.action import ActionDB
 from st2common.models.db.execution import ActionExecutionDB
-from st2common.rbac.resolvers import ExecutionPermissionsResolver
+
+from st2rbac_enterprise_backend.resolvers import ExecutionPermissionsResolver
 from tests.unit.test_rbac_resolvers import BasePermissionsResolverTestCase
 
 __all__ = [

@@ -14,6 +14,7 @@
 # limitations under the License.
 
 from __future__ import absolute_import
+
 import six
 import unittest2
 from oslo_config import cfg
@@ -32,9 +33,10 @@ from st2common.models.db.rbac import RoleDB
 from st2common.models.db.rbac import UserRoleAssignmentDB
 from st2common.models.db.rbac import PermissionGrantDB
 from st2common.models.db.pack import PackDB
-from st2common.rbac.resolvers import get_resolver_for_resource_type
 from st2common.rbac.migrations import insert_system_roles
 from st2tests.base import CleanDbTestCase
+
+from st2rbac_enterprise_backend.backend import EnterpriseRBACBackend
 
 __all__ = [
     'BasePermissionsResolverTestCase',
@@ -46,8 +48,11 @@ class BasePermissionsResolverTestCase(CleanDbTestCase):
     def setUp(self):
         super(BasePermissionsResolverTestCase, self).setUp()
 
+        self.backend = EnterpriseRBACBackend()
+
         # Make sure RBAC is enabeld
         cfg.CONF.set_override(name='enable', override=True, group='rbac')
+        cfg.CONF.set_override(name='backend', override='enterprise', group='rbac')
 
         self.users = {}
         self.roles = {}
@@ -277,6 +282,11 @@ class BasePermissionsResolverTestCase(CleanDbTestCase):
 
 
 class PermissionsResolverUtilsTestCase(unittest2.TestCase):
+    def setUp(self):
+        super(PermissionsResolverUtilsTestCase, self).setUp()
+
+        self.backend = EnterpriseRBACBackend()
+
     def test_get_resolver_for_resource_type_valid_resource_type(self):
         valid_resources_types = [ResourceType.PACK, ResourceType.SENSOR, ResourceType.ACTION,
                                  ResourceType.RULE, ResourceType.RULE_ENFORCEMENT,
@@ -285,12 +295,15 @@ class PermissionsResolverUtilsTestCase(unittest2.TestCase):
                                  ResourceType.WEBHOOK]
 
         for resource_type in valid_resources_types:
-            resolver_instance = get_resolver_for_resource_type(resource_type=resource_type)
+            resolver_instance = self.backend.get_resolver_for_resource_type(
+                resource_type=resource_type)
+
             resource_name = resource_type.split('_')[0].lower()
             class_name = resolver_instance.__class__.__name__.lower()
             self.assertTrue(resource_name in class_name)
 
     def test_get_resolver_for_resource_type_unsupported_resource_type(self):
         expected_msg = 'Unsupported resource: alias'
-        self.assertRaisesRegexp(ValueError, expected_msg, get_resolver_for_resource_type,
+        self.assertRaisesRegexp(ValueError, expected_msg,
+                                self.backend.get_resolver_for_resource_type,
                                 resource_type='alias')
