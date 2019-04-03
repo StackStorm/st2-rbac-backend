@@ -228,8 +228,6 @@ class RBACUtils(BaseRBACUtils):
         """
         Check that the provided user has specified permission.
         """
-        from st2rbac_enterprise_backend.backend import EnterpriseRBACBackend
-
         if not cfg.CONF.rbac.enable:
             return True
 
@@ -245,8 +243,6 @@ class RBACUtils(BaseRBACUtils):
         """
         Check that the provided user has specified permission on the provided resource API.
         """
-        from st2rbac_enterprise_backend.backend import EnterpriseRBACBackend
-
         if not cfg.CONF.rbac.enable:
             return True
 
@@ -264,8 +260,6 @@ class RBACUtils(BaseRBACUtils):
         """
         Check that the provided user has specified permission on the provided resource.
         """
-        from st2rbac_enterprise_backend.backend import EnterpriseRBACBackend
-
         if not cfg.CONF.rbac.enable:
             return True
 
@@ -283,13 +277,10 @@ class RBACUtils(BaseRBACUtils):
         Check that the currently logged-in has necessary permissions on the trigger used /
         referenced inside the rule.
         """
-        from st2rbac_enterprise_backend.backend import EnterpriseRBACBackend
-
         if not cfg.CONF.rbac.enable:
             return True
 
         rbac_backend = get_rbac_backend()
-        print rbac_backend
         rules_resolver = rbac_backend.get_resolver_for_resource_type(ResourceType.RULE)
         has_trigger_permission = rules_resolver.user_has_trigger_permission(user_db=user_db,
                                                                             trigger=trigger)
@@ -307,8 +298,6 @@ class RBACUtils(BaseRBACUtils):
 
         Note: Rules can reference actions which don't yet exist in the system.
         """
-        from st2rbac_enterprise_backend.backend import EnterpriseRBACBackend
-
         if not cfg.CONF.rbac.enable:
             return True
 

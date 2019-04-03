@@ -1061,7 +1061,7 @@ class InquiryPermissionsResolver(PermissionsResolver):
 
         NOTE:
         Because we're borrowing the ActionExecutionDB model, the resource_db parameter is
-        effectively ignored. All other filters are passed to rbac_service.get_all_permission_grants_for_user.
+        effectively ignored. All other filters are passed to get_all_permission_grants_for_user.
         Since all Inquiry permission types are global, this will still correctly return a list of
         grants.
         """
