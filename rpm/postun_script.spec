@@ -4,7 +4,7 @@ uninstall_package() {
 }
 
 disable_rbac() {
-  crudini --set /etc/st2/st2.conf rbac enable 'False'
+  crudini --del /etc/st2/st2.conf rbac enable
   crudini --del /etc/st2/st2.conf rbac backend
 }
 
