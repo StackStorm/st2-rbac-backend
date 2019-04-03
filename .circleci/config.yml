@@ -118,13 +118,6 @@ jobs:
             mkdir -p ~/st2-rbac-backend/build/
             cd  ~/st2-rbac-backend/build/ && mkdir ${DISTROS}
       - run:
-          name: Pre Docker cleanup
-          command: |
-            set -x
-            # Cleanup any existing volumes
-            docker rm -v --force st2-rbac-backend-vol || true
-            docker volume prune --force
-      - run:
           # Workaround for CircleCI docker-compose limitation where volumes don't work
           # See detailed explanation: https://circleci.com/docs/2.0/building-docker-images/#mounting-folders
           name: Copy packages files to build containers
