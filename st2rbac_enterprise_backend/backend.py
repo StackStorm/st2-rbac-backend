@@ -6,6 +6,7 @@
 from st2common.rbac.backends.base import BaseRBACBackend
 
 from st2rbac_enterprise_backend import resolvers
+from st2rbac_enterprise_backend.utils import RBACUtils
 from st2rbac_enterprise_backend.syncer import RBACRemoteGroupToRoleSyncer
 
 __all__ = [
@@ -22,3 +23,6 @@ class EnterpriseRBACBackend(BaseRBACBackend):
 
     def get_remote_group_to_role_syncer(self):
         return RBACRemoteGroupToRoleSyncer()
+
+    def get_utils_class(self):
+        return RBACUtils
