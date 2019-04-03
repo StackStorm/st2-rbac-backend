@@ -18,10 +18,11 @@ from st2common.exceptions.rbac import ResourceAccessDeniedError
 from st2common.rbac.types import PermissionType
 from st2common.rbac.types import ResourceType
 from st2common.rbac.types import SystemRole
-from st2common.services import rbac as rbac_services
 from st2common.util import action_db as action_utils
 from st2common.rbac.backends import get_rbac_backend
 from st2common.rbac.backends.base import BaseRBACUtils
+
+from st2rbac_enterprise_backend.service import RBACService as rbac_service
 
 __all__ = [
     'RBACUtils'
@@ -218,7 +219,7 @@ class RBACUtils(BaseRBACUtils):
         if not cfg.CONF.rbac.enable:
             return True
 
-        user_role_dbs = rbac_services.get_roles_for_user(user_db=user_db)
+        user_role_dbs = rbac_service.get_roles_for_user(user_db=user_db)
         user_role_names = [role_db.name for role_db in user_role_dbs]
 
         return role in user_role_names

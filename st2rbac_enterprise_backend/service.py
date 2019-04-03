@@ -345,6 +345,8 @@ class RBACService(BaseRBACService):
         :param role_names: Names of the roles to check for.
         :type role_names: ``list`` of ``str``
         """
+        role_names = list(set(role_names))
+
         role_dbs = RBACService.get_all_roles()
         existing_role_names = [role_db.name for role_db in role_dbs]
 

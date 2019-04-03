@@ -30,9 +30,10 @@ from st2common.persistence.rbac import Role
 from st2common.persistence.rbac import UserRoleAssignment
 from st2common.persistence.rbac import PermissionGrant
 from st2common.persistence.rbac import GroupToRoleMapping
-from st2common.services import rbac as rbac_services
 from st2common.rbac.backends.base import BaseRBACRemoteGroupToRoleSyncer
 from st2common.util.uid import parse_uid
+
+from st2rbac_enterprise_backend.service import RBACService as rbac_service
 
 
 LOG = logging.getLogger(__name__)
@@ -88,7 +89,7 @@ class RBACDefinitionsDBSyncer(object):
         LOG.info('Synchronizing roles...')
 
         # Retrieve all the roles currently in the DB
-        role_dbs = rbac_services.get_all_roles(exclude_system=True)
+        role_dbs = rbac_service.get_all_roles(exclude_system=True)
 
         role_db_names = [role_db.name for role_db in role_dbs]
         role_db_names = set(role_db_names)
@@ -149,8 +150,8 @@ class RBACDefinitionsDBSyncer(object):
         # Create new roles
         created_role_dbs = []
         for role_api in role_apis_to_create:
-            role_db = rbac_services.create_role(name=role_api.name,
-                                                description=role_api.description)
+            role_db = rbac_service.create_role(name=role_api.name,
+                                               description=role_api.description)
 
             # Create associated permission grants
             permission_grants = getattr(role_api, 'permission_grants', [])
@@ -163,7 +164,7 @@ class RBACDefinitionsDBSyncer(object):
                     resource_type = None
 
                 permission_types = permission_grant['permission_types']
-                assignment_db = rbac_services.create_permission_grant(
+                assignment_db = rbac_service.create_permission_grant(
                     role_db=role_db,
                     resource_uid=resource_uid,
                     resource_type=resource_type,
@@ -195,7 +196,7 @@ class RBACDefinitionsDBSyncer(object):
 
         # Note: We exclude remote assignments because sync tool is not supposed to manipulate
         # remote assignments
-        role_assignment_dbs = rbac_services.get_all_role_assignments(include_remote=False)
+        role_assignment_dbs = rbac_service.get_all_role_assignments(include_remote=False)
 
         user_dbs = User.get_all()
 
@@ -253,7 +254,7 @@ class RBACDefinitionsDBSyncer(object):
         LOG.info('Synchronizing group to role maps...')
 
         # Retrieve all the mappings currently in the db
-        group_to_role_map_dbs = rbac_services.get_all_group_to_role_maps()
+        group_to_role_map_dbs = rbac_service.get_all_group_to_role_maps()
 
         # 1. Delete all the existing mappings in the db
         group_to_role_map_to_delete = []
@@ -265,11 +266,11 @@ class RBACDefinitionsDBSyncer(object):
         # 2. Insert all mappings read from disk
         for group_to_role_map_api in group_to_role_map_apis:
             source = getattr(group_to_role_map_api, 'file_path', None)
-            rbac_services.create_group_to_role_map(group=group_to_role_map_api.group,
-                                                   roles=group_to_role_map_api.roles,
-                                                   description=group_to_role_map_api.description,
-                                                   enabled=group_to_role_map_api.enabled,
-                                                   source=source)
+            rbac_service.create_group_to_role_map(group=group_to_role_map_api.group,
+                                                  roles=group_to_role_map_api.roles,
+                                                  description=group_to_role_map_api.description,
+                                                  enabled=group_to_role_map_api.enabled,
+                                                  source=source)
 
         LOG.info('Group to role map definitions synchronized.')
 
@@ -345,7 +346,7 @@ class RBACDefinitionsDBSyncer(object):
                                    r.file_path == assignment_source][0]
             description = getattr(role_assignment_api, 'description', None)
 
-            assignment_db = rbac_services.assign_role_to_user(
+            assignment_db = rbac_service.assign_role_to_user(
                 role_db=role_db, user_db=user_db, source=assignment_source, description=description)
 
             created_role_assignment_dbs.append(assignment_db)
@@ -433,7 +434,7 @@ class RBACRemoteGroupToRoleSyncer(BaseRBACRemoteGroupToRoleSyncer):
             extra['mapping_db'] = mapping_db
 
             for role_name in mapping_db.roles:
-                role_db = rbac_services.get_role_by_name(name=role_name)
+                role_db = rbac_service.get_role_by_name(name=role_name)
 
                 if not role_db:
                     # Gracefully skip assignment for role which doesn't exist in the db
@@ -443,11 +444,11 @@ class RBACRemoteGroupToRoleSyncer(BaseRBACRemoteGroupToRoleSyncer):
 
                 description = ('Automatic role assignment based on the remote user membership in '
                                'group "%s"' % (mapping_db.group))
-                assignment_db = rbac_services.assign_role_to_user(role_db=role_db, user_db=user_db,
-                                                                  description=description,
-                                                                  is_remote=True,
-                                                                  source=mapping_db.source,
-                                                                  ignore_already_exists_error=True)
+                assignment_db = rbac_service.assign_role_to_user(role_db=role_db, user_db=user_db,
+                                                                 description=description,
+                                                                 is_remote=True,
+                                                                 source=mapping_db.source,
+                                                                 ignore_already_exists_error=True)
                 assert assignment_db.is_remote is True
                 created_assignments_dbs.append(assignment_db)
 
