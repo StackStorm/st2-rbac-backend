@@ -19,12 +19,11 @@ from st2common.models.system.common import ResourceReference
 from st2common.constants.triggers import WEBHOOK_TRIGGER_TYPE
 from st2common.persistence.execution import ActionExecution
 from st2common.rbac.backends.base import BaseRBACPermissionResolver
+from st2rbac_enterprise_backend.service import RBACService as rbac_service
 from st2common.rbac.types import PermissionType
 from st2common.rbac.types import ResourceType
 from st2common.rbac.types import SystemRole
 from st2common.rbac.types import GLOBAL_PACK_PERMISSION_TYPES
-from st2common.services.rbac import get_roles_for_user
-from st2common.services.rbac import get_all_permission_grants_for_user
 
 LOG = logging.getLogger(__name__)
 
@@ -118,8 +117,8 @@ class PermissionsResolver(BaseRBACPermissionResolver):
         permission_types = [permission_type]
 
         # Check direct grants
-        permission_grants = get_all_permission_grants_for_user(user_db=user_db,
-                                                               permission_types=permission_types)
+        permission_grants = rbac_service.get_all_permission_grants_for_user(user_db=user_db,
+            permission_types=permission_types)
         if len(permission_grants) >= 1:
             self._log('Found a direct grant', extra=log_context)
             return True
@@ -135,7 +134,7 @@ class PermissionsResolver(BaseRBACPermissionResolver):
         """
         permission_name = PermissionType.get_permission_name(permission_type)
 
-        user_role_dbs = get_roles_for_user(user_db=user_db)
+        user_role_dbs = rbac_service.get_roles_for_user(user_db=user_db)
         user_role_names = [role_db.name for role_db in user_role_dbs]
 
         if SystemRole.SYSTEM_ADMIN in user_role_names:
@@ -234,10 +233,10 @@ class ContentPackResourcePermissionsResolver(PermissionsResolver):
         # Check direct grants on the specified resource
         self._log('Checking direct grants on the specified resource', extra=log_context)
         resource_types = [self.resource_type]
-        permission_grants = get_all_permission_grants_for_user(user_db=user_db,
-                                                               resource_uid=resource_uid,
-                                                               resource_types=resource_types,
-                                                               permission_types=permission_types)
+        permission_grants = rbac_service.get_all_permission_grants_for_user(user_db=user_db,
+                                                                 resource_uid=resource_uid,
+                                                                 resource_types=resource_types,
+                                                                 permission_types=permission_types)
         if len(permission_grants) >= 1:
             self._log('Found a direct grant on the action', extra=log_context)
             return True
@@ -245,10 +244,10 @@ class ContentPackResourcePermissionsResolver(PermissionsResolver):
         # Check grants on the parent pack
         self._log('Checking grants on the parent resource', extra=log_context)
         resource_types = [ResourceType.PACK]
-        permission_grants = get_all_permission_grants_for_user(user_db=user_db,
-                                                               resource_uid=pack_uid,
-                                                               resource_types=resource_types,
-                                                               permission_types=permission_types)
+        permission_grants = rbac_service.get_all_permission_grants_for_user(user_db=user_db,
+                                                                resource_uid=pack_uid,
+                                                                resource_types=resource_types,
+                                                                permission_types=permission_types)
 
         if len(permission_grants) >= 1:
             self._log('Found a grant on the action parent pack', extra=log_context)
@@ -289,7 +288,7 @@ class RunnerPermissionsResolver(PermissionsResolver):
         resource_uid = resource_db.get_uid()
         resource_types = [ResourceType.RUNNER]
         permission_types = [permission_type]
-        permission_grants = get_all_permission_grants_for_user(user_db=user_db,
+        permission_grants = rbac_service.get_all_permission_grants_for_user(user_db=user_db,
                                                                resource_uid=resource_uid,
                                                                resource_types=resource_types,
                                                                permission_types=permission_types)
@@ -339,7 +338,7 @@ class PackPermissionsResolver(PermissionsResolver):
         resource_uid = resource_db.get_uid()
         resource_types = [ResourceType.PACK]
         permission_types = [permission_type]
-        permission_grants = get_all_permission_grants_for_user(user_db=user_db,
+        permission_grants = rbac_service.get_all_permission_grants_for_user(user_db=user_db,
                                                                resource_uid=resource_uid,
                                                                resource_types=resource_types,
                                                                permission_types=permission_types)
@@ -597,7 +596,7 @@ class RuleEnforcementPermissionsResolver(PermissionsResolver):
 
         # Check grants on the pack of the rule to which enforcement belongs to
         resource_types = [ResourceType.PACK]
-        permission_grants = get_all_permission_grants_for_user(user_db=user_db,
+        permission_grants = rbac_service.get_all_permission_grants_for_user(user_db=user_db,
                                                                resource_uid=rule_pack_uid,
                                                                resource_types=resource_types,
                                                                permission_types=permission_types)
@@ -608,7 +607,7 @@ class RuleEnforcementPermissionsResolver(PermissionsResolver):
 
         # Check grants on the rule the enforcement belongs to
         resource_types = [ResourceType.RULE]
-        permission_grants = get_all_permission_grants_for_user(user_db=user_db,
+        permission_grants = rbac_service.get_all_permission_grants_for_user(user_db=user_db,
                                                                resource_uid=rule_uid,
                                                                resource_types=resource_types,
                                                                permission_types=permission_types)
@@ -691,7 +690,7 @@ class ExecutionPermissionsResolver(PermissionsResolver):
         # Check grants on the pack of the action to which execution belongs to
         resource_types = [ResourceType.PACK]
         permission_types = [PermissionType.ACTION_ALL, action_permission_type]
-        permission_grants = get_all_permission_grants_for_user(user_db=user_db,
+        permission_grants = rbac_service.get_all_permission_grants_for_user(user_db=user_db,
                                                                resource_uid=action_pack_uid,
                                                                resource_types=resource_types,
                                                                permission_types=permission_types)
@@ -703,7 +702,7 @@ class ExecutionPermissionsResolver(PermissionsResolver):
         # Check grants on the action the execution belongs to
         resource_types = [ResourceType.ACTION]
         permission_types = [PermissionType.ACTION_ALL, action_permission_type]
-        permission_grants = get_all_permission_grants_for_user(user_db=user_db,
+        permission_grants = rbac_service.get_all_permission_grants_for_user(user_db=user_db,
                                                                resource_uid=action_uid,
                                                                resource_types=resource_types,
                                                                permission_types=permission_types)
@@ -747,7 +746,7 @@ class WebhookPermissionsResolver(PermissionsResolver):
         # Check direct grants on the webhook
         resource_types = [ResourceType.WEBHOOK]
         permission_types = [PermissionType.WEBHOOK_ALL, permission_type]
-        permission_grants = get_all_permission_grants_for_user(user_db=user_db,
+        permission_grants = rbac_service.get_all_permission_grants_for_user(user_db=user_db,
                                                                resource_uid=webhook_uid,
                                                                resource_types=resource_types,
                                                                permission_types=permission_types)
@@ -794,7 +793,7 @@ class TimerPermissionsResolver(PermissionsResolver):
         # Check direct grants on the webhook
         resource_types = [ResourceType.TIMER]
         permission_types = [PermissionType.TIMER_ALL, permission_type]
-        permission_grants = get_all_permission_grants_for_user(user_db=user_db,
+        permission_grants = rbac_service.get_all_permission_grants_for_user(user_db=user_db,
                                                                resource_uid=timer_uid,
                                                                resource_types=resource_types,
                                                                permission_types=permission_types)
@@ -845,7 +844,7 @@ class ApiKeyPermissionResolver(PermissionsResolver):
         # Check direct grants on the webhook
         resource_types = [ResourceType.API_KEY]
         permission_types = [PermissionType.API_KEY_ALL, permission_type]
-        permission_grants = get_all_permission_grants_for_user(user_db=user_db,
+        permission_grants = rbac_service.get_all_permission_grants_for_user(user_db=user_db,
                                                                resource_uid=api_key_uid,
                                                                resource_types=resource_types,
                                                                permission_types=permission_types)
@@ -892,7 +891,7 @@ class TracePermissionsResolver(PermissionsResolver):
         # Check direct grants on the webhook
         resource_types = [ResourceType.TRACE]
         permission_types = [PermissionType.TRACE_ALL, permission_type]
-        permission_grants = get_all_permission_grants_for_user(user_db=user_db,
+        permission_grants = rbac_service.get_all_permission_grants_for_user(user_db=user_db,
                                                                resource_uid=trace_uid,
                                                                resource_types=resource_types,
                                                                permission_types=permission_types)
@@ -939,7 +938,7 @@ class TriggerPermissionsResolver(PermissionsResolver):
         # Check direct grants on the webhook
         resource_types = [ResourceType.TRIGGER]
         permission_types = [PermissionType.TRIGGER_ALL, permission_type]
-        permission_grants = get_all_permission_grants_for_user(user_db=user_db,
+        permission_grants = rbac_service.get_all_permission_grants_for_user(user_db=user_db,
                                                                resource_uid=timer_uid,
                                                                resource_types=resource_types,
                                                                permission_types=permission_types)
@@ -986,7 +985,7 @@ class PolicyTypePermissionsResolver(PermissionsResolver):
         # Check direct grants on the webhook
         resource_types = [ResourceType.POLICY_TYPE]
         permission_types = [PermissionType.POLICY_TYPE_ALL, permission_type]
-        permission_grants = get_all_permission_grants_for_user(user_db=user_db,
+        permission_grants = rbac_service.get_all_permission_grants_for_user(user_db=user_db,
                                                                resource_uid=policy_type_uid,
                                                                resource_types=resource_types,
                                                                permission_types=permission_types)
@@ -1062,7 +1061,7 @@ class InquiryPermissionsResolver(PermissionsResolver):
 
         NOTE:
         Because we're borrowing the ActionExecutionDB model, the resource_db parameter is
-        effectively ignored. All other filters are passed to get_all_permission_grants_for_user.
+        effectively ignored. All other filters are passed to rbac_service.get_all_permission_grants_for_user.
         Since all Inquiry permission types are global, this will still correctly return a list of
         grants.
         """
@@ -1093,7 +1092,7 @@ class InquiryPermissionsResolver(PermissionsResolver):
 
         # Check for explicit Inquiry grants first
         resource_types = [ResourceType.INQUIRY]
-        permission_grants = get_all_permission_grants_for_user(user_db=user_db,
+        permission_grants = rbac_service.get_all_permission_grants_for_user(user_db=user_db,
                                                                resource_types=resource_types,
                                                                permission_types=permission_types)
 
@@ -1117,7 +1116,7 @@ class InquiryPermissionsResolver(PermissionsResolver):
             # Check grants on the pack of the workflow that the Inquiry was generated from
             resource_types = [ResourceType.PACK]
             permission_types = [PermissionType.ACTION_ALL, PermissionType.ACTION_EXECUTE]
-            permission_grants = get_all_permission_grants_for_user(
+            permission_grants = rbac_service.get_all_permission_grants_for_user(
                 user_db=user_db,
                 resource_uid=wf_action_pack_uid,
                 resource_types=resource_types,
@@ -1135,7 +1134,7 @@ class InquiryPermissionsResolver(PermissionsResolver):
             # Check grants on the workflow that the Inquiry was generated from
             resource_types = [ResourceType.ACTION]
             permission_types = [PermissionType.ACTION_ALL, PermissionType.ACTION_EXECUTE]
-            permission_grants = get_all_permission_grants_for_user(
+            permission_grants = rbac_service.get_all_permission_grants_for_user(
                 user_db=user_db,
                 resource_uid=wf_action_uid,
                 resource_types=resource_types,

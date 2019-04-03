@@ -228,6 +228,8 @@ class RBACUtils(BaseRBACUtils):
         """
         Check that the provided user has specified permission.
         """
+        from st2rbac_enterprise_backend.backend import EnterpriseRBACBackend
+
         if not cfg.CONF.rbac.enable:
             return True
 
@@ -243,6 +245,8 @@ class RBACUtils(BaseRBACUtils):
         """
         Check that the provided user has specified permission on the provided resource API.
         """
+        from st2rbac_enterprise_backend.backend import EnterpriseRBACBackend
+
         if not cfg.CONF.rbac.enable:
             return True
 
@@ -250,7 +254,8 @@ class RBACUtils(BaseRBACUtils):
         rbac_backend = get_rbac_backend()
 
         resolver = rbac_backend.get_resolver_for_permission_type(permission_type=permission_type)
-        result = resolver.user_has_resource_api_permission(user_db=user_db, resource_api=resource_api,
+        result = resolver.user_has_resource_api_permission(user_db=user_db,
+                                                           resource_api=resource_api,
                                                            permission_type=permission_type)
         return result
 
@@ -259,6 +264,8 @@ class RBACUtils(BaseRBACUtils):
         """
         Check that the provided user has specified permission on the provided resource.
         """
+        from st2rbac_enterprise_backend.backend import EnterpriseRBACBackend
+
         if not cfg.CONF.rbac.enable:
             return True
 
@@ -282,6 +289,7 @@ class RBACUtils(BaseRBACUtils):
             return True
 
         rbac_backend = get_rbac_backend()
+        print rbac_backend
         rules_resolver = rbac_backend.get_resolver_for_resource_type(ResourceType.RULE)
         has_trigger_permission = rules_resolver.user_has_trigger_permission(user_db=user_db,
                                                                             trigger=trigger)
