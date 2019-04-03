@@ -19,7 +19,6 @@ import six
 import unittest2
 from oslo_config import cfg
 
-from st2common.services import rbac as rbac_services
 from st2common.rbac.types import PermissionType
 from st2common.rbac.types import ResourceType
 from st2common.rbac.types import SystemRole
@@ -37,6 +36,7 @@ from st2common.rbac.migrations import insert_system_roles
 from st2tests.base import CleanDbTestCase
 
 from st2rbac_enterprise_backend.backend import EnterpriseRBACBackend
+from st2rbac_enterprise_backend.service import RBACService as rbac_service
 
 __all__ = [
     'BasePermissionsResolverTestCase',
@@ -232,13 +232,13 @@ class BasePermissionsResolverTestCase(CleanDbTestCase):
 
     def _insert_common_mock_roles(self):
         # Insert common mock roles
-        admin_role_db = rbac_services.get_role_by_name(name=SystemRole.ADMIN)
-        observer_role_db = rbac_services.get_role_by_name(name=SystemRole.OBSERVER)
+        admin_role_db = rbac_service.get_role_by_name(name=SystemRole.ADMIN)
+        observer_role_db = rbac_service.get_role_by_name(name=SystemRole.OBSERVER)
         self.roles['admin_role'] = admin_role_db
         self.roles['observer_role'] = observer_role_db
 
         # Custom role 1 - no grants
-        role_1_db = rbac_services.create_role(name='custom_role_1')
+        role_1_db = rbac_service.create_role(name='custom_role_1')
         self.roles['custom_role_1'] = role_1_db
 
         # Custom role 2 - one grant on pack_1
