@@ -56,4 +56,5 @@ Requires: crudini st2
 
 %files
   %doc rpm/LICENSE
+  %{_bindir}/st2-apply-rbac-definition
   %{st2wheels}/*
