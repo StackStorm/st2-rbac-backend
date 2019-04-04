@@ -1,0 +1,14 @@
+Source: st2-rbac-backend
+Section: Python
+Priority: optional
+Maintainer: StackStorm <opsadmin@stackstorm.com>
+Build-Depends: debhelper (>= 8.0.0)
+Standards-Version: 3.9.4
+Homepage: https://stackstorm.com/
+
+Package: st2-rbac-backend
+Architecture: amd64
+Pre-Depends: st2
+Depends: ${misc:Depends}, crudini, st2
+Description: RBAC backend for StackStorm
+  RBAC backend for StackStorm Enterprise Edition

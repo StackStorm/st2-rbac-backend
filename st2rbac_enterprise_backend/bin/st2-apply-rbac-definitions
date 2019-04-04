@@ -1,0 +1,11 @@
+#!/usr/bin/env python2.7
+# Copyright (c) Extreme Networks, Inc - All Rights Reserved
+# Unauthorized copying of this file, via any medium is strictly prohibited
+# Proprietary and confidential
+
+import sys
+
+from st2rbac_enterprise_backend.cmd import apply_rbac_definitions
+
+if __name__ == '__main__':
+    sys.exit(apply_rbac_definitions.main(sys.argv[1:]))
