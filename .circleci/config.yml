@@ -159,12 +159,14 @@ jobs:
           name: Install dependencies
           command: |
             set -x
-            sudo apt-get -y install parallel jq
+            sudo apt-get -y install jq
             gem install package_cloud
       - run:
           name: Deploy to packagecloud
           command: |
-            parallel -v -j0 --line-buffer .circle/packagecloud.sh deploy {} build/{} ::: ${DISTROS}
+            for distro in ${DISTROS}; do
+              .circle/packagecloud.sh deploy ${distro} build/${distro}
+            done
 
 workflows:
   version: 2
