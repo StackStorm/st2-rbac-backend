@@ -42,7 +42,7 @@ Requires: crudini st2
   make
 
 %install
-  %debian_links 
+  %debian_links
   %make_install
 
 %clean
@@ -56,5 +56,5 @@ Requires: crudini st2
 
 %files
   %doc rpm/LICENSE
-  %{_bindir}/st2-apply-rbac-definition
+  %{_bindir}/*
   %{st2wheels}/*
