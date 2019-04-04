@@ -41,7 +41,9 @@ setup(
         'Environment :: Console',
     ],
     platforms=['Any'],
-    scripts=[],
+    scripts=[
+        'bin/st2-apply-rbac-definitions'
+    ],
     provides=['st2rbac_enterprise_backend'],
     packages=find_packages(),
     include_package_data=True,
