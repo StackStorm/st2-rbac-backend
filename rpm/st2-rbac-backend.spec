@@ -22,6 +22,15 @@ Requires: crudini st2
 %define _builddir %(pwd)
 %define _rpmdir %(pwd)/build
 
+# Cat debian/package.links, set buildroot prefix and create symlinks.
+%define debian_links cat debian/%{name}.links | grep -v '^\\s*#' | \
+            sed -r -e 's~\\b~/~' -e 's~\\s+\\b~ %{buildroot}/~' | \
+          while read link_rule; do \
+            linkpath=$(echo "$link_rule" | cut -f2 -d' ') && [ -d $(dirname "$linkpath") ] || \
+              mkdir -p $(dirname "$linkpath") && ln -s $link_rule \
+          done \
+%{nil}
+
 %description
   RBAC Backend for StackStorm Enterprise Edition
 
@@ -33,6 +42,7 @@ Requires: crudini st2
   make
 
 %install
+  %debian_links 
   %make_install
 
 %clean
