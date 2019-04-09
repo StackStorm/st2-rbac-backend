@@ -12,9 +12,9 @@ Version:        %{version}
 Epoch: %{epoch}
 %endif
 Release:        %{release}
-License:        StackStorm Enterprise EULA
-Summary:        LDAP auth backend for st2
-URL:            https://stackstorm.com/
+License:        Extreme Workflow Composer EULA
+Summary:        RBAC Backend for EWC
+URL:            https://www.extremenetworks.com/product/workflow-composer/
 Source0:        st2-enterprise-auth-backend-ldap
 
 Requires: crudini st2
@@ -32,7 +32,7 @@ Requires: crudini st2
 %{nil}
 
 %description
-  RBAC Backend for StackStorm Enterprise Edition
+  RBAC Backend for Extreme Workflow Composer
 
 %prep
   rm -rf %{buildroot}
