@@ -16,6 +16,11 @@ set -e
 # for details, see http://www.debian.org/doc/debian-policy/ or
 # the debian-policy package
 
+ST2_CONFPATH="/etc/st2/st2.conf"
+ST2_RBAC_UPGRADESTAMP="/tmp/.stamp-stackstorm-st2-rbac-backend-deb-package"
+
+upgrading=0
+
 install_pacakge() {
   PIP=/opt/stackstorm/st2/bin/pip
   WHEELSDIR=/opt/stackstorm/share/wheels
@@ -23,14 +28,30 @@ install_pacakge() {
 }
 
 enable_rbac() {
-  crudini --set /etc/st2/st2.conf rbac enable 'True'
-  crudini --set /etc/st2/st2.conf rbac backend 'enterprise'
+  crudini --set ${ST2_CONFPATH} rbac enable 'True'
 }
+
+configure_rbac() {
+  crudini --set ${ST2_CONFPATH} rbac backend 'enterprise'
+}
+
+# Choose first install or upgrade
+[ -f ${ST2_RBAC_UPGRADESTAMP} ] && upgrading=1 || :
 
 case "$1" in
     configure)
       install_pacakge
-      enable_rbac
+
+      # NOTE: We only enable RBAC on initial installation. On upgrade we leave st2.conf alone.
+      [ "${upgrading}" = 1 ] || enable_rbac
+
+      # Clean up a file which signals a package upgrade
+      rm -f ${ST2_RBAC_UPGRADESTAMP}
+
+      # We still set rbac.backend to enterprise to correctly handle upgrades from pre v3.0.0
+      # where this option was added. If we don't do that, users who had previously configured
+      # RBAC, but don't set this config option could potentially end up with RBAC disabled.
+      configure_rbac
     ;;
     abort-upgrade|abort-remove|abort-deconfigure)
     ;;
