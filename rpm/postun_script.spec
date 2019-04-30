@@ -1,6 +1,6 @@
 uninstall_package() {
   PIP=/opt/stackstorm/st2/bin/pip
-  echo y | ${PIP} uninstall st2-enterprise-rbac-backend 1>/dev/null || :
+  ${PIP} uninstall -y --quiet st2-enterprise-rbac-backend 1>/dev/null || :
 }
 
 disable_rbac() {
