@@ -18,7 +18,8 @@ configure_rbac() {
 install_pacakge
 
 # NOTE: We only enable RBAC on initial installation. On upgrade we leave st2.conf alone.
-if [ "$1" -ge 1 ]; then
+# https://docs.fedoraproject.org/en-US/packaging-guidelines/Scriptlets/#_syntax
+if [ "$1" -eq 1 ]; then
   enable_rbac
 fi
 
