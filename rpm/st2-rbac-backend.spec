@@ -15,7 +15,7 @@ Release:        %{release}
 License:        Extreme Workflow Composer EULA
 Summary:        RBAC Backend for EWC
 URL:            https://www.extremenetworks.com/product/workflow-composer/
-Source0:        st2-enterprise-auth-backend-ldap
+Source0:        st2-enterprise-rbac-backend
 
 Requires: crudini st2
 
