@@ -3,4 +3,4 @@
 # Proprietary and confidential.
 # See the LICENSE file included with this work for details.
 
-__version__ = '3.0.0'
+__version__ = '3.0.1'
