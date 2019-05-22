@@ -1,7 +1,8 @@
 # Copyright (C) 2019 Extreme Networks, Inc - All Rights Reserved
-# Unauthorized copying of this file, via any medium is strictly prohibited
-# Proprietary and confidential.
-# See the LICENSE file included with this work for details.
+#
+# Unauthorized copying of this file, via any medium is strictly
+# prohibited. Proprietary and confidential. See the LICENSE file
+# included with this work for details.
 
 from __future__ import absolute_import
 
@@ -599,8 +600,8 @@ class RBACRemoteGroupToRoleSyncerTestCase(BaseRBACDefinitionsDBSyncerTestCase):
         # Create mock mapping which maps CN=stormers,OU=groups,DC=stackstorm,DC=net
         # to "mock_remote_role_3" and "mock_remote_role_4"
         rbac_service.create_group_to_role_map(group='CN=stormers,OU=groups,DC=stackstorm,DC=net',
-                                 roles=['mock_remote_role_3', 'mock_remote_role_4'],
-                                 source='mappings/stormers.yaml')
+                                              roles=['mock_remote_role_3', 'mock_remote_role_4'],
+                                              source='mappings/stormers.yaml')
 
         # Verify initial state
         role_dbs = rbac_service.get_roles_for_user(user_db=user_db, include_remote=True)
@@ -645,22 +646,24 @@ class RBACRemoteGroupToRoleSyncerTestCase(BaseRBACDefinitionsDBSyncerTestCase):
         role_db = rbac_service.create_role(name='mock_role_7')
 
         source = 'assignments/user_6_one.yaml'
-        rbac_service.assign_role_to_user(role_db=role_db, user_db=user_db, source=source, is_remote=False)
+        rbac_service.assign_role_to_user(
+            role_db=role_db, user_db=user_db, source=source, is_remote=False)
 
         source = 'assignments/user_6_two.yaml'
-        rbac_service.assign_role_to_user(role_db=role_db, user_db=user_db, source=source, is_remote=False)
+        rbac_service.assign_role_to_user(
+            role_db=role_db, user_db=user_db, source=source, is_remote=False)
 
         # Create mock mapping which maps CN=stormers,OU=groups,DC=stackstorm,DC=net
         # to "mock_role_7"
         rbac_service.create_group_to_role_map(group='CN=stormers,OU=groups,DC=stackstorm,DC=net',
-                                 roles=['mock_role_7'],
-                                 source='mappings/stormers.yaml')
+                                              roles=['mock_role_7'],
+                                              source='mappings/stormers.yaml')
 
         # Create mock mapping which maps CN=testers,OU=groups,DC=stackstorm,DC=net
         # to "mock_role_7"
         rbac_service.create_group_to_role_map(group='CN=testers,OU=groups,DC=stackstorm,DC=net',
-                                 roles=['mock_role_7'],
-                                 source='mappings/testers.yaml')
+                                              roles=['mock_role_7'],
+                                              source='mappings/testers.yaml')
 
         groups = [
             'CN=stormers,OU=groups,DC=stackstorm,DC=net',
@@ -707,14 +710,14 @@ class RBACRemoteGroupToRoleSyncerTestCase(BaseRBACDefinitionsDBSyncerTestCase):
         # Create mock mapping which maps CN=stormers,OU=groups,DC=stackstorm,DC=net
         # to "mock_remote_role_3"
         rbac_service.create_group_to_role_map(group='CN=stormers,OU=groups,DC=stackstorm,DC=net',
-                                 roles=['mock_remote_role_3'],
-                                 source='mappings/stormers.yaml')
+                                              roles=['mock_remote_role_3'],
+                                              source='mappings/stormers.yaml')
 
         # Create mock mapping which maps CN=testers,OU=groups,DC=stackstorm,DC=net
         # to "mock_remote_role_3"
         rbac_service.create_group_to_role_map(group='CN=testers,OU=groups,DC=stackstorm,DC=net',
-                                 roles=['mock_remote_role_3'],
-                                 source='mappings/testers.yaml')
+                                              roles=['mock_remote_role_3'],
+                                              source='mappings/testers.yaml')
 
         # Verify initial state
         role_dbs = rbac_service.get_roles_for_user(user_db=user_db, include_remote=True)
@@ -781,13 +784,14 @@ class RBACRemoteGroupToRoleSyncerTestCase(BaseRBACDefinitionsDBSyncerTestCase):
         # Create mock mapping which maps CN=stormers,OU=groups,DC=stackstorm,DC=net
         # to "mock_remote_role_3" and "mock_remote_role_4"
         rbac_service.create_group_to_role_map(group='CN=stormers,OU=groups,DC=stackstorm,DC=net',
-                                 roles=['mock_remote_role_3', 'mock_remote_role_4'],
-                                 source='mappings/stormers.yaml')
+                                              roles=['mock_remote_role_3', 'mock_remote_role_4'],
+                                              source='mappings/stormers.yaml')
 
         # Assign existing remote mock_role_5 to the user
         role_db = self.roles['mock_role_5']
         source = 'mappings/stormers.yaml'
-        rbac_service.assign_role_to_user(role_db=role_db, user_db=user_db, source=source, is_remote=True)
+        rbac_service.assign_role_to_user(
+            role_db=role_db, user_db=user_db, source=source, is_remote=True)
 
         # Verify initial state
         role_dbs = rbac_service.get_roles_for_user(user_db=user_db, include_remote=True)
@@ -825,8 +829,8 @@ class RBACRemoteGroupToRoleSyncerTestCase(BaseRBACDefinitionsDBSyncerTestCase):
         # Create mock mapping which maps CN=stormers,OU=groups,DC=stackstorm,DC=net
         # to "mock_remote_role_3" and "mock_remote_role_4"
         rbac_service.create_group_to_role_map(group='CN=stormers,OU=groups,DC=stackstorm,DC=net',
-                                 roles=['mock_remote_role_3', 'mock_remote_role_4'],
-                                 source='mappings/stormers.yaml')
+                                              roles=['mock_remote_role_3', 'mock_remote_role_4'],
+                                              source='mappings/stormers.yaml')
 
         # Verify initial state
         role_dbs = rbac_service.get_roles_for_user(user_db=user_db, include_remote=True)
@@ -855,14 +859,14 @@ class RBACRemoteGroupToRoleSyncerTestCase(BaseRBACDefinitionsDBSyncerTestCase):
         # to "mock_remote_role_3" and CN=testers,OU=groups,DC=stackstorm,DC=net to
         # "mock_remote_role_4"
         rbac_service.create_group_to_role_map(group='CN=stormers,OU=groups,DC=stackstorm,DC=net',
-                                 roles=['mock_remote_role_3'],
-                                 source='mappings/stormers.yaml',
-                                 enabled=True)
+                                              roles=['mock_remote_role_3'],
+                                              source='mappings/stormers.yaml',
+                                              enabled=True)
 
         rbac_service.create_group_to_role_map(group='CN=testers,OU=groups,DC=stackstorm,DC=net',
-                                 roles=['mock_remote_role_4'],
-                                 source='mappings/testers.yaml',
-                                 enabled=True)
+                                              roles=['mock_remote_role_4'],
+                                              source='mappings/testers.yaml',
+                                              enabled=True)
 
         # Verify initial state
         role_dbs = rbac_service.get_roles_for_user(user_db=user_db, include_remote=True)
@@ -925,14 +929,14 @@ class RBACRemoteGroupToRoleSyncerTestCase(BaseRBACDefinitionsDBSyncerTestCase):
         # to "mock_remote_role_3" and CN=testers,OU=groups,DC=stackstorm,DC=net to
         # "mock_remote_role_4"
         rbac_service.create_group_to_role_map(group='CN=stormers,OU=groups,DC=stackstorm,DC=net',
-                                 roles=['mock_remote_role_3'],
-                                 source='mappings/stormers.yaml',
-                                 enabled=True)
+                                              roles=['mock_remote_role_3'],
+                                              source='mappings/stormers.yaml',
+                                              enabled=True)
 
         rbac_service.create_group_to_role_map(group='CN=testers,OU=groups,DC=stackstorm,DC=net',
-                                 roles=['mock_remote_role_4'],
-                                 source='mappings/testers.yaml',
-                                 enabled=True)
+                                              roles=['mock_remote_role_4'],
+                                              source='mappings/testers.yaml',
+                                              enabled=True)
 
         # Verify initial state
         role_dbs = rbac_service.get_roles_for_user(user_db=user_db, include_remote=True)
