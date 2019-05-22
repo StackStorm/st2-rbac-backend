@@ -10,6 +10,7 @@ disable_rbac() {
 
 # 0 - uninstall
 # 1 - upgrade
+# See https://docs.fedoraproject.org/en-US/packaging-guidelines/Scriptlets/#_syntax for details
 if [ $1 -eq 0 ]; then
   uninstall_package
   disable_rbac
