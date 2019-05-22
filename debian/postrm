@@ -29,10 +29,14 @@ disable_rbac() {
 }
 
 case "$1" in
-    remove|upgrade)
+    remove)
       uninstall_package
       disable_rbac
     ;;
+    upgrade)
+      uninstall_package
+    ;;
+
     purge|failed-upgrade|abort-install|abort-upgrade|disappear)
     ;;
     *)
