@@ -43,10 +43,17 @@ case "$1" in
       install_package
 
       # NOTE: We only enable RBAC on initial installation. On upgrade we leave st2.conf alone.
-      [ "${upgrading}" = 1 ] || enable_rbac
-
+      #[ "${upgrading}" = 1 ] || enable_rbac
+      #
       # Clean up a file which signals a package upgrade
       rm -f ${ST2_RBAC_UPGRADESTAMP}
+
+      # NOTE: Due to the bug in v3.0.0 where we incorrectly disable RBAC on upgrade we need to always
+      # enable RBAC - also on upgrade and not just on install otherwise users upgrading from v3.0.0
+      # would end up with RBAC disabled on upgrade.
+      # See https://github.com/StackStorm/st2-enterprise-rbac-backend/pull/13#issuecomment-495121941
+      # We can remove this and do it only on uprade in a future release- e.g. v3.2.0
+      enable_rbac
 
       # We still set rbac.backend to enterprise to correctly handle upgrades from pre v3.0.0
       # where this option was added. If we don't do that, users who had previously configured
