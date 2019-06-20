@@ -12,3 +12,17 @@ if [ $1 -eq 0 ]; then
   uninstall_package
   disable_rbac
 fi
+
+# NOTE: We don't uninstall package on upgrade because during upgrade script
+# ordering is as follows
+#  %pre of new package
+# (package install)
+# %post of new package
+# %preun of old package
+# (removal of old package)
+# %postun of old package
+# This means that postun from the old package would remove files from new
+# package because postun of old package runs after %post of new package
+#if [ $1 -eq 1 ]; then
+#  uninstall_package
+#fi
