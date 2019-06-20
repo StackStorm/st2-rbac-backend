@@ -2,8 +2,15 @@ install_package() {
   PIP=/opt/stackstorm/st2/bin/pip
   WHEELSDIR=/opt/stackstorm/share/wheels
 
-  # NOTE: We ignore errors (e.g. on uninstall when package doesn't exist on disk anymore)
-  ${PIP} install --find-links ${WHEELSDIR} --no-index --quiet --upgrade st2-enterprise-rbac-backend || :
+  # Only perform it if package is not installed so we don't run it twice on fresh install
+  # and on upgrade
+  ${PIP} list installed | grep st2-enterprise-rbac-backend > /dev/null
+  EXIT_CODE=$?
+
+  if [ ${EXIT_CODE} -eq 1 ]; then
+      # NOTE: We ignore errors (e.g. on uninstall when package doesn't exist on disk anymore)
+      ${PIP} install --find-links ${WHEELSDIR} --no-index --quiet --upgrade st2-enterprise-rbac-backend || :
+  fi
 }
 
 # NOTE: This is a work around for a bug with RPM script introduced in v3.0.0.
