@@ -54,6 +54,9 @@ Requires: crudini st2
 %postun
   %include rpm/postun_script.spec
 
+%posttrans
+  %include rpm/posttrans_script.spec
+
 %files
   %doc rpm/LICENSE
   %{_bindir}/*
