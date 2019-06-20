@@ -1,7 +1,9 @@
 install_package() {
   PIP=/opt/stackstorm/st2/bin/pip
   WHEELSDIR=/opt/stackstorm/share/wheels
-  ${PIP} install --find-links ${WHEELSDIR} --no-index --quiet --upgrade st2-enterprise-rbac-backend || exit 0
+
+  # NOTE: We ignore errors (e.g. on uninstall when package doesn't exist on disk anymore)
+  ${PIP} install --find-links ${WHEELSDIR} --no-index --quiet --upgrade st2-enterprise-rbac-backend || :
 }
 
 # NOTE: This is a work around for a bug with RPM script introduced in v3.0.0.
@@ -9,5 +11,7 @@ install_package() {
 # removed on upgrade to a new version of that RPM package.
 # As a workaround, we reinstall the package on %posttrans of new package which
 # runs at the very end
+# This will result in double Python package installation on fresh install and
+# upgrade, but that's harmless
 # TODO: Remove this in v3.4.0
 install_package
