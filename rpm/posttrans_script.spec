@@ -11,5 +11,5 @@ install_package() {
 # removed on upgrade to a new version of that RPM package.
 # As a workaround, we reinstall the package on %posttrans of new package which
 # runs at the very end
-
+# TODO: Remove this in v3.4.0
 install_package
