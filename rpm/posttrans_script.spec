@@ -5,11 +5,13 @@ install_package() {
   # Only perform it if package is not installed so we don't run it twice on fresh install
   # and on upgrade
   ${PIP} list installed | grep st2-enterprise-rbac-backend > /dev/null
-  EXIT_CODE=$?
+  PIP_EXIT_CODE=$?
+  which /opt/stackstorm/st2/bin/st2-apply-rbac-definitions > /dev/null 2>&1
+  WHICH_EXIT_CODE=$?
 
-  if [ ${EXIT_CODE} -eq 1 ]; then
+  if [ ${PIP_EXIT_CODE} -eq 1 ] || [ ${WHICH_EXIT_CODE} -eq 1 ]; then
       # NOTE: We ignore errors (e.g. on uninstall when package doesn't exist on disk anymore)
-      ${PIP} install --find-links ${WHEELSDIR} --no-index --quiet --upgrade st2-enterprise-rbac-backend || :
+      ${PIP} install --find-links ${WHEELSDIR} --no-index --quiet --upgrade --force-reinstall st2-enterprise-rbac-backend || :
   fi
 }
 
