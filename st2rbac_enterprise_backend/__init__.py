@@ -4,4 +4,4 @@
 # prohibited. Proprietary and confidential. See the LICENSE file
 # included with this work for details.
 
-__version__ = '3.1dev'
+__version__ = '3.2dev'
