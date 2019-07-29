@@ -1,6 +1,6 @@
 # StackStorm Enterprise RBAC Backend for StackStorm Enterprise Edition
 
-[![Circle CI Build Status](https://circleci.com/gh/StackStorm/st2-enterprise-rbac-backend.svg?style=shield&circle-token=3bfc47f8b1f7af9c1845ea79df2c18e0f32cc509)](https://circleci.com/gh/StackStorm/st2-enterprise-rbac-backend)
+[![Circle CI Build Status](https://circleci.com/gh/extremenetworks/st2-enterprise-rbac-backend.svg?style=shield&circle-token=eaf1bdcfc552072706ef0a6e68049f285dd33a03)](https://circleci.com/gh/extremenetworks/st2-enterprise-rbac-backend)
 
 StackStorm RBAC backend for enterprise version which contains all the proprietary RBAC
 (permission resolving) business logic.

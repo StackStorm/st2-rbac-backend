@@ -27,10 +27,10 @@ setup(
     description='Enterprise RBAC backend for StackStorm.',
     author='StackStorm, Inc.',
     author_email='info@stackstorm.com',
-    url='https://github.com/StackStorm/st2-enterprise-rbac-backend',
+    url='https://github.com/extremenetworks/st2-enterprise-rbac-backend',
     license='Proprietary License',
     download_url=(
-        'https://github.com/StackStorm/st2-enterprise-rbac-backend/tarball/master'
+        'https://github.com/extremenetworks/st2-enterprise-rbac-backend/tarball/master'
     ),
     classifiers=[
         'License :: Other/Proprietary License'
