@@ -49,6 +49,7 @@ LIVE_ACTION_2 = {
     }
 }
 
+
 @mock.patch.object(PoolPublisher, 'publish', mock.MagicMock())
 class ActionExecutionRBACControllerTestCase(BaseActionExecutionControllerTestCase,
                                             APIControllerWithRBACTestCase,
