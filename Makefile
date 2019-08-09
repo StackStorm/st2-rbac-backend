@@ -9,11 +9,9 @@ PKG_RELEASE ?= 1
 WHEELSDIR ?= opt/stackstorm/share/wheels
 VIRTUALENV_DIR ?= virtualenv
 ST2_REPO_PATH ?= /tmp/st2
-#ST2_REPO_URL ?= git@github.com:StackStorm/st2.git
-ST2_REPO_URL ?= git@github.com:jdmeyer3/st2.git
+ST2_REPO_URL ?= git@github.com:StackStorm/st2.git
 #ST2_REPO_URL ?= git@github.com:StackStorm/st2-private.git
-ST2_REPO_BRANCH ?= bug/enterprise_ldap_view_executions_error
-#ST2_REPO_BRANCH ?= master
+ST2_REPO_BRANCH ?= master
 
 ifneq (,$(wildcard /etc/debian_version))
 	DEBIAN := 1
