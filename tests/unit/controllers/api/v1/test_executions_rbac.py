@@ -37,16 +37,25 @@ TEST_FIXTURES = {
 
 LIVE_ACTION_1 = {
     'action': 'core.local',
+    'pack': 'core',
     'parameters': {
         'cmd': 'uname -a',
+    },
+    'context': {
+        'user': 'stanley'
     }
 }
 
 LIVE_ACTION_2 = {
     'action': 'core.local',
+    'pack': 'core',
     'parameters': {
         'cmd': 'ls -l'
+    },
+    'context': {
+        'user': 'stanley'
     }
+
 }
 
 
