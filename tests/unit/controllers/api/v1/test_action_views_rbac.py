@@ -20,8 +20,10 @@ from st2common.models.db.rbac import PermissionGrantDB
 from st2common.content import utils as content_utils
 from st2tests.fixturesloader import FixturesLoader
 from st2common.util.compat import mock_open_name
+from st2api.controllers.v1.action_views import OverviewController
 
 from tests.base import APIControllerWithRBACTestCase
+from st2tests.api import APIControllerWithIncludeAndExcludeFilterTestCase
 
 http_client = six.moves.http_client
 
@@ -36,7 +38,16 @@ TEST_FIXTURES = {
 }
 
 
-class ActionViewsControllerRBACTestCase(APIControllerWithRBACTestCase):
+class ActionViewsControllerRBACTestCase(APIControllerWithRBACTestCase,
+                                        APIControllerWithIncludeAndExcludeFilterTestCase):
+
+    # Attributes used by APIControllerWithIncludeAndExcludeFilterTestCase
+    get_all_path = '/v1/actions/views/overview'
+    controller_cls = OverviewController
+    include_attribute_field_name = 'entry_point'
+    exclude_attribute_field_name = 'parameters'
+    rbac_enabled = True
+
     fixtures_loader = FixturesLoader()
 
     def setUp(self):
@@ -141,3 +152,7 @@ class ActionViewsControllerRBACTestCase(APIControllerWithRBACTestCase):
                         ' on resource "%s"' % (action_uid))
         self.assertEqual(resp.status_code, http_client.FORBIDDEN)
         self.assertEqual(resp.json['faultstring'], expected_msg)
+
+    def _insert_mock_models(self):
+        action_ids = [action['id'] for action in self.models['actions'].values()]
+        return action_ids
