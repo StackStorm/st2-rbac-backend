@@ -22,9 +22,11 @@ from st2common.persistence.rbac import UserRoleAssignment
 from st2common.persistence.rbac import Role
 from st2common.persistence.rbac import PermissionGrant
 from st2common.transport.publishers import PoolPublisher
+from st2api.controllers.v1.actionexecutions import ActionExecutionsController
 
 from tests.base import APIControllerWithRBACTestCase
 from st2tests.api import BaseActionExecutionControllerTestCase
+from st2tests.api import APIControllerWithIncludeAndExcludeFilterTestCase
 from st2tests.fixturesloader import FixturesLoader
 
 
@@ -33,10 +35,42 @@ TEST_FIXTURES = {
     'actions': ['action1.yaml', 'local.yaml']
 }
 
+LIVE_ACTION_1 = {
+    'action': 'core.local',
+    'pack': 'core',
+    'parameters': {
+        'cmd': 'uname -a',
+    },
+    'context': {
+        'user': 'stanley'
+    }
+}
+
+LIVE_ACTION_2 = {
+    'action': 'core.local',
+    'pack': 'core',
+    'parameters': {
+        'cmd': 'ls -l'
+    },
+    'context': {
+        'user': 'stanley'
+    }
+
+}
+
 
 @mock.patch.object(PoolPublisher, 'publish', mock.MagicMock())
 class ActionExecutionRBACControllerTestCase(BaseActionExecutionControllerTestCase,
-                                            APIControllerWithRBACTestCase):
+                                            APIControllerWithRBACTestCase,
+                                            APIControllerWithIncludeAndExcludeFilterTestCase):
+
+    # Attributes used by APIControllerWithIncludeAndExcludeFilterTestCase
+    get_all_path = '/v1/executions'
+    controller_cls = ActionExecutionsController
+    include_attribute_field_name = 'status'
+    exclude_attribute_field_name = 'status'
+    test_exact_object_count = False
+    rbac_enabled = True
 
     fixtures_loader = FixturesLoader()
 
@@ -49,6 +83,8 @@ class ActionExecutionRBACControllerTestCase(BaseActionExecutionControllerTestCas
 
         self.fixtures_loader.save_fixtures_to_db(fixtures_pack=FIXTURES_PACK,
                                                  fixtures_dict=TEST_FIXTURES)
+
+        cfg.CONF.set_override(name='permission_isolation', override=False, group='rbac')
 
         # Insert mock users, roles and assignments
 
@@ -317,6 +353,20 @@ class ActionExecutionRBACControllerTestCase(BaseActionExecutionControllerTestCas
                 resp = self.app.get('/v1/actionexecutions/%s' % (execution_id), expect_errors=True)
                 self.assertEqual(resp.status_code, http_client.FORBIDDEN)
                 self.assertEqual(resp.json['faultstring'], expected_msg % (execution_id))
+
+    def test_get_one_include_attributes_filter_provided(self):
+        user_db = self.users['admin']
+        self.use_user(user_db)
+
+        self._insert_mock_models()
+
+        resp = self.app.get('/v1/actionexecutions?include_attributes=id,status')
+        self.assertEqual(len(resp.json), 2)
+
+    def _insert_mock_models(self):
+        execution_1_id = self._get_actionexecution_id(self._do_post(LIVE_ACTION_1))
+        execution_2_id = self._get_actionexecution_id(self._do_post(LIVE_ACTION_2))
+        return [execution_1_id, execution_2_id]
 
     def _insert_mock_execution_data_for_isolation_tests(self):
         data = {
