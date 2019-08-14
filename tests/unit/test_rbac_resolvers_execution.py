@@ -525,7 +525,6 @@ class ExecutionPermissionsResolverTestCase(BasePermissionsResolverTestCase):
             resource_db=resource_db,
             permission_type=PermissionType.EXECUTION_VIEW)
 
-
         # Custom role - "action_execute" on action_2 parent pack, user should be able to view all
         # the executions for actions which belong to that pack
         user_db = self.users['custom_role_action_execute_action_2_pack_grant']
