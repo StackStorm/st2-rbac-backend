@@ -18,8 +18,10 @@ from st2common.transport import publishers
 from st2common.validators.api import action as action_validator
 from st2tests import fixturesloader
 from st2tests.api import BaseInquiryControllerTestCase
+from st2api.controllers.v1.inquiries import InquiriesController
 
 from tests.base import APIControllerWithRBACTestCase
+from st2tests.api import APIControllerWithIncludeAndExcludeFilterTestCase
 
 
 FIXTURES_PACK = 'generic'
@@ -42,7 +44,15 @@ SCHEMA_DEFAULT = {
 
 
 @mock.patch.object(publishers.PoolPublisher, 'publish', mock.MagicMock())
-class InquiryRBACControllerTestCase(APIControllerWithRBACTestCase, BaseInquiryControllerTestCase):
+class InquiryRBACControllerTestCase(APIControllerWithRBACTestCase, BaseInquiryControllerTestCase,
+                                    APIControllerWithIncludeAndExcludeFilterTestCase):
+
+    # Attributes used by APIControllerWithIncludeAndExcludeFilterTestCase
+    get_all_path = '/v1/inquiries'
+    controller_cls = InquiriesController
+    include_attribute_field_name = 'ttl'
+    exclude_attribute_field_name = 'ttl'
+    rbac_enabled = True
 
     fixtures_loader = fixturesloader.FixturesLoader()
 
@@ -53,7 +63,7 @@ class InquiryRBACControllerTestCase(APIControllerWithRBACTestCase, BaseInquiryCo
     def setUp(self):
         super(InquiryRBACControllerTestCase, self).setUp()
 
-        self.fixtures_loader.save_fixtures_to_db(
+        self.models = self.fixtures_loader.save_fixtures_to_db(
             fixtures_pack=FIXTURES_PACK,
             fixtures_dict=TEST_FIXTURES
         )
@@ -288,3 +298,9 @@ class InquiryRBACControllerTestCase(APIControllerWithRBACTestCase, BaseInquiryCo
         self.use_user(self.users['user_respond_inherit'])
         resp = self._do_respond(self.inquiry_inherit_id, {'continue': True})
         self.assertEqual(resp.status_int, http_client.OK)
+
+    def test_get_all_invalid_exclude_and_include_parameter(self):
+        pass
+
+    def _insert_mock_models(self):
+        return [self.inquiry_id, self.inquiry_inherit_id]
