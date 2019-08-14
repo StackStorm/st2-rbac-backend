@@ -19,8 +19,10 @@ from st2common.models.db.rbac import RoleDB
 from st2common.models.db.rbac import UserRoleAssignmentDB
 from st2common.models.db.rbac import PermissionGrantDB
 from st2tests.fixturesloader import FixturesLoader
+from st2api.controllers.v1.actions import ActionsController
 
 from tests.base import APIControllerWithRBACTestCase
+from st2tests.api import APIControllerWithIncludeAndExcludeFilterTestCase
 
 http_client = six.moves.http_client
 
@@ -48,13 +50,23 @@ ACTION_2 = {
 }
 
 
-class ActionControllerRBACTestCase(APIControllerWithRBACTestCase):
+class ActionControllerRBACTestCase(APIControllerWithRBACTestCase,
+                                   APIControllerWithIncludeAndExcludeFilterTestCase):
+
+    # Attributes used by APIControllerWithIncludeAndExcludeFilterTestCase
+    get_all_path = '/v1/actions'
+    controller_cls = ActionsController
+    include_attribute_field_name = 'parameters'
+    exclude_attribute_field_name = 'parameters'
+    test_exact_object_count = False
+    rbac_enabled = True
+
     fixtures_loader = FixturesLoader()
 
     def setUp(self):
         super(ActionControllerRBACTestCase, self).setUp()
-        self.fixtures_loader.save_fixtures_to_db(fixtures_pack=FIXTURES_PACK,
-                                                 fixtures_dict=TEST_FIXTURES)
+        self.models = self.fixtures_loader.save_fixtures_to_db(fixtures_pack=FIXTURES_PACK,
+                                                               fixtures_dict=TEST_FIXTURES)
 
         file_name = 'action1.yaml'
         ActionControllerRBACTestCase.ACTION_1 = self.fixtures_loader.load_fixtures(
@@ -143,6 +155,10 @@ class ActionControllerRBACTestCase(APIControllerWithRBACTestCase):
 
         resp = self.app.get('/v1/actions?limit=20000')
         self.assertEqual(resp.status_code, http_client.OK)
+
+    def _insert_mock_models(self):
+        action_ids = [action['id'] for action in self.models['actions'].values()]
+        return action_ids
 
     @staticmethod
     def __get_action_id(resp):
