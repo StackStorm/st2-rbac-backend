@@ -17,8 +17,10 @@ from st2common.models.db.rbac import RoleDB
 from st2common.models.db.rbac import UserRoleAssignmentDB
 from st2common.models.db.rbac import PermissionGrantDB
 from st2tests.fixturesloader import FixturesLoader
+from st2api.controllers.v1.traces import TracesController
 
 from tests.base import APIControllerWithRBACTestCase
+from st2tests.api import APIControllerWithIncludeAndExcludeFilterTestCase
 
 http_client = six.moves.http_client
 
@@ -33,7 +35,16 @@ TEST_FIXTURES = {
 }
 
 
-class TraceControllerRBACTestCase(APIControllerWithRBACTestCase):
+class TraceControllerRBACTestCase(APIControllerWithRBACTestCase,
+                                  APIControllerWithIncludeAndExcludeFilterTestCase):
+
+    # Attributes used by APIControllerWithIncludeAndExcludeFilterTestCase
+    get_all_path = '/v1/traces'
+    controller_cls = TracesController
+    include_attribute_field_name = 'trace_tag'
+    exclude_attribute_field_name = 'start_timestamp'
+    rbac_enabled = True
+
     fixtures_loader = FixturesLoader()
 
     def setUp(self):
@@ -156,3 +167,7 @@ class TraceControllerRBACTestCase(APIControllerWithRBACTestCase):
         expected_msg = ('User "trace_view" doesn\'t have required permission "trace_list"')
         self.assertEqual(resp.status_code, http_client.FORBIDDEN)
         self.assertEqual(resp.json['faultstring'], expected_msg)
+
+    def _insert_mock_models(self):
+        trace_ids = [trace['id'] for trace in self.models['traces'].values()]
+        return trace_ids

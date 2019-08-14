@@ -23,8 +23,10 @@ from st2common.models.db.rbac import RoleDB
 from st2common.models.db.rbac import UserRoleAssignmentDB
 from st2common.models.db.rbac import PermissionGrantDB
 from st2tests.fixturesloader import FixturesLoader
+from st2api.controllers.v1.rules import RuleController
 
 from tests.base import APIControllerWithRBACTestCase
+from st2tests.api import APIControllerWithIncludeAndExcludeFilterTestCase
 
 http_client = six.moves.http_client
 
@@ -64,8 +66,8 @@ class BaseRuleControllerRBACTestCase(APIControllerWithRBACTestCase):
 
     def setUp(self):
         super(BaseRuleControllerRBACTestCase, self).setUp()
-        self.fixtures_loader.save_fixtures_to_db(fixtures_pack=FIXTURES_PACK,
-                                                 fixtures_dict=TEST_FIXTURES)
+        self.models = self.fixtures_loader.save_fixtures_to_db(fixtures_pack=FIXTURES_PACK,
+                                                               fixtures_dict=TEST_FIXTURES)
 
         file_name = 'rule_with_webhook_trigger.yaml'
         self.RULE_1 = self.fixtures_loader.load_fixtures(
@@ -437,7 +439,16 @@ class BaseRuleControllerRBACTestCase(APIControllerWithRBACTestCase):
         return result
 
 
-class RuleControllerRBACTestCase(BaseRuleControllerRBACTestCase):
+class RuleControllerRBACTestCase(BaseRuleControllerRBACTestCase,
+                                 APIControllerWithIncludeAndExcludeFilterTestCase):
+
+    # Attributes used by APIControllerWithIncludeAndExcludeFilterTestCase
+    get_all_path = '/v1/rules'
+    controller_cls = RuleController
+    include_attribute_field_name = 'criteria'
+    exclude_attribute_field_name = 'enabled'
+    rbac_enabled = True
+
     api_endpoint = '/v1/rules'
 
     def test_post_webhook_trigger_no_trigger_and_action_permission(self):
@@ -507,3 +518,8 @@ class RuleControllerRBACTestCase(BaseRuleControllerRBACTestCase):
 
         resp = self.app.get('/v1/rules?limit=-1')
         self.assertEqual(resp.status_code, http_client.OK)
+
+    def _insert_mock_models(self):
+        rule_1_id = self._do_post(self.RULE_1).json['id']
+        rule_2_id = self._do_post(self.RULE_2).json['id']
+        return [rule_1_id, rule_2_id]

@@ -7,8 +7,10 @@
 import six
 
 from st2tests.fixturesloader import FixturesLoader
+from st2api.controllers.v1.runnertypes import RunnerTypesController
 
 from tests.base import APIControllerWithRBACTestCase
+from st2tests.api import APIControllerWithIncludeAndExcludeFilterTestCase
 
 http_client = six.moves.http_client
 
@@ -25,7 +27,17 @@ TEST_FIXTURES = {
 }
 
 
-class RunnerTypesControllerRBACTestCase(APIControllerWithRBACTestCase):
+class RunnerTypesControllerRBACTestCase(APIControllerWithRBACTestCase,
+                                        APIControllerWithIncludeAndExcludeFilterTestCase):
+
+    # Attributes used by APIControllerWithIncludeAndExcludeFilterTestCase
+    get_all_path = '/v1/runnertypes'
+    controller_cls = RunnerTypesController
+    include_attribute_field_name = 'runner_package'
+    exclude_attribute_field_name = 'runner_module'
+    test_exact_object_count = False  # runners are registered dynamically in base test class
+    rbac_enabled = True
+
     fixtures_loader = FixturesLoader()
 
     def setUp(self):
