@@ -287,5 +287,5 @@ deb:
 	dpkg-buildpackage -b -uc -us -j`_cpunum=$$(nproc); echo "${_cpunum:-1}"`
 
 rpm:
-	yum install -y which
+	yum install -y which python3-devel
 	rpmbuild -bb rpm/st2-rbac-backend.spec
