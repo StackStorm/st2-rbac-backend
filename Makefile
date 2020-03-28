@@ -182,23 +182,41 @@ compilepy3:
 	@echo ""
 	@echo "================== register metrics drivers ======================"
 	@echo ""
-
 	# Install st2common to register metrics drivers
 	(. $(VIRTUALENV_DIR)/bin/activate; cd $(ST2_REPO_PATH)/st2common; python setup.py develop --no-deps)
-
 	@echo ""
 	@echo "================== register rbac backend ======================"
 	@echo ""
 	(. $(VIRTUALENV_DIR)/bin/activate; python setup.py develop --no-deps)
 
-
+# NOTE: We pass --no-deps to the script so we don't install all the
+# package dependencies which are already installed as part of "requirements"
+# make targets. This speeds up the build
 .PHONY: requirements
-requirements: virtualenv .clone_st2_repo .install-runners-and-deps
+requirements: virtualenv .clone_st2_repo
 	@echo
 	@echo "==================== requirements ===================="
 	@echo
 	. $(VIRTUALENV_DIR)/bin/activate && $(VIRTUALENV_DIR)/bin/pip install --cache-dir $(HOME)/.pip-cache $(PIP_OPTIONS) -r /tmp/st2/requirements.txt
 	. $(VIRTUALENV_DIR)/bin/activate && $(VIRTUALENV_DIR)/bin/pip install --cache-dir $(HOME)/.pip-cache $(PIP_OPTIONS) -r /tmp/st2/test-requirements.txt
+	@echo ""
+	@echo "================== install runners ===================="
+	@echo ""
+	@for component in $(COMPONENTS_RUNNERS); do \
+        echo "==========================================================="; \
+        echo "Installing runner:" $$component; \
+        echo "==========================================================="; \
+        (. $(VIRTUALENV_DIR)/bin/activate; cd $$component; python setup.py develop --no-deps); \
+    done
+	@echo ""
+	@echo "================== register metrics drivers ======================"
+	@echo ""
+	# Install st2common to register metrics drivers
+	(. $(VIRTUALENV_DIR)/bin/activate; cd $(ST2_REPO_PATH)/st2common; python setup.py develop --no-deps)
+	@echo ""
+	@echo "================== register rbac backend ======================"
+	@echo ""
+	(. $(VIRTUALENV_DIR)/bin/activate; python setup.py develop --no-deps)
 
 .PHONY: requirements-ci
 requirements-ci:
