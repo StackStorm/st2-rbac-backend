@@ -16,7 +16,6 @@ ifneq (,$(wildcard /etc/debian_version))
 	DEBIAN := 1
 	DEB_DISTRO := $(shell lsb_release -cs)
 	REDHAT_DISTRO := 0
-    REDHAT_DISTRO := -1
 else
 	REDHAT := 1
 	REDHAT_DISTRO := $(shell rpm --eval '%{rhel}')
@@ -214,7 +213,7 @@ requirements: .clone_st2_repo virtualenv
         echo "Installing runner:" $$component; \
         echo "==========================================================="; \
         (. $(VIRTUALENV_DIR)/bin/activate; cd $$component; python setup.py develop --no-deps); \
-    done
+	done
 	@echo ""
 	@echo "================== register metrics drivers ======================"
 	@echo ""
