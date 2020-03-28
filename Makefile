@@ -3,7 +3,7 @@
 # Proprietary and confidential
 
 ROOT_DIR ?= $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
-
+CURRENT_DIR ?= $(shell pwd)
 PKG_NAME := st2-rbac-backend
 PKG_RELEASE ?= 1
 WHEELSDIR ?= opt/stackstorm/share/wheels
@@ -51,7 +51,7 @@ space_char +=
 COMPONENTS = $(wildcard $(ST2_REPO_PATH)/st2*)
 COMPONENTS_RUNNERS := $(wildcard $(ST2_REPO_PATH)/contrib/runners/*)
 COMPONENTS_WITH_RUNNERS := $(COMPONENTS) $(COMPONENTS_RUNNERS)
-COMPONENT_PYTHONPATH = $(subst $(space_char),:,$(realpath $(COMPONENTS_WITH_RUNNERS))):$(ST2_REPO_PATH)
+COMPONENT_PYTHONPATH = $(subst $(space_char),:,$(realpath $(COMPONENTS_WITH_RUNNERS))):$(ST2_REPO_PATH):$(CURRENT_DIR)
 COMPONENTS_TEST := $(foreach component,$(filter-out $(COMPONENT_SPECIFIC_TESTS),$(COMPONENTS_WITH_RUNNERS)),$(component))
 COMPONENTS_TEST_COMMA := $(subst $(slash),$(dot),$(subst $(space_char),$(comma),$(COMPONENTS_TEST)))
 COMPONENTS_TEST_MODULES := $(subst $(slash),$(dot),$(COMPONENTS_TEST_DIRS))
@@ -200,7 +200,7 @@ compilepy3:
 # package dependencies which are already installed as part of "requirements"
 # make targets. This speeds up the build
 .PHONY: requirements
-requirements: virtualenv .clone_st2_repo
+requirements: .clone_st2_repo virtualenv
 	@echo
 	@echo "==================== requirements ===================="
 	@echo
