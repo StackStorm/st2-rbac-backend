@@ -32,7 +32,7 @@ ifeq ($(REDHAT_DISTRO),)
     REDHAT_DISTRO := 0
 endif
 
-ifeq ($(REDHAT_DISTRO),"%{rhel}")
+ifeq ($(REDHAT_DISTRO),$(shell echo "%{rhel}")))
 	REDHAT_DISTRO := 0
 endif
 
