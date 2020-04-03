@@ -70,7 +70,7 @@ jobs:
       - image: circleci/python:2.7
     environment:
       DISTROS: trusty xenial bionic el6 el7 el8
-      DOCKER_DISTROS: trusty xenial bionic centos6 centos7 centos8
+      DOCKER_DISTROS: trusty bionic centos6 centos7 centos8
       DOCKER_RUN: |-
         docker run -w /code/st2-rbac-backend --volumes-from st2-rbac-backend-vol
             -e PKG_VERSION=$PKG_VERSION
