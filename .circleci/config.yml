@@ -88,6 +88,9 @@ jobs:
             for dist in $DOCKER_DISTROS; do
               docker pull stackstorm/buildpack:$dist
             done
+            echo "<-- BEGIN DOCKER IMAGE LIST -->"
+            docker image list
+            echo "<-- END DOCKER IMAGE LIST -->"
       - run:
           name: Setup ~/.circlerc environment variables
           command: |
