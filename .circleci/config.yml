@@ -135,7 +135,7 @@ jobs:
             eval ${DOCKER_RUN} stackstorm/buildpack:centos7 make play rpm
             docker cp st2-rbac-backend-vol:/code/st2-rbac-backend/build/x86_64/st2-rbac-backend-${PKG_VERSION}-${PKG_RELEASE}.x86_64.rpm ~/st2-rbac-backend/build/el7
             # 5. Build RHEL 8 packages
-            eval ${DOCKER_RUN} stackstorm/buildpack:centos8 "yum install -y which python3-wheel; make play rpm"
+            eval ${DOCKER_RUN} stackstorm/buildpack:centos8 yum install -y which python3-wheel; make play rpm
             docker cp st2-rbac-backend-vol:/code/st2-rbac-backend/build/x86_64/st2-rbac-backend-${PKG_VERSION}-${PKG_RELEASE}.x86_64.rpm ~/st2-rbac-backend/build/el8
             # List poduced artifacts
             ls -la ~/st2-rbac-backend/build/*/*
