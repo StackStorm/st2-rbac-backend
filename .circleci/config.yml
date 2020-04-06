@@ -70,7 +70,7 @@ jobs:
       - image: circleci/python:2.7
     environment:
       DISTROS: trusty xenial bionic el6 el7 el8
-      DOCKER_DISTROS: trusty xenial bionic centos6 centos7 centos8
+      DOCKER_DISTROS: trusty bionic centos6 centos7 centos8
       DOCKER_RUN: |-
         docker run -w /code/st2-rbac-backend --volumes-from st2-rbac-backend-vol
             -e PKG_VERSION=$PKG_VERSION
@@ -88,6 +88,9 @@ jobs:
             for dist in $DOCKER_DISTROS; do
               docker pull stackstorm/buildpack:$dist
             done
+            echo "<-- BEGIN DOCKER IMAGE LIST -->"
+            docker image list
+            echo "<-- END DOCKER IMAGE LIST -->"
       - run:
           name: Setup ~/.circlerc environment variables
           command: |
@@ -132,7 +135,7 @@ jobs:
             eval ${DOCKER_RUN} stackstorm/buildpack:centos7 make play rpm
             docker cp st2-rbac-backend-vol:/code/st2-rbac-backend/build/x86_64/st2-rbac-backend-${PKG_VERSION}-${PKG_RELEASE}.x86_64.rpm ~/st2-rbac-backend/build/el7
             # 5. Build RHEL 8 packages
-            eval ${DOCKER_RUN} stackstorm/buildpack:centos8 "yum install -y which; make play rpm"
+            eval ${DOCKER_RUN} stackstorm/buildpack:centos8 make play rpm
             docker cp st2-rbac-backend-vol:/code/st2-rbac-backend/build/x86_64/st2-rbac-backend-${PKG_VERSION}-${PKG_RELEASE}.x86_64.rpm ~/st2-rbac-backend/build/el8
             # List poduced artifacts
             ls -la ~/st2-rbac-backend/build/*/*

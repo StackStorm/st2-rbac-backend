@@ -12,14 +12,28 @@ ST2_REPO_PATH ?= /tmp/st2
 ST2_REPO_URL ?= git@github.com:StackStorm/st2.git
 ST2_REPO_BRANCH ?= master
 
+DEBIAN := 0
+REDHAT := 0
+
 ifneq (,$(wildcard /etc/debian_version))
 	DEBIAN := 1
-	DEB_DISTRO := $(shell lsb_release -cs)
-	REDHAT_DISTRO := 0
 else
 	REDHAT := 1
-	REDHAT_DISTRO := $(shell rpm --eval '%{rhel}')
-	DEB_DISTRO := unstable
+endif
+
+DEB_DISTRO := $(shell lsb_release -cs)
+REDHAT_DISTRO := $(shell rpm --eval '%{rhel}')
+
+ifeq ($(DEB_DISTRO),)
+	DEB_DISTRO := "unstable"
+endif
+
+ifeq ($(REDHAT_DISTRO),)
+    REDHAT_DISTRO := 0
+endif
+
+ifeq ($(REDHAT_DISTRO),$(shell echo "%{rhel}"))
+	REDHAT_DISTRO := 0
 endif
 
 ifeq ($(DEB_DISTRO),bionic)
@@ -93,6 +107,8 @@ play:
 	@echo COMPONENT_PYTHONPATH=$(COMPONENT_PYTHONPATH)
 	@echo TRAVIS_PULL_REQUEST=$(TRAVIS_PULL_REQUEST)
 	@echo NOSE_OPTS=$(NOSE_OPTS)
+	@echo
+	@echo "`cat /etc/os-release`"
 	@echo
 
 .PHONY: all
