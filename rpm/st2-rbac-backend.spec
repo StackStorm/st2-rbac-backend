@@ -18,9 +18,9 @@ Version:        %{version}
 Epoch: %{epoch}
 %endif
 Release:        %{release}
-License:        Extreme Workflow Composer EULA
-Summary:        RBAC Backend for EWC
-URL:            https://www.extremenetworks.com/product/workflow-composer/
+License:        Apache 2.0
+Summary:        RBAC Backend for StackStorm
+URL:            https://stackstorm.com
 Source0:        st2-enterprise-rbac-backend
 
 Requires: crudini st2
@@ -38,7 +38,7 @@ Requires: crudini st2
 %{nil}
 
 %description
-  RBAC Backend for Extreme Workflow Composer
+  RBAC Backend for StackStorm
 
 %prep
   rm -rf %{buildroot}
