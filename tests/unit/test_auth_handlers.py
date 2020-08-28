@@ -26,8 +26,8 @@ from st2common.persistence.auth import User
 from st2tests.mocks.auth import DUMMY_CREDS
 from st2tests.mocks.auth import get_mock_backend
 
-from st2rbac_enterprise_backend.syncer import RBACRemoteGroupToRoleSyncer
-from st2rbac_enterprise_backend.service import RBACService as rbac_service
+from st2-rbac-backend.syncer import RBACRemoteGroupToRoleSyncer
+from st2-rbac-backend.service import RBACService as rbac_service
 
 __all__ = [
     'AuthHandlerRBACRoleSyncTestCase'

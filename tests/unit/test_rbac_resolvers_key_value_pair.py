@@ -19,7 +19,7 @@ from st2common.rbac.types import ResourceType
 from st2common.persistence.keyvalue import KeyValuePair
 from st2common.models.db.keyvalue import KeyValuePairDB
 
-from st2rbac_enterprise_backend.resolvers import KeyValuePermissionsResolver
+from st2-rbac-backend.resolvers import KeyValuePermissionsResolver
 from tests.unit.test_rbac_resolvers import BasePermissionsResolverTestCase
 
 __all__ = [

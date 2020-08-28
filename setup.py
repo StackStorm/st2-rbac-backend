@@ -24,13 +24,13 @@ check_pip_version()
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 REQUIREMENTS_FILE = os.path.join(BASE_DIR, 'requirements.txt')
-INIT_FILE = os.path.join(BASE_DIR, 'st2rbac_enterprise_backend', '__init__.py')
+INIT_FILE = os.path.join(BASE_DIR, 'st2-rbac-backend', '__init__.py')
 
 version = parse_version_string(INIT_FILE)
 install_reqs, dep_links = fetch_requirements(REQUIREMENTS_FILE)
 
 setup(
-    name='st2-enterprise-rbac-backend',
+    name='st2-rbac-backend',
     version=version,
     description='RBAC backend for StackStorm.',
     author='StackStorm, Inc.',
@@ -51,7 +51,7 @@ setup(
     scripts=[
         'bin/st2-apply-rbac-definitions'
     ],
-    provides=['st2rbac_enterprise_backend'],
+    provides=['st2-rbac-backend'],
     packages=find_packages(),
     include_package_data=True,
     install_requires=install_reqs,
@@ -59,7 +59,7 @@ setup(
     test_suite='tests',
     entry_points={
         'st2common.rbac.backend': [
-            'enterprise = st2rbac_enterprise_backend.backend:EnterpriseRBACBackend',
+            'enterprise = st2-rbac-backend.backend:EnterpriseRBACBackend',
         ],
     },
     zip_safe=False

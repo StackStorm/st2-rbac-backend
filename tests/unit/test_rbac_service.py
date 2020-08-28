@@ -29,7 +29,7 @@ from st2common.models.db.rbac import UserRoleAssignmentDB
 from st2common.models.db.rule import RuleDB
 from st2common.exceptions.db import StackStormDBObjectConflictError
 
-from st2rbac_enterprise_backend.service import RBACService as rbac_service
+from st2-rbac-backend.service import RBACService as rbac_service
 
 __all__ = [
     'RBACServiceTestCase'

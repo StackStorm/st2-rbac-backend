@@ -156,14 +156,14 @@ compilepy3:
 	@echo
 	@echo "==================== flake8 ===================="
 	@echo
-	. $(VIRTUALENV_DIR)/bin/activate; flake8 --config=lint-configs/python/.flake8-proprietary st2rbac_enterprise_backend/ tests/
+	. $(VIRTUALENV_DIR)/bin/activate; flake8 --config=lint-configs/python/.flake8-proprietary st2-rbac-backend/ tests/
 
 .PHONY: .pylint
 .pylint:
 	@echo
 	@echo "==================== pylint ===================="
 	@echo
-	. $(VIRTUALENV_DIR)/bin/activate; pylint -j $(PYLINT_CONCURRENCY) -E --rcfile=./lint-configs/python/.pylintrc --load-plugins=pylint_plugins.api_models --load-plugins=pylint_plugins.db_models st2rbac_enterprise_backend/
+	. $(VIRTUALENV_DIR)/bin/activate; pylint -j $(PYLINT_CONCURRENCY) -E --rcfile=./lint-configs/python/.pylintrc --load-plugins=pylint_plugins.api_models --load-plugins=pylint_plugins.db_models st2-rbac-backend/
 
 .PHONY: .unit-tests
 .unit-tests:
