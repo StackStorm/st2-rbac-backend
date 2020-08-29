@@ -30,7 +30,7 @@ version = parse_version_string(INIT_FILE)
 install_reqs, dep_links = fetch_requirements(REQUIREMENTS_FILE)
 
 setup(
-    name='st2-rbac-enterprise-backend',
+    name='st2-rbac-backend',
     version=version,
     description='RBAC backend for StackStorm.',
     author='StackStorm, Inc.',
