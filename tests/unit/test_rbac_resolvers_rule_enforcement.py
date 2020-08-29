@@ -32,7 +32,7 @@ from st2common.models.db.rbac import PermissionGrantDB
 from st2common.models.db.rule import RuleDB
 from st2common.models.db.rule_enforcement import RuleEnforcementDB
 
-from st2-rbac-backend.resolvers import RuleEnforcementPermissionsResolver
+from st2rbac_backend.resolvers import RuleEnforcementPermissionsResolver
 from tests.unit.test_rbac_resolvers import BasePermissionsResolverTestCase
 
 __all__ = [

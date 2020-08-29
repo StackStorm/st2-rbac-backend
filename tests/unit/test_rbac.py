@@ -24,8 +24,8 @@ from st2common.rbac.types import ResourceType
 from st2common.rbac.backends import get_backend_instance
 from st2common.models.db.auth import UserDB
 from st2common.rbac.migrations import insert_system_roles
-from st2-rbac-backend.utils import RBACUtils as rbac_utils
-from st2-rbac-backend.service import RBACService as rbac_service
+from st2rbac_backend.utils import RBACUtils as rbac_utils
+from st2rbac_backend.service import RBACService as rbac_service
 
 __all__ = [
     'RBACUtilsTestCase',

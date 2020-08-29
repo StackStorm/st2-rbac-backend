@@ -24,7 +24,7 @@ from st2common.models.db.rbac import UserRoleAssignmentDB
 from st2common.rbac.types import SystemRole
 from st2common.rbac.migrations import insert_system_roles
 
-from st2-rbac-backend.utils import RBACUtils as rbac_utils
+from st2rbac_backend.utils import RBACUtils as rbac_utils
 
 __all__ = [
     'RBACUtilsTestCase'

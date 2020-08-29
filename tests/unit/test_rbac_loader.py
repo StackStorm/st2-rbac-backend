@@ -21,7 +21,7 @@ import jsonschema
 
 from st2tests import config
 from st2tests.fixturesloader import get_fixtures_base_path
-from st2-rbac-backend.loader import RBACDefinitionsLoader
+from st2rbac_backend.loader import RBACDefinitionsLoader
 
 __all__ = [
     'RBACDefinitionsLoaderTestCase'

@@ -28,7 +28,7 @@ from st2common.models.system.common import ResourceReference
 from st2common.constants.triggers import WEBHOOK_TRIGGER_TYPE
 from st2common.persistence.execution import ActionExecution
 from st2common.rbac.backends.base import BaseRBACPermissionResolver
-from st2-rbac-backend.service import RBACService as rbac_service
+from st2rbac_backend.service import RBACService as rbac_service
 from st2common.rbac.types import PermissionType
 from st2common.rbac.types import ResourceType
 from st2common.rbac.types import SystemRole

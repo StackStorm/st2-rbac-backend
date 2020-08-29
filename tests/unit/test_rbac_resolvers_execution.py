@@ -30,7 +30,7 @@ from st2common.models.db.rbac import PermissionGrantDB
 from st2common.models.db.action import ActionDB
 from st2common.models.db.execution import ActionExecutionDB
 
-from st2-rbac-backend.resolvers import ExecutionPermissionsResolver
+from st2rbac_backend.resolvers import ExecutionPermissionsResolver
 from tests.unit.test_rbac_resolvers import BasePermissionsResolverTestCase
 
 __all__ = [

@@ -42,7 +42,7 @@ from st2common.persistence.rbac import GroupToRoleMapping
 from st2common.rbac.backends.base import BaseRBACRemoteGroupToRoleSyncer
 from st2common.util.uid import parse_uid
 
-from st2-rbac-backend.service import RBACService as rbac_service
+from st2rbac_backend.service import RBACService as rbac_service
 
 
 LOG = logging.getLogger(__name__)

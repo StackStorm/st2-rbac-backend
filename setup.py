@@ -24,7 +24,7 @@ check_pip_version()
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 REQUIREMENTS_FILE = os.path.join(BASE_DIR, 'requirements.txt')
-INIT_FILE = os.path.join(BASE_DIR, 'st2-rbac-backend', '__init__.py')
+INIT_FILE = os.path.join(BASE_DIR, 'st2rbac_backend', '__init__.py')
 
 version = parse_version_string(INIT_FILE)
 install_reqs, dep_links = fetch_requirements(REQUIREMENTS_FILE)
@@ -39,7 +39,7 @@ setup(
     license='Apache License (2.0)',
     download_url='https://stackstorm.com/',
     classifiers=[
-        'License :: Other/Proprietary License'
+        'License :: OSI Approved :: Apache Software License'
         'Programming Language :: Python',
         'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 2.7',
@@ -51,7 +51,7 @@ setup(
     scripts=[
         'bin/st2-apply-rbac-definitions'
     ],
-    provides=['st2-rbac-backend'],
+    provides=['st2rbac_backend'],
     packages=find_packages(),
     include_package_data=True,
     install_requires=install_reqs,
@@ -59,7 +59,7 @@ setup(
     test_suite='tests',
     entry_points={
         'st2common.rbac.backend': [
-            'enterprise = st2-rbac-backend.backend:EnterpriseRBACBackend',
+            'enterprise = st2rbac_backend.backend:EnterpriseRBACBackend',
         ],
     },
     zip_safe=False
