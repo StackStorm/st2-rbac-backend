@@ -156,7 +156,7 @@ compilepy3:
 	@echo
 	@echo "==================== flake8 ===================="
 	@echo
-	. $(VIRTUALENV_DIR)/bin/activate; flake8 --config=lint-configs/python/.flake8 st2rbac_backend/ tests/
+	. $(VIRTUALENV_DIR)/bin/activate; flake8 --config=lint-configs/python/.flake8-proprietary st2rbac_backend/ tests/
 
 .PHONY: .pylint
 .pylint:
