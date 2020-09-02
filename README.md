@@ -1,16 +1,15 @@
-# StackStorm Enterprise RBAC Backend for StackStorm Enterprise Edition
+# RBAC Backend for StackStorm
 
-StackStorm RBAC backend for enterprise version which contains all the proprietary RBAC
-(permission resolving) business logic.
+StackStorm backend that contains the implementation for role based access control.
 
 NOTE: Due to the original code structure and the code originally living as part of the
 open source StackStorm/st2 repo, some of the utility RBAC code is still part of the open
 source repo (that code is of little use without the permission resolving classes which
-contain majority of the business logic though).
+contain majority of the business logic).
 
 ## Installation
 
-NOTE: This happens automatically when using bwc installer script.
+NOTE: This happens automatically when using the StackStorm installer script.
 
 1. Make sure the backend Python package is installed inside StackStorm virtualenv
    (``/opt/stackstorm/st2/``)
