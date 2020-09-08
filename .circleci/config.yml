@@ -80,6 +80,7 @@ jobs:
       - run:
           name: Install dependencies
           command: |
+            sudo apt-get update
             sudo apt-get install -y jq rpm
       - setup_remote_docker
       - run:
