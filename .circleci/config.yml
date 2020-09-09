@@ -57,6 +57,7 @@ jobs:
       - run:
           name: Run lint and tests (Python 3.6)
           command: |
+            sudo apt-get install -y lsb-release
             make .lint
             make .unit-tests
       - save_cache:
@@ -81,7 +82,6 @@ jobs:
           name: Install dependencies
           command: |
             sudo apt-get update
-            sudo apt-get install -y lsb-core
             sudo apt-get install -y jq rpm
             gem install package_cloud
       - setup_remote_docker
