@@ -312,4 +312,5 @@ deb:
 	dpkg-buildpackage -b -uc -us -j`_cpunum=$$(nproc); echo "${_cpunum:-1}"`
 
 rpm:
+	rpm rpm-build -q
 	rpmbuild -bb rpm/st2-rbac-backend.spec
