@@ -58,8 +58,6 @@ jobs:
           name: Run lint and tests (Python 3.6)
           command: |
             sudo apt-get install -y lsb-release
-            #sudo apt-get install -y rpm-build
-            make rpm
             make .lint
             make .unit-tests
       - save_cache:
