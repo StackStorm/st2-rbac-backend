@@ -70,7 +70,7 @@ jobs:
       - image: circleci/python:2.7
     environment:
       DISTROS: xenial bionic el7 el8
-      DOCKER_DISTROS: bionic centos7 centos8
+      DOCKER_DISTROS: xenial bionic centos7 centos8
       DOCKER_RUN: |-
         docker run -w /code/st2-rbac-backend --volumes-from st2-rbac-backend-vol
             -e PKG_VERSION=$PKG_VERSION
@@ -82,6 +82,7 @@ jobs:
           command: |
             sudo apt-get update
             sudo apt-get install -y jq rpm
+            gem install package_cloud
       - setup_remote_docker
       - run:
           name: Pull buildpacks
