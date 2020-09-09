@@ -83,6 +83,8 @@ jobs:
             sudo apt-get update
             sudo apt-get install -y jq rpm
             gem install package_cloud
+            sudo apt-get install rpm -y
+            sudo apt-get install lsb-release -y
       - setup_remote_docker
       - run:
           name: Pull buildpacks
