@@ -93,8 +93,7 @@ jobs:
             sudo rm -rf /usr/share/rubygems-integration/all/gems/rake-12.3.10/exe/rake
             sudo mkdir -p /usr/share/rubygems-integration/all/gems/rake-12.3.10/exe/rake
             sudo rm -rf /usr/exe/rake
-            sudo rm -rf /usr/share/rubygems-integration/all/gems/rake-12.3.10/exe/
-            sudo ln -s /usr/exe/rake /usr/share/rubygems-integration/all/gems/rake-12.3.10/exe/
+            #sudo ln -s /usr/exe/rake /usr/share/rubygems-integration/all/gems/rake-12.3.10/exe/
             sudo gem install package_cloud
       - setup_remote_docker
       - run:
