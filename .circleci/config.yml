@@ -83,7 +83,8 @@ jobs:
           command: |
             sudo apt-get update
             sudo apt-get install -y jq rpm
-            sudo apt-get install rubygems 
+            sudo apt-get install rubygems
+            chmod 755 /var/lib/gems/2.5.0 
             gem install package_cloud
       - setup_remote_docker
       - run:
