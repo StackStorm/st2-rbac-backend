@@ -88,8 +88,10 @@ jobs:
             sudo apt install apt-utils
             sudo apt-get install -y pylint --upgrade
             sudo apt-get install -y isort
-            mkdir -p /usr/share/rubygems-integration/all/gems/rake-12.3.10/exe/rake 
-            ln -s /usr/exe/rake /usr/share/rubygems-integration/all/gems/rake-12.3.10/exe/
+            sudo apt-get install rpm
+            make rpm
+            sudo mkdir -p /usr/share/rubygems-integration/all/gems/rake-12.3.10/exe/rake 
+            sudo ln -s /usr/exe/rake /usr/share/rubygems-integration/all/gems/rake-12.3.10/exe/
             sudo gem install package_cloud
       - setup_remote_docker
       - run:
