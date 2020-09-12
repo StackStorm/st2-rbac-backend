@@ -62,6 +62,9 @@ endif
 PKG_VERSION := $(shell $(PYTHON_BINARY) setup.py --version 2> /dev/null | sed 's/\.dev[0-9]$$/dev/')
 CHANGELOG_COMMENT ?= "automated build, version: $(PKG_VERSION)"
 
+REQUIREMENTS := test-requirements.txt requirements.txt
+PIP_OPTIONS := $(ST2_PIP_OPTIONS)
+
 # nasty hack to get a space into a variable
 colon := :
 comma := ,
