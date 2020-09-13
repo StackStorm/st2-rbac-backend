@@ -27,8 +27,7 @@ REQUIREMENTS_FILE = os.path.join(BASE_DIR, 'requirements.txt')
 INIT_FILE = os.path.join(BASE_DIR, 'st2rbac_backend', '__init__.py')
 
 version = parse_version_string(INIT_FILE)
-#install_reqs, dep_links = fetch_requirements(REQUIREMENTS_FILE)
-install_reqs = parse_requirements(requirements_path, session=False)
+install_reqs, dep_links = fetch_requirements(REQUIREMENTS_FILE)
 
 setup(
     name='st2-rbac-backend',
