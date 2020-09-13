@@ -29,6 +29,11 @@ INIT_FILE = os.path.join(BASE_DIR, 'st2rbac_backend', '__init__.py')
 version = parse_version_string(INIT_FILE)
 install_reqs, dep_links = fetch_requirements(REQUIREMENTS_FILE)
 
+try:
+    requirements = [str(ir.req) for ir in install_reqs]
+except:
+    requirements = [str(ir.requirement) for ir in install_reqs]
+
 setup(
     name='st2-rbac-backend',
     version=version,
