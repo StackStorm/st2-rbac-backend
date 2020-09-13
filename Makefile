@@ -19,7 +19,7 @@ PKG_RELEASE ?= 1
 WHEELSDIR ?= opt/stackstorm/share/wheels
 VIRTUALENV_DIR ?= virtualenv
 ST2_REPO_PATH ?= /tmp/st2
-#ST2_REPO_URL ?= git@github.com:StackStorm/st2.git
+ST2_REPO_URL ?= git@github.com:StackStorm/st2.git
 ST2_REPO_BRANCH ?= master
 
 DEBIAN := 0
