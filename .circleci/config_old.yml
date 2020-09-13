@@ -57,6 +57,7 @@ jobs:
       - run:
           name: Run lint and tests (Python 3.6)
           command: |
+            sudo apt-get install -y lsb-release
             make .lint
             make .unit-tests
       - save_cache:
@@ -69,8 +70,8 @@ jobs:
     docker:
       - image: circleci/python:2.7
     environment:
-      DISTROS: trusty xenial bionic el7 el8
-      DOCKER_DISTROS: trusty bionic centos7 centos8
+      DISTROS: xenial bionic el7 el8
+      DOCKER_DISTROS: xenial bionic centos7 centos8
       DOCKER_RUN: |-
         docker run -w /code/st2-rbac-backend --volumes-from st2-rbac-backend-vol
             -e PKG_VERSION=$PKG_VERSION
@@ -80,7 +81,21 @@ jobs:
       - run:
           name: Install dependencies
           command: |
+            sudo apt-get update
             sudo apt-get install -y jq rpm
+            sudo apt-get install rubygems
+            sudo chmod -R 755 /var/lib/gems/2.5.0
+            sudo apt install apt-utils
+            sudo pip install --upgrade pip
+            sudo apt-get install -y pylint --upgrade
+            sudo apt-get install -y isort
+            sudo apt-get install rpm
+            make rpm
+            sudo rm -rf /usr/share/rubygems-integration/all/gems/rake-12.3.10/exe/rake
+            sudo mkdir -p /usr/share/rubygems-integration/all/gems/rake-12.3.10/exe/rake
+            sudo unlink /usr/share/rubygems-integration/all/gems/rake-12.3.10/exe/
+            sudo ln -s /usr/exe/rake /usr/share/rubygems-integration/all/gems/rake-12.3.10/exe/
+            sudo gem install package_cloud
       - setup_remote_docker
       - run:
           name: Pull buildpacks
@@ -99,7 +114,7 @@ jobs:
             wget -qO - https://github.com/StackStorm/st2-packages/raw/master/.circle/packagecloud.sh > .circle/packagecloud.sh
             chmod 755 .circle/packagecloud.sh
             PKG_VERSION=$(python setup.py --version 2> /dev/null | sed 's/\.dev[0-9]$/dev/')
-            PKG_RELEASE=$(.circle/packagecloud.sh next-revision trusty ${PKG_VERSION} st2-rbac-backend)
+            PKG_RELEASE=$(.circle/packagecloud.sh next-revision  ${PKG_VERSION} st2-rbac-backend)
             echo "export PKG_VERSION=${PKG_VERSION}" >> ~/.circlerc
             echo "export PKG_RELEASE=${PKG_RELEASE}" >> ~/.circlerc
             # Create directories
@@ -120,10 +135,10 @@ jobs:
             source ~/.circlerc
             # 1. Build Trusty and Xenial packages
             # NOTE: We can re-use the same packages because both distros use same Python 2.7 version
-            eval ${DOCKER_RUN} stackstorm/buildpack:trusty make play deb
-            docker cp st2-rbac-backend-vol:/code/st2-rbac-backend_${PKG_VERSION}-${PKG_RELEASE}_amd64.deb ~/st2-rbac-backend/build/trusty
-            docker cp st2-rbac-backend-vol:/code/st2-rbac-backend_${PKG_VERSION}-${PKG_RELEASE}_amd64.changes ~/st2-rbac-backend/build/trusty
-            cp ~/st2-rbac-backend/build/trusty/* ~/st2-rbac-backend/build/xenial
+            eval ${DOCKER_RUN} stackstorm/buildpack: make play deb
+            docker cp st2-rbac-backend-vol:/code/st2-rbac-backend_${PKG_VERSION}-${PKG_RELEASE}_amd64.deb ~/st2-rbac-backend/build
+            docker cp st2-rbac-backend-vol:/code/st2-rbac-backend_${PKG_VERSION}-${PKG_RELEASE}_amd64.changes ~/st2-rbac-backend/build
+            cp ~/st2-rbac-backend/build/* ~/st2-rbac-backend/build/xenial
             # 2. Build Bionic packages
             eval ${DOCKER_RUN} stackstorm/buildpack:bionic make play deb
             docker cp st2-rbac-backend-vol:/code/st2-rbac-backend_${PKG_VERSION}-${PKG_RELEASE}_amd64.deb ~/st2-rbac-backend/build/bionic
@@ -150,7 +165,7 @@ jobs:
       - image: circleci/ruby:2.4
     working_directory: /tmp/deploy
     environment:
-      DISTROS: trusty xenial bionic el7 el8
+      DISTROS: xenial bionic el7 el8
     steps:
       - checkout
       - attach_workspace:
