@@ -53,6 +53,8 @@ jobs:
       - run:
           name: Download and install dependencies
           command: |
+            sudo apt-get -y install rpm
+            sudo apt-get -y install lsb-release
             make requirements
       - run:
           name: Run lint and tests (Python 3.6)
