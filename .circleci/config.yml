@@ -81,9 +81,9 @@ jobs:
           name: Install dependencies
           command: |
             sudo apt-get install -y jq rpm
+            sudo apt-get install -y lsb_release
+            sudo apt-get install -y rpm
             sudo apt-get  install -y pylint
-            echo "installing isort"
-            sudo apt-get install -y isort
       - setup_remote_docker
       - run:
           name: Pull buildpacks
