@@ -34,8 +34,8 @@ from st2common.models.db.pack import PackDB
 from st2common.rbac.migrations import insert_system_roles
 from st2tests.base import CleanDbTestCase
 
-from st2rbac_enterprise_backend.backend import EnterpriseRBACBackend
-from st2rbac_enterprise_backend.service import RBACService as rbac_service
+from st2rbac_backend.backend import EnterpriseRBACBackend
+from st2rbac_backend.service import RBACService as rbac_service
 
 __all__ = [
     'BasePermissionsResolverTestCase',

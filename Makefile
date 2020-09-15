@@ -156,14 +156,14 @@ compilepy3:
 	@echo
 	@echo "==================== flake8 ===================="
 	@echo
-	. $(VIRTUALENV_DIR)/bin/activate; flake8 --config=lint-configs/python/.flake8-proprietary st2rbac_enterprise_backend/ tests/
+	. $(VIRTUALENV_DIR)/bin/activate; flake8 --config=lint-configs/python/.flake8 st2rbac_backend/ tests/
 
 .PHONY: .pylint
 .pylint:
 	@echo
 	@echo "==================== pylint ===================="
 	@echo
-	. $(VIRTUALENV_DIR)/bin/activate; pylint -j $(PYLINT_CONCURRENCY) -E --rcfile=./lint-configs/python/.pylintrc --load-plugins=pylint_plugins.api_models --load-plugins=pylint_plugins.db_models st2rbac_enterprise_backend/
+	. $(VIRTUALENV_DIR)/bin/activate; pylint -j $(PYLINT_CONCURRENCY) -E --rcfile=./lint-configs/python/.pylintrc --load-plugins=pylint_plugins.api_models --load-plugins=pylint_plugins.db_models st2rbac_backend/
 
 .PHONY: .unit-tests
 .unit-tests:
@@ -229,8 +229,12 @@ requirements: .clone_st2_repo virtualenv
 	@echo
 	@echo "==================== requirements ===================="
 	@echo
-	. $(VIRTUALENV_DIR)/bin/activate && $(VIRTUALENV_DIR)/bin/pip install --cache-dir $(HOME)/.pip-cache $(PIP_OPTIONS) -r /tmp/st2/requirements.txt
-	. $(VIRTUALENV_DIR)/bin/activate && $(VIRTUALENV_DIR)/bin/pip install --cache-dir $(HOME)/.pip-cache $(PIP_OPTIONS) -r /tmp/st2/test-requirements.txt
+	#. $(VIRTUALENV_DIR)/bin/activate && $(VIRTUALENV_DIR)/bin/pip install --cache-dir $(HOME)/.pip-cache $(PIP_OPTIONS) -r /tmp/st2/requirements.txt
+	#. $(VIRTUALENV_DIR)/bin/activate && $(VIRTUALENV_DIR)/bin/pip install --cache-dir $(HOME)/.pip-cache $(PIP_OPTIONS) -r /tmp/st2/test-requirements.txt
+	$(VIRTUALENV_DIR)/bin/pip install --cache-dir $(HOME)/.pip-cache $(PIP_OPTIONS) -r $(ST2_REPO_PATH)/requirements.txt
+	$(VIRTUALENV_DIR)/bin/pip install --cache-dir $(HOME)/.pip-cache $(PIP_OPTIONS) -r $(ST2_REPO_PATH)/test-requirements.txt
+	$(VIRTUALENV_DIR)/bin/pip install --cache-dir $(HOME)/.pip-cache $(PIP_OPTIONS) -r requirements.txt
+	$(VIRTUALENV_DIR)/bin/pip install --cache-dir $(HOME)/.pip-cache $(PIP_OPTIONS) -r test-requirements.txt
 	@echo ""
 	@echo "================== install runners ===================="
 	@echo ""
@@ -255,8 +259,12 @@ requirements-ci:
 	@echo
 	@echo "==================== requirements-ci ===================="
 	@echo
-	. $(VIRTUALENV_DIR)/bin/activate && $(VIRTUALENV_DIR)/bin/pip install --cache-dir $(HOME)/.pip-cache $(PIP_OPTIONS) -r /tmp/st2/requirements.txt
-	. $(VIRTUALENV_DIR)/bin/activate && $(VIRTUALENV_DIR)/bin/pip install --cache-dir $(HOME)/.pip-cache $(PIP_OPTIONS) -r /tmp/st2/test-requirements.txt
+	#. $(VIRTUALENV_DIR)/bin/activate && $(VIRTUALENV_DIR)/bin/pip install --cache-dir $(HOME)/.pip-cache $(PIP_OPTIONS) -r /tmp/st2/requirements.txt
+	#. $(VIRTUALENV_DIR)/bin/activate && $(VIRTUALENV_DIR)/bin/pip install --cache-dir $(HOME)/.pip-cache $(PIP_OPTIONS) -r /tmp/st2/test-requirements.txt
+	$(VIRTUALENV_DIR)/bin/pip install --cache-dir $(HOME)/.pip-cache $(PIP_OPTIONS) -r $(ST2_REPO_PATH)/requirements.txt
+	$(VIRTUALENV_DIR)/bin/pip install --cache-dir $(HOME)/.pip-cache $(PIP_OPTIONS) -r $(ST2_REPO_PATH)/test-requirements.txt
+	$(VIRTUALENV_DIR)/bin/pip install --cache-dir $(HOME)/.pip-cache $(PIP_OPTIONS) -r requirements.txt
+	$(VIRTUALENV_DIR)/bin/pip install --cache-dir $(HOME)/.pip-cache $(PIP_OPTIONS) -r test-requirements.txt
 
 .PHONY: virtualenv
 virtualenv: $(VIRTUALENV_DIR)/bin/activate
@@ -298,7 +306,7 @@ install_wheel:
 # This step is arch-dependent and must be called only on prepared environment,
 # it's run inside stackstorm/buildpack containers.
 install_deps:
-	$(PIP_BINARY) wheel --wheel-dir=$(DESTDIR)/$(WHEELSDIR) -r requirements.txt
+	$(PIP_BINARY) wheel --wheel-dir=$(DESTDIR)/$(WHEELSDIR) -r requirements.txt -r test-requirements.txt
 	# Well welcome to enterprise (rhel).
 	# Hardcore workaround to make wheel installable on any platform.
 	cd $(DESTDIR)/$(WHEELSDIR); \

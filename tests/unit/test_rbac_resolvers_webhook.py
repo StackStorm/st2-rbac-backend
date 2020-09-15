@@ -26,7 +26,7 @@ from st2common.models.db.rbac import UserRoleAssignmentDB
 from st2common.models.db.rbac import PermissionGrantDB
 from st2common.models.db.webhook import WebhookDB
 
-from st2rbac_enterprise_backend.resolvers import WebhookPermissionsResolver
+from st2rbac_backend.resolvers import WebhookPermissionsResolver
 from tests.unit.test_rbac_resolvers import BasePermissionsResolverTestCase
 
 __all__ = [

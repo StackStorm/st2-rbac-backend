@@ -8,7 +8,7 @@
 
 import sys
 
-from st2rbac_enterprise_backend.cmd import apply_rbac_definitions
+from st2rbac_backend.cmd import apply_rbac_definitions
 
 if __name__ == '__main__':
     sys.exit(apply_rbac_definitions.main(sys.argv[1:]))

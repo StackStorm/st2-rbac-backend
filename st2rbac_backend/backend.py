@@ -14,10 +14,10 @@
 
 from st2common.rbac.backends.base import BaseRBACBackend
 
-from st2rbac_enterprise_backend import resolvers
-from st2rbac_enterprise_backend.service import RBACService
-from st2rbac_enterprise_backend.utils import RBACUtils
-from st2rbac_enterprise_backend.syncer import RBACRemoteGroupToRoleSyncer
+from st2rbac_backend import resolvers
+from st2rbac_backend.service import RBACService
+from st2rbac_backend.utils import RBACUtils
+from st2rbac_backend.syncer import RBACRemoteGroupToRoleSyncer
 
 __all__ = [
     'EnterpriseRBACBackend'

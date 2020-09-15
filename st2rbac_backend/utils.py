@@ -31,7 +31,7 @@ from st2common.util import action_db as action_utils
 from st2common.rbac.backends import get_rbac_backend
 from st2common.rbac.backends.base import BaseRBACUtils
 
-from st2rbac_enterprise_backend.service import RBACService as rbac_service
+from st2rbac_backend.service import RBACService as rbac_service
 
 __all__ = [
     'RBACUtils'

@@ -25,9 +25,9 @@ from st2common.models.db.auth import UserDB
 from st2common.models.db.rbac import UserRoleAssignmentDB
 from st2common.models.api.rbac import RoleDefinitionFileFormatAPI
 from st2common.models.api.rbac import UserRoleAssignmentFileFormatAPI
-from st2rbac_enterprise_backend.service import RBACService as rbac_service
-from st2rbac_enterprise_backend.syncer import RBACDefinitionsDBSyncer
-from st2rbac_enterprise_backend.syncer import RBACRemoteGroupToRoleSyncer
+from st2rbac_backend.service import RBACService as rbac_service
+from st2rbac_backend.syncer import RBACDefinitionsDBSyncer
+from st2rbac_backend.syncer import RBACRemoteGroupToRoleSyncer
 
 __all__ = [
     'RBACDefinitionsDBSyncerTestCase',

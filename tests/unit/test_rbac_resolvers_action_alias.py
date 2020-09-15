@@ -27,7 +27,7 @@ from st2common.models.db.rbac import PermissionGrantDB
 from st2common.models.db.actionalias import ActionAliasDB
 from st2common.models.api.action import ActionAliasAPI
 
-from st2rbac_enterprise_backend.resolvers import ActionAliasPermissionsResolver
+from st2rbac_backend.resolvers import ActionAliasPermissionsResolver
 from tests.unit.test_rbac_resolvers import BasePermissionsResolverTestCase
 
 __all__ = [
