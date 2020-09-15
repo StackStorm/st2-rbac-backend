@@ -1,4 +1,4 @@
-## Copyright (C) 2020 Extreme Networks, Inc - All Rights Reserved
+# Copyright (C) 2020 Extreme Networks, Inc - All Rights Reserved
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -61,9 +61,6 @@ endif
 # For example: 3.0.dev0 -> 3.0.dev
 PKG_VERSION := $(shell $(PYTHON_BINARY) setup.py --version 2> /dev/null | sed 's/\.dev[0-9]$$/dev/')
 CHANGELOG_COMMENT ?= "automated build, version: $(PKG_VERSION)"
-
-REQUIREMENTS := test-requirements.txt
-PIP_OPTIONS := $(ST2_PIP_OPTIONS)
 
 # nasty hack to get a space into a variable
 colon := :

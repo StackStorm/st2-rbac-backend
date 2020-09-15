@@ -39,7 +39,7 @@ setup(
     license='Apache License (2.0)',
     download_url='https://stackstorm.com/',
     classifiers=[
-        'License :: OSI Approved :: Other/Proprietary License',
+        'License :: OSI Approved :: Apache Software License',
         'Programming Language :: Python',
         'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 2.7',
