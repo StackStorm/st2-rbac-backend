@@ -71,8 +71,8 @@ jobs:
     docker:
       - image: circleci/python:2.7
     environment:
-      DISTROS: trusty xenial bionic el7 el8
-      DOCKER_DISTROS: trusty bionic centos7 centos8
+      DISTROS: xenial bionic el7 el8
+      DOCKER_DISTROS: xenial bionic centos7 centos8
       DOCKER_RUN: |-
         docker run -w /code/st2-rbac-backend --volumes-from st2-rbac-backend-vol
             -e PKG_VERSION=$PKG_VERSION
@@ -104,7 +104,7 @@ jobs:
             wget -qO - https://github.com/StackStorm/st2-packages/raw/master/.circle/packagecloud.sh > .circle/packagecloud.sh
             chmod 755 .circle/packagecloud.sh
             PKG_VERSION=$(python setup.py --version 2> /dev/null | sed 's/\.dev[0-9]$/dev/')
-            PKG_RELEASE=$(.circle/packagecloud.sh next-revision trusty ${PKG_VERSION} st2-rbac-backend)
+            PKG_RELEASE=$(.circle/packagecloud.sh next-revision xenial ${PKG_VERSION} st2-rbac-backend)
             echo "export PKG_VERSION=${PKG_VERSION}" >> ~/.circlerc
             echo "export PKG_RELEASE=${PKG_RELEASE}" >> ~/.circlerc
             # Create directories
@@ -123,12 +123,11 @@ jobs:
           name: Build packages for supported distros on native OS inside stackstorm/buildpack container
           command: |
             source ~/.circlerc
-            # 1. Build Trusty and Xenial packages
-            # NOTE: We can re-use the same packages because both distros use same Python 2.7 version
+            # 1. Build Xenial packages
+            # NOTE: We can re-use the package for trusty because both trusty and xenial use same Python 2.7 version
             eval ${DOCKER_RUN} stackstorm/buildpack:trusty make play deb
-            docker cp st2-rbac-backend-vol:/code/st2-rbac-backend_${PKG_VERSION}-${PKG_RELEASE}_amd64.deb ~/st2-rbac-backend/build/trusty
-            docker cp st2-rbac-backend-vol:/code/st2-rbac-backend_${PKG_VERSION}-${PKG_RELEASE}_amd64.changes ~/st2-rbac-backend/build/trusty
-            cp ~/st2-rbac-backend/build/trusty/* ~/st2-rbac-backend/build/xenial
+            docker cp st2-rbac-backend-vol:/code/st2-rbac-backend_${PKG_VERSION}-${PKG_RELEASE}_amd64.deb ~/st2-rbac-backend/build/xenial
+            docker cp st2-rbac-backend-vol:/code/st2-rbac-backend_${PKG_VERSION}-${PKG_RELEASE}_amd64.changes ~/st2-rbac-backend/build/xenial
             # 2. Build Bionic packages
             eval ${DOCKER_RUN} stackstorm/buildpack:bionic make play deb
             docker cp st2-rbac-backend-vol:/code/st2-rbac-backend_${PKG_VERSION}-${PKG_RELEASE}_amd64.deb ~/st2-rbac-backend/build/bionic
@@ -155,7 +154,7 @@ jobs:
       - image: circleci/ruby:2.4
     working_directory: /tmp/deploy
     environment:
-      DISTROS: trusty xenial bionic el7 el8
+      DISTROS: xenial bionic el7 el8
     steps:
       - checkout
       - attach_workspace:
