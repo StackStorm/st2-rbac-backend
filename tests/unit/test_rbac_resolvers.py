@@ -34,7 +34,7 @@ from st2common.models.db.pack import PackDB
 from st2common.rbac.migrations import insert_system_roles
 from st2tests.base import CleanDbTestCase
 
-from st2rbac_backend.backend import EnterpriseRBACBackend
+from st2rbac_backend.backend import RBACBackend
 from st2rbac_backend.service import RBACService as rbac_service
 
 __all__ = [
@@ -47,11 +47,11 @@ class BasePermissionsResolverTestCase(CleanDbTestCase):
     def setUp(self):
         super(BasePermissionsResolverTestCase, self).setUp()
 
-        self.backend = EnterpriseRBACBackend()
+        self.backend = RBACBackend()
 
         # Make sure RBAC is enabeld
         cfg.CONF.set_override(name='enable', override=True, group='rbac')
-        cfg.CONF.set_override(name='backend', override='enterprise', group='rbac')
+        cfg.CONF.set_override(name='backend', override='default', group='rbac')
 
         self.users = {}
         self.roles = {}
@@ -284,7 +284,7 @@ class PermissionsResolverUtilsTestCase(unittest2.TestCase):
     def setUp(self):
         super(PermissionsResolverUtilsTestCase, self).setUp()
 
-        self.backend = EnterpriseRBACBackend()
+        self.backend = RBACBackend()
 
     def test_get_resolver_for_resource_type_valid_resource_type(self):
         valid_resources_types = [ResourceType.PACK, ResourceType.SENSOR, ResourceType.ACTION,

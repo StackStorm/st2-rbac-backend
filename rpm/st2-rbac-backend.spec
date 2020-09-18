@@ -21,7 +21,7 @@ Release:        %{release}
 License:        Apache 2.0
 Summary:        RBAC Backend for StackStorm
 URL:            https://stackstorm.com
-Source0:        st2-enterprise-rbac-backend
+Source0:        st2-rbac-backend
 
 Requires: crudini st2
 
