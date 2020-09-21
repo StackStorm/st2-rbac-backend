@@ -55,8 +55,8 @@ case "$1" in
       # We can remove this and do it only on uprade in a future release- e.g. v3.2.0
       enable_rbac
 
-      # We still set rbac.backend to enterprise to correctly handle upgrades from pre v3.0.0
-      # where this option was added. If we don't do that, users who had previously configured
+      # We still set rbac.backend to "default" to correctly handle upgrades. Previously, this
+      # value was "enterprise". If we don't do that, users who had previously configured
       # RBAC, but don't set this config option could potentially end up with RBAC disabled.
       configure_rbac
     ;;

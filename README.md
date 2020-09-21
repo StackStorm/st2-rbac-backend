@@ -1,5 +1,9 @@
 # RBAC Backend for StackStorm
 
+The RBAC backend started as part of StackStorm core repo and then moved out into a separate
+repo for enterprise purposes. Some enterprise features such as RBAC has been made open
+sourced as part of the donation to Linux Foundation in 2019.
+
 NOTE: Due to the original code structure and the code originally living as part of the
 open source StackStorm/st2 repo, some of the utility RBAC code is still part of the open
 source repo (that code is of little use without the permission resolving classes which
