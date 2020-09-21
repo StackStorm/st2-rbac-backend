@@ -20,11 +20,11 @@ from st2rbac_backend.utils import RBACUtils
 from st2rbac_backend.syncer import RBACRemoteGroupToRoleSyncer
 
 __all__ = [
-    'EnterpriseRBACBackend'
+    'RBACBackend'
 ]
 
 
-class EnterpriseRBACBackend(BaseRBACBackend):
+class RBACBackend(BaseRBACBackend):
     def get_resolver_for_resource_type(self, resource_type):
         return resolvers.get_resolver_for_resource_type(resource_type=resource_type)
 

@@ -40,7 +40,7 @@ class AuthHandlerRBACRoleSyncTestCase(CleanDbTestCase):
         super(AuthHandlerRBACRoleSyncTestCase, self).setUp()
 
         cfg.CONF.set_override(group='auth', name='backend', override='mock')
-        cfg.CONF.set_override(group='rbac', name='backend', override='enterprise')
+        cfg.CONF.set_override(group='rbac', name='backend', override='default')
 
         self.users = {}
         self.roles = {}

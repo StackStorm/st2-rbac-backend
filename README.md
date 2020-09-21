@@ -1,7 +1,8 @@
-# StackStorm Enterprise RBAC Backend for StackStorm Enterprise Edition
+# RBAC Backend for StackStorm
 
-StackStorm RBAC backend for enterprise version which contains all the proprietary RBAC
-(permission resolving) business logic.
+The RBAC backend started as part of StackStorm core repo and then moved out into a separate
+repo for enterprise purposes. Some enterprise features such as RBAC has been made open
+sourced as part of the donation to Linux Foundation in 2019.
 
 NOTE: Due to the original code structure and the code originally living as part of the
 open source StackStorm/st2 repo, some of the utility RBAC code is still part of the open
@@ -20,7 +21,7 @@ NOTE: This happens automatically when using bwc installer script.
 ...
 [rbac]
 enable = True
-backend = enterprise
+backend = default
 ...
 3. Restart all the services - ``sudo st2ctl restart``
 

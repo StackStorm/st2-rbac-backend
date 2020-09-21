@@ -38,7 +38,7 @@ class RBACUtilsTestCase(CleanDbTestCase):
     def setUpClass(cls):
         super(RBACUtilsTestCase, cls).setUpClass()
         config.parse_args()
-        cfg.CONF.set_override(name='backend', override='enterprise', group='rbac')
+        cfg.CONF.set_override(name='backend', override='default', group='rbac')
 
     def setUp(self):
         super(RBACUtilsTestCase, self).setUp()

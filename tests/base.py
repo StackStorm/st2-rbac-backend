@@ -48,7 +48,7 @@ class BaseAPIControllerWithRBACTestCase(BaseFunctionalTest, CleanDbTestCase):
 
         # Make sure RBAC is enabeld
         cfg.CONF.set_override(name='enable', override=True, group='rbac')
-        cfg.CONF.set_override(name='backend', override='enterprise', group='rbac')
+        cfg.CONF.set_override(name='backend', override='default', group='rbac')
 
     @classmethod
     def tearDownClass(cls):
