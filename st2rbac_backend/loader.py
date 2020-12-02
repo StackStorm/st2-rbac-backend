@@ -105,7 +105,7 @@ class RBACDefinitionsLoader(object):
         for file_path in file_paths:
             LOG.debug('Loading user role assignments from: %s' % (file_path))
             role_assignment_api = self.load_user_role_assignments_from_file(file_path=file_path)
-            username = role_assignment_api.username # NOQA
+            username = role_assignment_api.username # pylint: disable=no-member
             enabled = getattr(role_assignment_api, 'enabled', True)
 
             if username in result:
@@ -134,7 +134,7 @@ class RBACDefinitionsLoader(object):
             group_to_role_map_api = self.load_group_to_role_map_assignment_from_file(
                 file_path=file_path)
 
-            group_name = group_to_role_map_api.group # NOQA
+            group_name = group_to_role_map_api.group # pylint: disable=no-member
             result[group_name] = group_to_role_map_api
 
         return result
