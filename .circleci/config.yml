@@ -23,6 +23,7 @@ jobs:
           command: |
             sudo apt-get -y install rpm
             sudo apt-get -y install lsb-release
+            sudo apt-get -y install libldap2-dev libsasl2-dev
             make requirements
       - run:
           name: Run lint and tests (Python 3.6)
