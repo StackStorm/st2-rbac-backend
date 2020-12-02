@@ -41,12 +41,10 @@ workflows:
   # Workflow which runs on each posh
   build_test_deploy_on_push:
     jobs:
-      - build_and_test_python27
       - build_and_test_python36
   build_test_nightly:
     jobs:
-        - build_and_test_python27
-        - build_and_test_python36
+      - build_and_test_python36
     triggers:
       # Run nightly build for the pack
       - schedule:
