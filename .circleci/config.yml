@@ -5,34 +5,6 @@
 
 version: 2
 jobs:
-  build_and_test_python27:
-    docker:
-      - image: circleci/python:2.7
-      - image: rabbitmq:3
-      - image: mongo:3.4
-    steps:
-      - checkout
-      - run:
-          name: Clone StackStorm/st2 repo
-          command: |
-            make .clone_st2_repo
-      - restore_cache:
-          key: v1-dependency-cache-py27-{{ checksum "/tmp/st2/requirements.txt" }}
-      - run:
-          name: Download and install dependencies
-          command: |
-            make requirements
-      - run:
-          name: Run lint and tests (Python 2.7)
-          command: |
-            make .lint
-            make .unit-tests
-      - save_cache:
-          key: v1-dependency-cache-py27-{{ checksum "/tmp/st2/requirements.txt" }}
-          paths:
-            - ~/.cache/pip
-            - ~/.apt-cache
-
   build_and_test_python36:
     docker:
       - image: circleci/python:3.6
