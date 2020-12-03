@@ -14,53 +14,10 @@
 
 ROOT_DIR ?= $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 CURRENT_DIR ?= $(shell pwd)
-PKG_NAME := st2-rbac-backend
-PKG_RELEASE ?= 1
-WHEELSDIR ?= opt/stackstorm/share/wheels
 VIRTUALENV_DIR ?= virtualenv
 ST2_REPO_PATH ?= /tmp/st2
 ST2_REPO_URL ?= git@github.com:StackStorm/st2.git
 ST2_REPO_BRANCH ?= master
-
-DEBIAN := 0
-REDHAT := 0
-
-ifneq (,$(wildcard /etc/debian_version))
-	DEBIAN := 1
-else
-	REDHAT := 1
-endif
-
-DEB_DISTRO := $(shell lsb_release -cs || true)
-REDHAT_DISTRO := $(shell rpm --eval '%{rhel}')
-
-ifeq ($(DEB_DISTRO),)
-	DEB_DISTRO := "unstable"
-endif
-
-ifeq ($(REDHAT_DISTRO),)
-    REDHAT_DISTRO := 0
-endif
-
-ifeq ($(REDHAT_DISTRO),$(shell echo "%{rhel}"))
-	REDHAT_DISTRO := 0
-endif
-
-ifeq ($(DEB_DISTRO),bionic)
-	PYTHON_BINARY := /usr/bin/python3
-	PIP_BINARY := /usr/local/bin/pip3
-else ifeq ($(shell test $(REDHAT_DISTRO) -ge 8; echo $$?), 0)
-	PYTHON_BINARY := $(shell which python3)
-	PIP_BINARY := $(shell which pip3)
-else
-	PYTHON_BINARY := python
-	PIP_BINARY := pip
-endif
-
-# NOTE: We remove trailing "0" which is added at the end by newer versions of pip
-# For example: 3.0.dev0 -> 3.0.dev
-PKG_VERSION := $(shell $(PYTHON_BINARY) setup.py --version 2> /dev/null | sed 's/\.dev[0-9]$$/dev/')
-CHANGELOG_COMMENT ?= "automated build, version: $(PKG_VERSION)"
 
 # nasty hack to get a space into a variable
 colon := :
@@ -102,15 +59,6 @@ endif
 # Target for debugging Makefile variable assembly
 .PHONY: play
 play:
-	@echo "DEBIAN=$(DEBIAN)"
-	@echo "DEB_DISTRO=$(DEB_DISTRO)"
-	@echo "REDHAT=$(REDHAT)"
-	@echo "REDHAT_DISTRO=$(REDHAT_DISTRO)"
-	@echo "PYTHON_BINARY=$(PYTHON_BINARY)"
-	@echo "PIP_BINARY=$(PIP_BINARY)"
-	@echo "PKG_VERSION=$(PKG_VERSION)"
-	@echo "PKG_RELEASE=$(PKG_RELEASE)"
-	@echo
 	@echo COMPONENTS=$(COMPONENTS)
 	@echo COMPONENTS_RUNNERS=$(COMPONENTS_RUNNERS)
 	@echo COMPONENTS_WITH_RUNNERS=$(COMPONENTS_WITH_RUNNERS)
@@ -292,33 +240,3 @@ endif
 	echo 'PYTHONPATH=$(COMPONENT_PYTHONPATH)' >> $(VIRTUALENV_DIR)/bin/activate
 	echo 'export PYTHONPATH' >> $(VIRTUALENV_DIR)/bin/activate
 	touch $(VIRTUALENV_DIR)/bin/activate
-
-# Package build tasks
-.PHONY: all install install_wheel install_deps deb rpm
-all:
-
-install: install_wheel install_deps
-
-install_wheel:
-	install -d $(DESTDIR)/$(WHEELSDIR)
-	$(PYTHON_BINARY) setup.py bdist_wheel -d $(DESTDIR)/$(WHEELSDIR)
-
-# This step is arch-dependent and must be called only on prepared environment,
-# it's run inside stackstorm/buildpack containers.
-install_deps:
-	$(PIP_BINARY) wheel --wheel-dir=$(DESTDIR)/$(WHEELSDIR) -r requirements.txt -r test-requirements.txt
-	# Well welcome to enterprise (rhel).
-	# Hardcore workaround to make wheel installable on any platform.
-	cd $(DESTDIR)/$(WHEELSDIR); \
-        find ./ -maxdepth 1 -name '*-cp27mu-*.whl' | while read f; do \
-            echo "Renaming $$f to $$(echo $$f | sed 's/cp27mu/none/')..."; \
-            mv $$f $$(echo $$f | sed "s/cp27mu/none/"); \
-        done
-
-deb:
-	[ -z "$(DEB_EPOCH)" ] && _epoch="" || _epoch="$(DEB_EPOCH):"; \
-		dch -m --force-distribution -v$${_epoch}$(PKG_VERSION)-$(PKG_RELEASE) -D$(DEB_DISTRO) $(CHANGELOG_COMMENT)
-	dpkg-buildpackage -b -uc -us -j`_cpunum=$$(nproc); echo "${_cpunum:-1}"`
-
-rpm:
-	rpmbuild -bb --define '_topdir %(readlink -f build)' rpm/st2-rbac-backend.spec

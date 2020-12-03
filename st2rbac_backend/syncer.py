@@ -78,7 +78,9 @@ class RBACDefinitionsDBSyncer(object):
 
         result['roles'] = self.sync_roles(role_definition_apis)
         result['role_assignments'] = self.sync_users_role_assignments(role_assignment_apis)
-        result['group_to_role_maps'] = self.sync_group_to_role_maps(group_to_role_map_apis)
+        result['group_to_role_maps'] = self.sync_group_to_role_maps(  # pylint: disable=E1111
+            group_to_role_map_apis
+        )
 
         return result
 
