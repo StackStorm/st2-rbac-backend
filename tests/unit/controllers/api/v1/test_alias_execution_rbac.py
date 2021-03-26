@@ -16,6 +16,7 @@
 import mock
 
 from st2common.constants.action import LIVEACTION_STATUS_SUCCEEDED
+from st2common.bootstrap import runnersregistrar as runners_registrar
 from st2common.models.db.execution import ActionExecutionDB
 from st2common.services import action as action_service
 from st2tests.fixturesloader import FixturesLoader
@@ -52,6 +53,7 @@ class AliasExecutionWithRBACTestCase(APIControllerWithRBACTestCase):
                                                            fixtures_dict=TEST_MODELS)
         self.alias1 = self.models['aliases']['alias1.yaml']
         self.alias2 = self.models['aliases']['alias2.yaml']
+        runners_registrar.register_runners()
 
     @mock.patch.object(action_service, 'request',
                        return_value=(None, EXECUTION))

@@ -158,17 +158,17 @@ compilepy3:
 		echo "==========================================================="; \
 		echo "Installing runner:" $$component; \
 		echo "==========================================================="; \
-        (. $(VIRTUALENV_DIR)/bin/activate; cd $$component; python setup.py develop --no-deps); \
+        	(. $(VIRTUALENV_DIR)/bin/activate; cd $$component; python3 setup.py develop --no-deps); \
 	done
 	@echo ""
 	@echo "================== register metrics drivers ======================"
 	@echo ""
 	# Install st2common to register metrics drivers
-	(. $(VIRTUALENV_DIR)/bin/activate; cd $(ST2_REPO_PATH)/st2common; python setup.py develop --no-deps)
+	(. $(VIRTUALENV_DIR)/bin/activate; cd $(ST2_REPO_PATH)/st2common; python3 setup.py develop --no-deps)
 	@echo ""
 	@echo "================== register rbac backend ======================"
 	@echo ""
-	(. $(VIRTUALENV_DIR)/bin/activate; python setup.py develop --no-deps)
+	(. $(VIRTUALENV_DIR)/bin/activate; python3 setup.py develop --no-deps)
 
 # NOTE: We pass --no-deps to the script so we don't install all the
 # package dependencies which are already installed as part of "requirements"
@@ -180,6 +180,8 @@ requirements: .clone_st2_repo virtualenv
 	@echo
 	#. $(VIRTUALENV_DIR)/bin/activate && $(VIRTUALENV_DIR)/bin/pip install --cache-dir $(HOME)/.pip-cache $(PIP_OPTIONS) -r /tmp/st2/requirements.txt
 	#. $(VIRTUALENV_DIR)/bin/activate && $(VIRTUALENV_DIR)/bin/pip install --cache-dir $(HOME)/.pip-cache $(PIP_OPTIONS) -r /tmp/st2/test-requirements.txt
+	$(eval PIP_VERSION := $(shell grep 'PIP_VERSION ?= ' /tmp/st2/Makefile | awk '{ print $$3}'))
+	$(VIRTUALENV_DIR)/bin/pip install --upgrade "pip==$(PIP_VERSION)"
 	$(VIRTUALENV_DIR)/bin/pip install --cache-dir $(HOME)/.pip-cache $(PIP_OPTIONS) -r $(ST2_REPO_PATH)/requirements.txt
 	$(VIRTUALENV_DIR)/bin/pip install --cache-dir $(HOME)/.pip-cache $(PIP_OPTIONS) -r $(ST2_REPO_PATH)/test-requirements.txt
 	$(VIRTUALENV_DIR)/bin/pip install --cache-dir $(HOME)/.pip-cache $(PIP_OPTIONS) -r requirements.txt
@@ -191,17 +193,17 @@ requirements: .clone_st2_repo virtualenv
         echo "==========================================================="; \
         echo "Installing runner:" $$component; \
         echo "==========================================================="; \
-        (. $(VIRTUALENV_DIR)/bin/activate; cd $$component; python setup.py develop --no-deps); \
+        (. $(VIRTUALENV_DIR)/bin/activate; cd $$component; python3 setup.py develop); \
 	done
 	@echo ""
 	@echo "================== register metrics drivers ======================"
 	@echo ""
 	# Install st2common to register metrics drivers
-	(. $(VIRTUALENV_DIR)/bin/activate; cd $(ST2_REPO_PATH)/st2common; python setup.py develop --no-deps)
+	(. $(VIRTUALENV_DIR)/bin/activate; cd $(ST2_REPO_PATH)/st2common; python3 setup.py develop --no-deps)
 	@echo ""
 	@echo "================== register rbac backend ======================"
 	@echo ""
-	(. $(VIRTUALENV_DIR)/bin/activate; python setup.py develop --no-deps)
+	(. $(VIRTUALENV_DIR)/bin/activate; python3 setup.py develop --no-deps)
 
 .PHONY: requirements-ci
 requirements-ci:
@@ -221,7 +223,7 @@ $(VIRTUALENV_DIR)/bin/activate:
 	@echo
 	@echo "==================== virtualenv ===================="
 	@echo
-	test -d $(VIRTUALENV_DIR) || virtualenv $(VIRTUALENV_DIR)
+	test -d $(VIRTUALENV_DIR) || virtualenv $(VIRTUALENV_DIR) -p python3
 
 	# Setup PYTHONPATH in bash activate script...
 	# Delete existing entries (if any)
