@@ -153,7 +153,7 @@ class PermissionsResolver(BaseRBACPermissionResolver):
             # Admin has all the permissions
             return True
         elif (
-            SystemRole.OBSERVER in user_role_names and 
+            SystemRole.OBSERVER in user_role_names and
             permission_name in READ_PERMISSION_NAMES
         ):
             # Observer role has "view" permission on all the resources
@@ -654,8 +654,8 @@ class RuleEnforcementPermissionsResolver(PermissionsResolver):
 
         if not rule_uid or not rule_id or not rule_pack:
             LOG.error(
-                "Rule UID or ID or PACK not present in enforcement object. "+
-                ("UID = %s, ID = %s, PACK = %s" % (rule_uid, rule_id, rule_pack)) + 
+                "Rule UID or ID or PACK not present in enforcement object. " +
+                ("UID = %s, ID = %s, PACK = %s" % (rule_uid, rule_id, rule_pack)) +
                 "Cannot assess access permissions without it. Defaulting to DENY."
             )
             return False
