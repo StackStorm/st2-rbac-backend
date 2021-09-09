@@ -153,8 +153,8 @@ class PermissionsResolver(BaseRBACPermissionResolver):
             # Admin has all the permissions
             return True
         elif (
-            SystemRole.OBSERVER in user_role_names and
-            permission_name in READ_PERMISSION_NAMES
+            SystemRole.OBSERVER in user_role_names
+            and permission_name in READ_PERMISSION_NAMES
         ):
             # Observer role has "view" permission on all the resources
             return True
@@ -654,9 +654,9 @@ class RuleEnforcementPermissionsResolver(PermissionsResolver):
 
         if not rule_uid or not rule_id or not rule_pack:
             LOG.error(
-                "Rule UID or ID or PACK not present in enforcement object. " +
-                ("UID = %s, ID = %s, PACK = %s" % (rule_uid, rule_id, rule_pack)) +
-                "Cannot assess access permissions without it. Defaulting to DENY."
+                "Rule UID or ID or PACK not present in enforcement object. "
+                + ("UID = %s, ID = %s, PACK = %s" % (rule_uid, rule_id, rule_pack))
+                + "Cannot assess access permissions without it. Defaulting to DENY."
             )
             return False
 
@@ -753,7 +753,7 @@ class KeyValuePermissionsResolver(PermissionsResolver):
             self._log("Found a matching grant via system role", extra=log_context)
             return True
 
-        # Check custom roles
+        # Check custom roles and permission grants
         resource_uid = resource_db.get_uid()
         resource_types = [ResourceType.KEY_VALUE_PAIR]
         permission_types = [PermissionType.KEY_VALUE_ALL, permission_type]
