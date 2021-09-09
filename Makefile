@@ -21,12 +21,12 @@ ST2_REPO_URL ?= git@github.com:StackStorm/st2.git
 ST2_REPO_BRANCH ?= master
 
 # nasty hack to get a space into a variable
+empty:=
+space_char:= $(empty) $(empty)
 colon := :
 comma := ,
 dot := .
 slash := /
-space_char :=
-space_char +=
 
 # All components are prefixed by st2
 COMPONENTS = $(wildcard $(ST2_REPO_PATH)/st2*)
