@@ -14,6 +14,7 @@
 # limitations under the License.
 
 import mock
+import os
 import six
 
 import st2common.validators.api.action as action_validator
@@ -56,6 +57,19 @@ ACTION_2 = {
         'c': {'type': 'string', 'default': 'C1', 'position': 0},
         'd': {'type': 'string', 'default': 'D1', 'immutable': True}
     }
+}
+
+ACTION_3 = {
+    "name": "ma.dummy.clone_action",
+    "pack": "clonepack",
+    "description": "test description",
+    "enabled": True,
+    "entry_point": "/tmp/test/clone_action.sh",
+    "runner_type": "local-shell-script",
+    "parameters": {
+        "x": {"type": "string", "default": "A1"},
+        "y": {"type": "string", "default": "B1"},
+    },
 }
 
 
@@ -106,6 +120,77 @@ class ActionControllerRBACTestCase(APIControllerWithRBACTestCase,
             user=user_db.name,
             role=self.roles['action_create'].name,
             source='assignments/%s.yaml' % user_db.name)
+        UserRoleAssignment.add_or_update(role_assignment_db)
+
+        # creating `action_clone` user with all permissions related to cloning an action
+        user_3_db = UserDB(name="action_clone")
+        user_3_db = User.add_or_update(user_3_db)
+        self.users["action_clone"] = user_3_db
+
+        # roles of action_clone user
+        grant_db = PermissionGrantDB(
+            resource_uid="pack:clonepack",
+            resource_type=ResourceType.PACK,
+            permission_types=[PermissionType.ACTION_CREATE],
+        )
+        grant_db = PermissionGrant.add_or_update(grant_db)
+        grant_db_view = PermissionGrantDB(
+            resource_uid="pack:examples",
+            resource_type=ResourceType.PACK,
+            permission_types=[PermissionType.ACTION_VIEW],
+        )
+        grant_db_view = PermissionGrant.add_or_update(grant_db_view)
+        grant_db_create = PermissionGrantDB(
+            resource_uid="pack:examples",
+            resource_type=ResourceType.PACK,
+            permission_types=[PermissionType.ACTION_CREATE],
+        )
+        grant_db_create = PermissionGrant.add_or_update(grant_db_create)
+        permission_grants = [
+            str(grant_db.id),
+            str(grant_db_view.id),
+            str(grant_db_create.id),
+        ]
+        role_1_db = RoleDB(name="action_clone", permission_grants=permission_grants)
+        role_1_db = Role.add_or_update(role_1_db)
+        self.roles["action_clone"] = role_1_db
+
+        # role assignments for action_clone user
+        user_db = self.users["action_clone"]
+        role_assignment_db = UserRoleAssignmentDB(
+            user=user_db.name,
+            role=self.roles["action_clone"].name,
+            source="assignments/%s.yaml" % user_db.name,
+        )
+        UserRoleAssignment.add_or_update(role_assignment_db)
+
+        # creating `no_create_permission` user with action_view permission on source action
+        # but no create_action permission on destination pack
+        user_2_db = UserDB(name="no_create_permission")
+        user_2_db = User.add_or_update(user_2_db)
+        self.users["no_create_permission"] = user_2_db
+
+        # roles of no_create_permission user
+        grant_db = PermissionGrantDB(
+            resource_uid="pack:examples",
+            resource_type=ResourceType.PACK,
+            permission_types=[PermissionType.ACTION_VIEW],
+        )
+        grant_db = PermissionGrant.add_or_update(grant_db)
+        permission_grants = [str(grant_db.id)]
+        role_1_db = RoleDB(
+            name="no_create_permission", permission_grants=permission_grants
+        )
+        role_1_db = Role.add_or_update(role_1_db)
+        self.roles["no_create_permission"] = role_1_db
+
+        # role assignments for no_create_permission user
+        user_db = self.users["no_create_permission"]
+        role_assignment_db = UserRoleAssignmentDB(
+            user=user_db.name,
+            role=self.roles["no_create_permission"].name,
+            source="assignments/%s.yaml" % user_db.name,
+        )
         UserRoleAssignment.add_or_update(role_assignment_db)
 
     def test_create_action_no_action_create_permission(self):
@@ -165,6 +250,120 @@ class ActionControllerRBACTestCase(APIControllerWithRBACTestCase,
         resp = self.app.get('/v1/actions?limit=20000')
         self.assertEqual(resp.status_code, http_client.OK)
 
+    @mock.patch.object(os.path, "isdir", mock.MagicMock(return_value=True))
+    @mock.patch("st2api.controllers.v1.actions.clone_action")
+    @mock.patch.object(
+        action_validator, "validate_action", mock.MagicMock(return_value=True)
+    )
+    def test_clone_action_success(self, mock_clone_action):
+        user_db = self.users["action_clone"]
+        self.use_user(user_db)
+        self.__do_post(ACTION_2)
+        self.__do_post(ACTION_3)
+        dest_data_body = {
+            "dest_pack": ACTION_3["pack"],
+            "dest_action": "clone_action_2",
+        }
+        source_ref_or_id = "%s.%s" % (ACTION_2["pack"], ACTION_2["name"])
+        clone_resp = self.__do_clone(dest_data_body, source_ref_or_id)
+        self.assertEqual(clone_resp.status_code, http_client.CREATED)
+
+    @mock.patch.object(os.path, "isdir", mock.MagicMock(return_value=True))
+    @mock.patch("st2api.controllers.v1.actions.clone_action")
+    @mock.patch.object(
+        action_validator, "validate_action", mock.MagicMock(return_value=True)
+    )
+    def test_clone_overwrite_action_success(self, mock_clone_action):
+        user_db = self.users["action_clone"]
+        self.use_user(user_db)
+        self.__do_post(ACTION_2)
+        self.__do_post(ACTION_3)
+        dest_data_body = {
+            "dest_pack": ACTION_3["pack"],
+            "dest_action": ACTION_3["name"],
+            "overwrite": True,
+        }
+        source_ref_or_id = "%s.%s" % (ACTION_2["pack"], ACTION_2["name"])
+        clone_resp = self.__do_clone(dest_data_body, source_ref_or_id)
+        self.assertEqual(clone_resp.status_code, http_client.CREATED)
+
+    @mock.patch.object(
+        action_validator, "validate_action", mock.MagicMock(return_value=True)
+    )
+    def test_clone_action_no_source_action_view_permission(self):
+        user_db = self.users["action_create"]
+        self.use_user(user_db)
+        self.__do_post(ACTION_2)
+        user_db = self.users["no_permissions"]
+        self.use_user(user_db)
+        dest_data_body = {
+            "dest_pack": ACTION_3["pack"],
+            "dest_action": "clone_action_3",
+        }
+        source_ref_or_id = "%s.%s" % (ACTION_2["pack"], ACTION_2["name"])
+        clone_resp = self.__do_clone(
+            dest_data_body, source_ref_or_id, expect_errors=True
+        )
+        expected_msg = (
+            'User "no_permissions" doesn\'t have required permission "action_view" '
+            'on resource "action:examples:ma.dummy.action"'
+        )
+        self.assertEqual(clone_resp.status_code, http_client.FORBIDDEN)
+        self.assertEqual(clone_resp.json["faultstring"], expected_msg)
+
+    @mock.patch.object(os.path, "isdir", mock.MagicMock(return_value=True))
+    @mock.patch.object(
+        action_validator, "validate_action", mock.MagicMock(return_value=True)
+    )
+    def test_clone_action_no_destination_action_create_permission(self):
+        user_db = self.users["action_clone"]
+        self.use_user(user_db)
+        self.__do_post(ACTION_2)
+        self.__do_post(ACTION_3)
+        user_db = self.users["no_create_permission"]
+        self.use_user(user_db)
+        dest_data_body = {
+            "dest_pack": ACTION_3["pack"],
+            "dest_action": "clone_action_4",
+        }
+        source_ref_or_id = "%s.%s" % (ACTION_2["pack"], ACTION_2["name"])
+        clone_resp = self.__do_clone(
+            dest_data_body, source_ref_or_id, expect_errors=True
+        )
+        expected_msg = (
+            'User "no_create_permission" doesn\'t have required permission "action_create" '
+            'on resource "action:clonepack:clone_action_4"'
+        )
+        self.assertEqual(clone_resp.status_code, http_client.FORBIDDEN)
+        self.assertEqual(clone_resp.json["faultstring"], expected_msg)
+
+    @mock.patch.object(os.path, "isdir", mock.MagicMock(return_value=True))
+    @mock.patch.object(
+        action_validator, "validate_action", mock.MagicMock(return_value=True)
+    )
+    def test_clone_overwrite_action_no_destination_action_create_permission(self):
+        user_db = self.users["action_clone"]
+        self.use_user(user_db)
+        self.__do_post(ACTION_2)
+        self.__do_post(ACTION_3)
+        user_db = self.users["no_create_permission"]
+        self.use_user(user_db)
+        dest_data_body = {
+            "dest_pack": ACTION_3["pack"],
+            "dest_action": ACTION_3["name"],
+            "overwrite": True,
+        }
+        source_ref_or_id = "%s.%s" % (ACTION_2["pack"], ACTION_2["name"])
+        clone_resp = self.__do_clone(
+            dest_data_body, source_ref_or_id, expect_errors=True
+        )
+        expected_msg = (
+            'User "no_create_permission" doesn\'t have required permission "action_create" '
+            'on resource "action:clonepack:ma.dummy.clone_action"'
+        )
+        self.assertEqual(clone_resp.status_code, http_client.FORBIDDEN)
+        self.assertEqual(clone_resp.json["faultstring"], expected_msg)
+
     def _insert_mock_models(self):
         action_ids = [action['id'] for action in self.models['actions'].values()]
         return action_ids
@@ -178,3 +377,8 @@ class ActionControllerRBACTestCase(APIControllerWithRBACTestCase,
 
     def __do_delete(self, action_id, expect_errors=False):
         return self.app.delete('/v1/actions/%s' % action_id, expect_errors=expect_errors)
+
+    def __do_clone(self, dest_data, action_id, expect_errors=False):
+        return self.app.post_json(
+            "/v1/actions/%s/clone" % (action_id), dest_data, expect_errors=expect_errors
+        )
