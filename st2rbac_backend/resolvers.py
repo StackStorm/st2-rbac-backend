@@ -153,8 +153,8 @@ class PermissionsResolver(BaseRBACPermissionResolver):
             # Admin has all the permissions
             return True
         elif (
-            SystemRole.OBSERVER in user_role_names and
-            permission_name in READ_PERMISSION_NAMES
+            SystemRole.OBSERVER in user_role_names
+            and permission_name in READ_PERMISSION_NAMES
         ):
             # Observer role has "view" permission on all the resources
             return True
@@ -654,9 +654,9 @@ class RuleEnforcementPermissionsResolver(PermissionsResolver):
 
         if not rule_uid or not rule_id or not rule_pack:
             LOG.error(
-                "Rule UID or ID or PACK not present in enforcement object. " +
-                ("UID = %s, ID = %s, PACK = %s" % (rule_uid, rule_id, rule_pack)) +
-                "Cannot assess access permissions without it. Defaulting to DENY."
+                "Rule UID or ID or PACK not present in enforcement object. "
+                + ("UID = %s, ID = %s, PACK = %s" % (rule_uid, rule_id, rule_pack))
+                + "Cannot assess access permissions without it. Defaulting to DENY."
             )
             return False
 
@@ -721,13 +721,6 @@ class KeyValuePermissionsResolver(PermissionsResolver):
     """
 
     resource_type = ResourceType.KEY_VALUE_PAIR
-    view_grant_permission_types = [
-        PermissionType.KEY_VALUE_VIEW,
-        PermissionType.KEY_VALUE_SET,
-        PermissionType.KEY_VALUE_DELETE,
-        PermissionType.KEY_VALUE_LIST,
-        PermissionType.KEY_VALUE_ALL,
-    ]
 
     def user_has_permission(self, user_db, permission_type):
         assert permission_type in [PermissionType.KEY_VALUE_LIST]
@@ -756,7 +749,7 @@ class KeyValuePermissionsResolver(PermissionsResolver):
         # Check custom roles and permission grants
         resource_uid = resource_db.get_uid()
         resource_types = [ResourceType.KEY_VALUE_PAIR]
-        permission_types = [PermissionType.KEY_VALUE_ALL, permission_type]
+        permission_types = [permission_type]
         permission_grants = rbac_service.get_all_permission_grants_for_user(
             user_db=user_db,
             resource_uid=resource_uid,

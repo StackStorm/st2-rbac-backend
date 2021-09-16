@@ -58,29 +58,72 @@ class KeyValuePermissionsResolverTestCase(BasePermissionsResolverTestCase):
         user_5_db = User.add_or_update(user_5_db)
         self.users["custom_role_key_value_pair_delete_grant"] = user_5_db
 
-        kvp_1_db = KeyValuePairDB(name="key1", value="val1")
+        user_6_db = UserDB(name="6_system_grant")
+        user_6_db = User.add_or_update(user_6_db)
+        self.users["st2kv_system_grant"] = user_6_db
+
+        kvp_1_db = KeyValuePairDB(
+            uid="key_value_pair:st2kv.user:testu:key1",
+            scope="st2kv.user",
+            name="key1",
+            value="val1",
+        )
         kvp_1_db = KeyValuePair.add_or_update(kvp_1_db)
         self.resources["user_role_1"] = kvp_1_db
 
-        kvp_2_db = KeyValuePairDB(name="key2", value="val2")
+        kvp_2_db = KeyValuePairDB(
+            uid="key_value_pair:st2kv.user:testu:key2",
+            scope="st2kv.user",
+            name="key2",
+            value="val2",
+        )
         kvp_2_db = KeyValuePair.add_or_update(kvp_2_db)
         self.resources["user_role_2"] = kvp_2_db
 
-        kvp_3_db = KeyValuePairDB(name="key3", value="val3")
+        kvp_3_db = KeyValuePairDB(
+            uid="key_value_pair:st2kv.user:testu:key3",
+            scope="st2kv.user",
+            name="key3",
+            value="val3",
+        )
         kvp_3_db = KeyValuePair.add_or_update(kvp_3_db)
         self.resources["user_role_3"] = kvp_3_db
 
-        kvp_4_db = KeyValuePairDB(name="key4", value="val4")
+        kvp_4_db = KeyValuePairDB(
+            uid="key_value_pair:st2kv.system:key4",
+            scope="st2kv.system",
+            name="key4",
+            value="val4",
+        )
         kvp_4_db = KeyValuePair.add_or_update(kvp_4_db)
         self.resources["user_role_4"] = kvp_4_db
 
-        kvp_5_db = KeyValuePairDB(name="key5", value="val5")
+        kvp_5_db = KeyValuePairDB(
+            uid="key_value_pair:st2kv.system:key5",
+            scope="st2kv.system",
+            name="key5",
+            value="val5",
+        )
         kvp_5_db = KeyValuePair.add_or_update(kvp_5_db)
         self.resources["user_role_5"] = kvp_5_db
 
-        kvp_6_db = KeyValuePairDB(name="key6", value="val6")
+        kvp_6_db = KeyValuePairDB(
+            uid="key_value_pair:st2kv.system:key6",
+            scope="st2kv.system",
+            name="key6",
+            value="val6",
+        )
         kvp_6_db = KeyValuePair.add_or_update(kvp_6_db)
         self.resources["user_role_6"] = kvp_6_db
+
+        kvp_7_db = KeyValuePairDB(
+            uid="key_value_pair:st2kv.system:key7",
+            scope="st2kv.system",
+            name="key7",
+            value="val7",
+        )
+        kvp_7_db = KeyValuePair.add_or_update(kvp_7_db)
+        self.resources["system_role"] = kvp_7_db
 
         # Create some mock roles with associated permission grants
         # Custom role - View permission
@@ -112,6 +155,20 @@ class KeyValuePermissionsResolverTestCase(BasePermissionsResolverTestCase):
         )
         role_2_db = Role.add_or_update(role_2_db)
         self.roles["custom_role_key_value_pair_list_grant"] = role_2_db
+
+        grant_db = PermissionGrantDB(
+            resource_uid=self.resources["system_role"].get_uid(),
+            resource_type=ResourceType.KEY_VALUE_PAIR,
+            permission_types=[PermissionType.KEY_VALUE_LIST],
+        )
+        grant_db = PermissionGrant.add_or_update(grant_db)
+        permission_grants = [str(grant_db.id)]
+        role_7_db = RoleDB(
+            name="st2kv_system_grant",
+            permission_grants=permission_grants,
+        )
+        role_7_db = Role.add_or_update(role_7_db)
+        self.roles["st2kv_system_grant"] = role_7_db
 
         grant_db = PermissionGrantDB(
             resource_uid=self.resources["user_role_6"].get_uid(),
@@ -196,6 +253,14 @@ class KeyValuePermissionsResolverTestCase(BasePermissionsResolverTestCase):
         )
         UserRoleAssignment.add_or_update(role_assignment_db)
 
+        user_db = self.users["st2kv_system_grant"]
+        role_assignment_db = UserRoleAssignmentDB(
+            user=user_db.name,
+            role=self.roles["st2kv_system_grant"].name,
+            source="assignments/%s.yaml" % user_db.name,
+        )
+        UserRoleAssignment.add_or_update(role_assignment_db)
+
     def test_user_has_resource_db_permission(self):
         resolver = KeyValuePermissionsResolver()
         all_permission_types = PermissionType.get_valid_permissions_for_resource_type(
@@ -243,12 +308,13 @@ class KeyValuePermissionsResolverTestCase(BasePermissionsResolverTestCase):
         )
 
         # No roles, should return false for everything
-        user_db = self.users['no_roles']
+        user_db = self.users["no_roles"]
         self.assertUserDoesntHaveResourceDbPermissions(
             resolver=resolver,
             user_db=user_db,
             resource_db=resource_db,
-            permission_types=all_permission_types)
+            permission_types=all_permission_types,
+        )
 
         # Custom role with no permission grants, should return false for everything
         user_db = self.users["1_custom_role_no_permissions"]
@@ -291,6 +357,14 @@ class KeyValuePermissionsResolverTestCase(BasePermissionsResolverTestCase):
             permission_type=PermissionType.KEY_VALUE_VIEW,
         )
 
+        user_db = self.users["st2kv_system_grant"]
+        self.assertUserHasResourceDbPermission(
+            resolver=resolver,
+            user_db=user_db,
+            resource_db=self.resources["system_role"],
+            permission_type=PermissionType.KEY_VALUE_LIST,
+        )
+
     def test_user_has_permission(self):
         resolver = KeyValuePermissionsResolver()
         permission_type = PermissionType.KEY_VALUE_LIST
@@ -320,7 +394,12 @@ class KeyValuePermissionsResolverTestCase(BasePermissionsResolverTestCase):
         )
 
         # No roles, should return false for everything
-        user_db = self.users['no_roles']
-        self.assertUserDoesntHavePermission(resolver=resolver,
-                                            user_db=user_db,
-                                            permission_type=permission_type)
+        user_db = self.users["no_roles"]
+        self.assertUserDoesntHavePermission(
+            resolver=resolver, user_db=user_db, permission_type=permission_type
+        )
+
+        user_db = self.users["st2kv_system_grant"]
+        self.assertUserHasPermission(
+            resolver=resolver, user_db=user_db, permission_type=permission_type
+        )
