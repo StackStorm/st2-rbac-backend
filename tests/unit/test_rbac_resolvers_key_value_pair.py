@@ -247,7 +247,7 @@ class KeyValuePermissionsResolverTestCase(BasePermissionsResolverTestCase):
         )
         role_5_db = Role.add_or_update(role_5_db)
         self.roles["custom_role_key_value_pair_delete_grant"] = role_5_db
-      
+
         # Create some mock role assignments
         user_db = self.users["custom_role_key_value_pair_view_grant"]
         role_assignment_db = UserRoleAssignmentDB(
@@ -368,7 +368,7 @@ class KeyValuePermissionsResolverTestCase(BasePermissionsResolverTestCase):
             resource_db=self.resources["user_role_2"],
             permission_type=PermissionType.KEY_VALUE_LIST,
         )
-       
+
         user_db = self.users["custom_role_key_value_pair_view_grant"]
         self.assertUserHasResourceDbPermission(
             resolver=resolver,
@@ -392,7 +392,7 @@ class KeyValuePermissionsResolverTestCase(BasePermissionsResolverTestCase):
             resource_db=self.resources["system_role_5"],
             permission_type=PermissionType.KEY_VALUE_VIEW,
         )
-      
+
         user_db = self.users["custom_role_key_value_pair_delete_grant"]
         self.assertUserHasResourceDbPermission(
             resolver=resolver,

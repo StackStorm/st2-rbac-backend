@@ -255,7 +255,7 @@ class KeyValuesControllerRBACTestCase(APIControllerWithRBACTestCase):
         role_2_db = RoleDB(name="user5", permission_grants=permission_grants)
         role_2_db = Role.add_or_update(role_2_db)
         self.roles["user_5"] = role_2_db
-         # set permission type for user
+        # set permission type for user
         grant_7_db = PermissionGrantDB(
             resource_uid="key_value_pair:st2kv.user:user6:test_new_key_3",
             resource_type=ResourceType.KEY_VALUE_PAIR,
@@ -335,7 +335,7 @@ class KeyValuesControllerRBACTestCase(APIControllerWithRBACTestCase):
         # Verify second item is encrypted
         self.assertTrue(resp.json[1]["secret"])
         self.assertTrue(len(resp.json[1]["value"]) > 50)
-        
+
         # limit=-1 admin user
         self.use_user(self.users["admin"])
         resp = self.app.get("/v1/keys/?limit=-1")
@@ -387,7 +387,7 @@ class KeyValuesControllerRBACTestCase(APIControllerWithRBACTestCase):
         # Verify second item is decrypted
         self.assertTrue(resp.json[1]["secret"])
         self.assertEqual(resp.json[1]["value"], "value_secret")
-       
+
     def test_get_all_scope_all_admin_decrypt_success(self):
         # Admin users should be able to view all items (including user scoped ones) when using
         # ?scope=all
