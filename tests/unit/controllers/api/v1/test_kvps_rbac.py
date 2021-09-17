@@ -146,13 +146,15 @@ class KeyValuesControllerRBACTestCase(APIControllerWithRBACTestCase):
         self.user_scoped_items_count = 6
         self.user_scoped_items_per_user_count = {"user1": 2, "user2": 1}
 
-        # key_value_pair_set grant on system user
+        # key_value_pair_set grant permissions on user
+        # list permission type for user
         grant_1_db = PermissionGrantDB(
             resource_uid="key_value_pair:st2kv.user:user1:",
             resource_type=ResourceType.KEY_VALUE_PAIR,
             permission_types=[PermissionType.KEY_VALUE_LIST],
         )
         grant_1_db = PermissionGrant.add_or_update(grant_1_db)
+        # view permission type for user
         grant_10_db = PermissionGrantDB(
             resource_uid="key_value_pair:st2kv.user:user1:test_user_scope_3",
             resource_type=ResourceType.KEY_VALUE_PAIR,
@@ -171,12 +173,15 @@ class KeyValuesControllerRBACTestCase(APIControllerWithRBACTestCase):
             permission_types=[PermissionType.KEY_VALUE_VIEW],
         )
         grant_12_db = PermissionGrant.add_or_update(grant_12_db)
+
+        # key_value_pair_set grant permissions on system
         grant_13_db = PermissionGrantDB(
             resource_uid="key_value_pair:st2kv.system:user1:test_system_scope",
             resource_type=ResourceType.KEY_VALUE_PAIR,
             permission_types=[PermissionType.KEY_VALUE_VIEW],
         )
         grant_13_db = PermissionGrant.add_or_update(grant_13_db)
+        # delete permission type for system user
         grant_14_db = PermissionGrantDB(
             resource_uid="key_value_pair:st2kv.system:test_system_scope",
             resource_type=ResourceType.KEY_VALUE_PAIR,
@@ -194,7 +199,7 @@ class KeyValuesControllerRBACTestCase(APIControllerWithRBACTestCase):
         role_1_db = RoleDB(name="user1", permission_grants=permission_grants)
         role_1_db = Role.add_or_update(role_1_db)
         self.roles["user_1"] = role_1_db
-
+        # view permission type for system user
         grant_2_db = PermissionGrantDB(
             resource_uid="key_value_pair:st2kv.system:user3:test_system_scope",
             resource_type=ResourceType.KEY_VALUE_PAIR,
@@ -222,7 +227,7 @@ class KeyValuesControllerRBACTestCase(APIControllerWithRBACTestCase):
         role_1_db = RoleDB(name="user_2", permission_grants=permission_grants)
         role_1_db = Role.add_or_update(role_1_db)
         self.roles["user_2"] = role_1_db
-
+        # view permission type for user
         grant_1_db = PermissionGrantDB(
             resource_uid="key_value_pair:st2kv.user:user4:test_user_scope_4",
             resource_type=ResourceType.KEY_VALUE_PAIR,
@@ -250,7 +255,7 @@ class KeyValuesControllerRBACTestCase(APIControllerWithRBACTestCase):
         role_2_db = RoleDB(name="user5", permission_grants=permission_grants)
         role_2_db = Role.add_or_update(role_2_db)
         self.roles["user_5"] = role_2_db
-
+         # set permission type for user
         grant_7_db = PermissionGrantDB(
             resource_uid="key_value_pair:st2kv.user:user6:test_new_key_3",
             resource_type=ResourceType.KEY_VALUE_PAIR,
@@ -330,13 +335,7 @@ class KeyValuesControllerRBACTestCase(APIControllerWithRBACTestCase):
         # Verify second item is encrypted
         self.assertTrue(resp.json[1]["secret"])
         self.assertTrue(len(resp.json[1]["value"]) > 50)
-
-        resp = self.app.get("/v1/keys")
-        self.assertEqual(resp.status_int, 200)
-        self.assertEqual(len(resp.json), self.system_scoped_items_count)
-        for item in resp.json:
-            self.assertEqual(item["scope"], FULL_SYSTEM_SCOPE)
-
+        
         # limit=-1 admin user
         self.use_user(self.users["admin"])
         resp = self.app.get("/v1/keys/?limit=-1")
@@ -388,16 +387,7 @@ class KeyValuesControllerRBACTestCase(APIControllerWithRBACTestCase):
         # Verify second item is decrypted
         self.assertTrue(resp.json[1]["secret"])
         self.assertEqual(resp.json[1]["value"], "value_secret")
-        resp = self.app.get("/v1/keys?decrypt=True&limit=-1")
-        self.assertEqual(resp.status_int, 200)
-        self.assertEqual(len(resp.json), self.system_scoped_items_count)
-        for item in resp.json:
-            self.assertEqual(item["scope"], FULL_SYSTEM_SCOPE)
-
-        # Verify second item is decrypted
-        self.assertTrue(resp.json[1]["secret"])
-        self.assertEqual(resp.json[1]["value"], "value_secret")
-
+       
     def test_get_all_scope_all_admin_decrypt_success(self):
         # Admin users should be able to view all items (including user scoped ones) when using
         # ?scope=all
