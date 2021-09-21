@@ -20,9 +20,7 @@ from st2rbac_backend.service import RBACService
 from st2rbac_backend.utils import RBACUtils
 from st2rbac_backend.syncer import RBACRemoteGroupToRoleSyncer
 
-__all__ = [
-    'RBACBackend'
-]
+__all__ = ["RBACBackend"]
 
 
 class RBACBackend(BaseRBACBackend):

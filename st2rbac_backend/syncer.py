@@ -26,7 +26,7 @@ from itertools import chain
 if six.PY3:
     from itertools import zip_longest as izip_longest  # pylint: disable=no-name-in-module
 else:
-    from itertools import izip_longest    # pylint: disable=no-name-in-module
+    from itertools import izip_longest  # pylint: disable=no-name-in-module
 
 from collections import defaultdict
 
@@ -48,10 +48,7 @@ from st2rbac_backend.service import RBACService as rbac_service
 
 LOG = logging.getLogger(__name__)
 
-__all__ = [
-    'RBACDefinitionsDBSyncer',
-    'RBACRemoteGroupToRoleSyncer'
-]
+__all__ = ["RBACDefinitionsDBSyncer", "RBACRemoteGroupToRoleSyncer"]
 
 
 class RBACDefinitionsDBSyncer(object):
@@ -77,9 +74,9 @@ class RBACDefinitionsDBSyncer(object):
         """
         result = {}
 
-        result['roles'] = self.sync_roles(role_definition_apis)
-        result['role_assignments'] = self.sync_users_role_assignments(role_assignment_apis)
-        result['group_to_role_maps'] = self.sync_group_to_role_maps(  # pylint: disable=E1111
+        result["roles"] = self.sync_roles(role_definition_apis)
+        result["role_assignments"] = self.sync_users_role_assignments(role_assignment_apis)
+        result["group_to_role_maps"] = self.sync_group_to_role_maps(  # pylint: disable=E1111
             group_to_role_map_apis
         )
 
@@ -98,7 +95,7 @@ class RBACDefinitionsDBSyncer(object):
 
         :rtype: ``tuple``
         """
-        LOG.info('Synchronizing roles...')
+        LOG.info("Synchronizing roles...")
 
         # Retrieve all the roles currently in the DB
         role_dbs = rbac_service.get_all_roles(exclude_system=True)
@@ -115,21 +112,25 @@ class RBACDefinitionsDBSyncer(object):
         updated_role_names = role_db_names.intersection(role_api_names)
 
         # A list of roles which should be removed from the database
-        removed_role_names = (role_db_names - role_api_names)
+        removed_role_names = role_db_names - role_api_names
 
-        LOG.debug('New roles: %r' % (new_role_names))
-        LOG.debug('Updated roles: %r' % (updated_role_names))
-        LOG.debug('Removed roles: %r' % (removed_role_names))
+        LOG.debug("New roles: %r" % (new_role_names))
+        LOG.debug("Updated roles: %r" % (updated_role_names))
+        LOG.debug("Removed roles: %r" % (removed_role_names))
 
         # Build a list of roles to delete
         role_names_to_delete = updated_role_names.union(removed_role_names)
-        role_dbs_to_delete = [role_db for role_db in role_dbs if
-                              role_db.name in role_names_to_delete]
+        role_dbs_to_delete = [
+            role_db for role_db in role_dbs if role_db.name in role_names_to_delete
+        ]
 
         # Build a list of roles to create
         role_names_to_create = new_role_names.union(updated_role_names)
-        role_apis_to_create = [role_definition_api for role_definition_api in role_definition_apis
-                               if role_definition_api.name in role_names_to_create]
+        role_apis_to_create = [
+            role_definition_api
+            for role_definition_api in role_definition_apis
+            if role_definition_api.name in role_names_to_create
+        ]
 
         ########
         # 1. Remove obsolete roles and associated permission grants from the DB
@@ -140,54 +141,56 @@ class RBACDefinitionsDBSyncer(object):
         for role_db in role_dbs_to_delete:
             role_ids_to_delete.append(role_db.id)
 
-        LOG.debug('Deleting %s stale roles' % (len(role_ids_to_delete)))
+        LOG.debug("Deleting %s stale roles" % (len(role_ids_to_delete)))
         Role.query(id__in=role_ids_to_delete, system=False).delete()
-        LOG.debug('Deleted %s stale roles' % (len(role_ids_to_delete)))
+        LOG.debug("Deleted %s stale roles" % (len(role_ids_to_delete)))
 
         # Remove associated permission grants
         permission_grant_ids_to_delete = []
         for role_db in role_dbs_to_delete:
             permission_grant_ids_to_delete.extend(role_db.permission_grants)
 
-        LOG.debug('Deleting %s stale permission grants' % (len(permission_grant_ids_to_delete)))
+        LOG.debug("Deleting %s stale permission grants" % (len(permission_grant_ids_to_delete)))
         PermissionGrant.query(id__in=permission_grant_ids_to_delete).delete()
-        LOG.debug('Deleted %s stale permission grants' % (len(permission_grant_ids_to_delete)))
+        LOG.debug("Deleted %s stale permission grants" % (len(permission_grant_ids_to_delete)))
 
         ########
         # 2. Add new / updated roles to the DB
         ########
 
-        LOG.debug('Creating %s new roles' % (len(role_apis_to_create)))
+        LOG.debug("Creating %s new roles" % (len(role_apis_to_create)))
 
         # Create new roles
         created_role_dbs = []
         for role_api in role_apis_to_create:
-            role_db = rbac_service.create_role(name=role_api.name,
-                                               description=role_api.description)
+            role_db = rbac_service.create_role(name=role_api.name, description=role_api.description)
 
             # Create associated permission grants
-            permission_grants = getattr(role_api, 'permission_grants', [])
+            permission_grants = getattr(role_api, "permission_grants", [])
             for permission_grant in permission_grants:
-                resource_uid = permission_grant.get('resource_uid', None)
+                resource_uid = permission_grant.get("resource_uid", None)
 
                 if resource_uid:
                     resource_type, _ = parse_uid(resource_uid)
                 else:
                     resource_type = None
 
-                permission_types = permission_grant['permission_types']
+                permission_types = permission_grant["permission_types"]
                 assignment_db = rbac_service.create_permission_grant(
                     role_db=role_db,
                     resource_uid=resource_uid,
                     resource_type=resource_type,
-                    permission_types=permission_types)
+                    permission_types=permission_types,
+                )
 
                 role_db.permission_grants.append(str(assignment_db.id))
             created_role_dbs.append(role_db)
 
-        LOG.debug('Created %s new roles' % (len(created_role_dbs)))
-        LOG.info('Roles synchronized (%s created, %s updated, %s removed)' %
-                 (len(new_role_names), len(updated_role_names), len(removed_role_names)))
+        LOG.debug("Created %s new roles" % (len(created_role_dbs)))
+        LOG.info(
+            "Roles synchronized (%s created, %s updated, %s removed)"
+            % (len(new_role_names), len(updated_role_names), len(removed_role_names))
+        )
 
         return [created_role_dbs, role_dbs_to_delete]
 
@@ -204,7 +207,7 @@ class RBACDefinitionsDBSyncer(object):
         """
         assert isinstance(role_assignment_apis, (list, tuple))
 
-        LOG.info('Synchronizing users role assignments...')
+        LOG.info("Synchronizing users role assignments...")
 
         # Note: We exclude remote assignments because sync tool is not supposed to manipulate
         # remote assignments
@@ -228,9 +231,11 @@ class RBACDefinitionsDBSyncer(object):
         # and ones which are in the database). We want to make sure assignments are correctly
         # deleted from the database for users which existing in the database, but have no
         # assignment file on disk and for assignments for users which don't exist in the database.
-        all_usernames = (list(username_to_user_db_map.keys()) +
-                         list(username_to_role_assignment_apis_map.keys()) +
-                         list(username_to_role_assignment_dbs_map.keys()))
+        all_usernames = (
+            list(username_to_user_db_map.keys())
+            + list(username_to_role_assignment_apis_map.keys())
+            + list(username_to_role_assignment_dbs_map.keys())
+        )
         all_usernames = list(set(all_usernames))
 
         results = {}
@@ -242,8 +247,9 @@ class RBACDefinitionsDBSyncer(object):
                 # DB yet because user creation in StackStorm is lazy (we only create UserDB) object
                 # when user first logs in.
                 user_db = UserDB(name=username)
-                LOG.debug(('User "%s" doesn\'t exist in the DB, creating assignment anyway' %
-                          (username)))
+                LOG.debug(
+                    ('User "%s" doesn\'t exist in the DB, creating assignment anyway' % (username))
+                )
 
             role_assignment_apis = username_to_role_assignment_apis_map.get(username, [])
             role_assignment_dbs = username_to_role_assignment_dbs_map.get(username, [])
@@ -254,16 +260,18 @@ class RBACDefinitionsDBSyncer(object):
                 assert role_assignment_db.is_remote is False
 
             result = self._sync_user_role_assignments(
-                user_db=user_db, role_assignment_dbs=role_assignment_dbs,
-                role_assignment_apis=role_assignment_apis)
+                user_db=user_db,
+                role_assignment_dbs=role_assignment_dbs,
+                role_assignment_apis=role_assignment_apis,
+            )
 
             results[username] = result
 
-        LOG.info('User role assignments synchronized')
+        LOG.info("User role assignments synchronized")
         return results
 
     def sync_group_to_role_maps(self, group_to_role_map_apis):
-        LOG.info('Synchronizing group to role maps...')
+        LOG.info("Synchronizing group to role maps...")
 
         # Retrieve all the mappings currently in the db
         group_to_role_map_dbs = rbac_service.get_all_group_to_role_maps()
@@ -277,14 +285,16 @@ class RBACDefinitionsDBSyncer(object):
 
         # 2. Insert all mappings read from disk
         for group_to_role_map_api in group_to_role_map_apis:
-            source = getattr(group_to_role_map_api, 'file_path', None)
-            rbac_service.create_group_to_role_map(group=group_to_role_map_api.group,
-                                                  roles=group_to_role_map_api.roles,
-                                                  description=group_to_role_map_api.description,
-                                                  enabled=group_to_role_map_api.enabled,
-                                                  source=source)
+            source = getattr(group_to_role_map_api, "file_path", None)
+            rbac_service.create_group_to_role_map(
+                group=group_to_role_map_api.group,
+                roles=group_to_role_map_api.roles,
+                description=group_to_role_map_api.description,
+                enabled=group_to_role_map_api.enabled,
+                source=source,
+            )
 
-        LOG.info('Group to role map definitions synchronized.')
+        LOG.info("Group to role map definitions synchronized.")
 
     def _sync_user_role_assignments(self, user_db, role_assignment_dbs, role_assignment_apis):
         """
@@ -317,7 +327,7 @@ class RBACDefinitionsDBSyncer(object):
         updated_roles = db_roles.intersection(api_roles)
 
         # A list of assignments which should be removed from the database
-        removed_roles = (db_roles - api_roles)
+        removed_roles = db_roles - api_roles
 
         LOG.debug('New assignments for user "%s": %r' % (user_db.name, new_roles))
         LOG.debug('Updated assignments for user "%s": %r' % (user_db.name, updated_roles))
@@ -327,22 +337,25 @@ class RBACDefinitionsDBSyncer(object):
         roles_to_delete = updated_roles.union(removed_roles)
 
         role_assignment_dbs_to_delete = [
-            role_assignment_db for role_assignment_db in role_assignment_dbs
+            role_assignment_db
+            for role_assignment_db in role_assignment_dbs
             if (role_assignment_db.role, role_assignment_db.source) in roles_to_delete
         ]
 
         for role_name, assignment_source in roles_to_delete:
             queryset_filter = (
-                Q(user=user_db.name) &
-                Q(role=role_name) &
-                Q(source=assignment_source) &
-                (Q(is_remote=False) | Q(is_remote__exists=False))
+                Q(user=user_db.name)
+                & Q(role=role_name)
+                & Q(source=assignment_source)
+                & (Q(is_remote=False) | Q(is_remote__exists=False))
             )
 
             UserRoleAssignmentDB.objects(queryset_filter).delete()
 
-            LOG.debug('Removed role "%s" from "%s" for user "%s".' % (role_name, assignment_source,
-                                                                      user_db.name))
+            LOG.debug(
+                'Removed role "%s" from "%s" for user "%s".'
+                % (role_name, assignment_source, user_db.name)
+            )
 
         # Build a list of roles assignments to create
         roles_to_create = new_roles.union(updated_roles)
@@ -354,17 +367,21 @@ class RBACDefinitionsDBSyncer(object):
                 msg = 'Role "%s" referenced in assignment file "%s" doesn\'t exist'
                 raise ValueError(msg % (role_name, assignment_source))
 
-            role_assignment_api = [r for r in role_assignment_apis if
-                                   r.file_path == assignment_source][0]
-            description = getattr(role_assignment_api, 'description', None)
+            role_assignment_api = [
+                r for r in role_assignment_apis if r.file_path == assignment_source
+            ][0]
+            description = getattr(role_assignment_api, "description", None)
 
             assignment_db = rbac_service.assign_role_to_user(
-                role_db=role_db, user_db=user_db, source=assignment_source, description=description)
+                role_db=role_db, user_db=user_db, source=assignment_source, description=description
+            )
 
             created_role_assignment_dbs.append(assignment_db)
 
-            LOG.debug('Assigned role "%s" from "%s" for user "%s".' %
-                (role_name, assignment_source, user_db.name))
+            LOG.debug(
+                'Assigned role "%s" from "%s" for user "%s".'
+                % (role_name, assignment_source, user_db.name)
+            )
 
         return (created_role_assignment_dbs, role_assignment_dbs_to_delete)
 
@@ -388,16 +405,17 @@ class RBACRemoteGroupToRoleSyncer(BaseRBACRemoteGroupToRoleSyncer):
         """
         groups = list(set(groups))
 
-        extra = {'user_db': user_db, 'groups': groups}
-        LOG.info('Synchronizing remote role assignments for user "%s"' % (str(user_db)),
-                 extra=extra)
+        extra = {"user_db": user_db, "groups": groups}
+        LOG.info(
+            'Synchronizing remote role assignments for user "%s"' % (str(user_db)), extra=extra
+        )
 
         # 1. Retrieve group to role mappings for the provided groups
         all_mapping_dbs = GroupToRoleMapping.query(group__in=groups)
-        enabled_mapping_dbs = [mapping_db for mapping_db in all_mapping_dbs if
-                               mapping_db.enabled]
-        disabled_mapping_dbs = [mapping_db for mapping_db in all_mapping_dbs if
-                                not mapping_db.enabled]
+        enabled_mapping_dbs = [mapping_db for mapping_db in all_mapping_dbs if mapping_db.enabled]
+        disabled_mapping_dbs = [
+            mapping_db for mapping_db in all_mapping_dbs if not mapping_db.enabled
+        ]
 
         if not all_mapping_dbs:
             LOG.debug('No group to role mappings found for user "%s"' % (str(user_db)), extra=extra)
@@ -420,51 +438,65 @@ class RBACRemoteGroupToRoleSyncer(BaseRBACRemoteGroupToRoleSyncer):
         updated_role_names = existing_role_names.intersection(current_role_names)
 
         # A list of role assignments which should be removed from the database
-        removed_role_names = (existing_role_names - new_role_names)
+        removed_role_names = existing_role_names - new_role_names
 
         # Also remove any assignments for mappings which are disabled in the database
         for mapping_db in disabled_mapping_dbs:
             for role in mapping_db.roles:
                 removed_role_names.add(role)
 
-        LOG.debug('New role assignments: %r' % (new_role_names))
-        LOG.debug('Updated role assignments: %r' % (updated_role_names))
-        LOG.debug('Removed role assignments: %r' % (removed_role_names))
+        LOG.debug("New role assignments: %r" % (new_role_names))
+        LOG.debug("Updated role assignments: %r" % (updated_role_names))
+        LOG.debug("Removed role assignments: %r" % (removed_role_names))
 
         # Build a list of role assignments to delete
         role_names_to_delete = updated_role_names.union(removed_role_names)
-        role_assignment_dbs_to_delete = [role_assignment_db for role_assignment_db
-                                         in remote_assignment_dbs
-                                         if role_assignment_db.role in role_names_to_delete]
+        role_assignment_dbs_to_delete = [
+            role_assignment_db
+            for role_assignment_db in remote_assignment_dbs
+            if role_assignment_db.role in role_names_to_delete
+        ]
 
-        UserRoleAssignment.query(user=user_db.name, role__in=role_names_to_delete,
-                                 is_remote=True).delete()
+        UserRoleAssignment.query(
+            user=user_db.name, role__in=role_names_to_delete, is_remote=True
+        ).delete()
 
         # 3. Create role assignments for all the current groups
         created_assignments_dbs = []
         for mapping_db in enabled_mapping_dbs:
-            extra['mapping_db'] = mapping_db
+            extra["mapping_db"] = mapping_db
 
             for role_name in mapping_db.roles:
                 role_db = rbac_service.get_role_by_name(name=role_name)
 
                 if not role_db:
                     # Gracefully skip assignment for role which doesn't exist in the db
-                    LOG.info('Role with name "%s" for mapping "%s" not found, skipping assignment.'
-                             % (role_name, str(mapping_db)), extra=extra)
+                    LOG.info(
+                        'Role with name "%s" for mapping "%s" not found, skipping assignment.'
+                        % (role_name, str(mapping_db)),
+                        extra=extra,
+                    )
                     continue
 
-                description = ('Automatic role assignment based on the remote user membership in '
-                               'group "%s"' % (mapping_db.group))
-                assignment_db = rbac_service.assign_role_to_user(role_db=role_db, user_db=user_db,
-                                                                 description=description,
-                                                                 is_remote=True,
-                                                                 source=mapping_db.source,
-                                                                 ignore_already_exists_error=True)
+                description = (
+                    "Automatic role assignment based on the remote user membership in "
+                    'group "%s"' % (mapping_db.group)
+                )
+                assignment_db = rbac_service.assign_role_to_user(
+                    role_db=role_db,
+                    user_db=user_db,
+                    description=description,
+                    is_remote=True,
+                    source=mapping_db.source,
+                    ignore_already_exists_error=True,
+                )
                 assert assignment_db.is_remote is True
                 created_assignments_dbs.append(assignment_db)
 
-        LOG.debug('Created %s new remote role assignments for user "%s"' %
-                  (len(created_assignments_dbs), str(user_db)), extra=extra)
+        LOG.debug(
+            'Created %s new remote role assignments for user "%s"'
+            % (len(created_assignments_dbs), str(user_db)),
+            extra=extra,
+        )
 
         return (created_assignments_dbs, role_assignment_dbs_to_delete)
