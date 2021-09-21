@@ -721,6 +721,11 @@ class KeyValuePermissionsResolver(PermissionsResolver):
     """
 
     resource_type = ResourceType.KEY_VALUE_PAIR
+    view_grant_permission_types = [
+        PermissionType.KEY_VALUE_SET,
+        PermissionType.KEY_VALUE_DELETE,
+        PermissionType.KEY_VALUE_ALL,
+    ]
 
     def user_has_permission(self, user_db, permission_type):
         assert permission_type in [PermissionType.KEY_VALUE_LIST]
@@ -746,10 +751,25 @@ class KeyValuePermissionsResolver(PermissionsResolver):
             self._log("Found a matching grant via system role", extra=log_context)
             return True
 
+        # Check custom roles
+        view_permission_type = PermissionType.get_permission_type(
+            resource_type="key_value", permission_name="view"
+        )
+        all_permission_type = PermissionType.get_permission_type(
+            resource_type="key_value", permission_name="all"
+        )
         # Check custom roles and permission grants
         resource_uid = resource_db.get_uid()
         resource_types = [ResourceType.KEY_VALUE_PAIR]
-        permission_types = [permission_type]
+        if permission_type == view_permission_type:
+            # Note: Some permissions such as "create", "delete" and "all" also
+            # grant / imply "view" permission
+            permission_types = self.view_grant_permission_types[:] + [permission_type]
+        elif permission_type not in all_permission_type:
+            permission_types = [all_permission_type, permission_type]
+        else:
+            permission_types = [permission_type]
+
         permission_grants = rbac_service.get_all_permission_grants_for_user(
             user_db=user_db,
             resource_uid=resource_uid,

@@ -51,26 +51,6 @@ class KeyValuesControllerRBACTestCase(APIControllerWithRBACTestCase):
         user_1_db = User.add_or_update(user_1_db)
         self.users["user_1"] = user_1_db
 
-        user_2_db = UserDB(name="user2")
-        user_2_db = User.add_or_update(user_2_db)
-        self.users["user_2"] = user_2_db
-
-        user_3_db = UserDB(name="user3")
-        user_3_db = User.add_or_update(user_3_db)
-        self.users["user_3"] = user_3_db
-
-        user_4_db = UserDB(name="user4")
-        user_4_db = User.add_or_update(user_4_db)
-        self.users["user_4"] = user_4_db
-
-        user_5_db = UserDB(name="user5")
-        user_5_db = User.add_or_update(user_5_db)
-        self.users["user_5"] = user_5_db
-
-        user_6_db = UserDB(name="user6")
-        user_6_db = User.add_or_update(user_6_db)
-        self.users["user_6"] = user_6_db
-
         # Insert mock kvp objects
         kvp_api = KeyValuePairSetAPI(
             name="test_system_scope", value="value1", scope=FULL_SYSTEM_SCOPE
@@ -80,17 +60,6 @@ class KeyValuesControllerRBACTestCase(APIControllerWithRBACTestCase):
         kvp_db = KeyValuePairAPI.from_model(kvp_db)
         self.kvps["kvp_1"] = kvp_db
 
-        kvp_api = KeyValuePairSetAPI(
-            name="test_system_scope_secret",
-            value="value_secret",
-            scope=FULL_SYSTEM_SCOPE,
-            secret=True,
-        )
-        kvp_db = KeyValuePairSetAPI.to_model(kvp_api)
-        kvp_db = KeyValuePair.add_or_update(kvp_db)
-        kvp_db = KeyValuePairAPI.from_model(kvp_db)
-        self.kvps["kvp_2"] = kvp_db
-
         name = get_key_reference(
             scope=FULL_USER_SCOPE, name="test_user_scope_1", user="user1"
         )
@@ -98,17 +67,6 @@ class KeyValuesControllerRBACTestCase(APIControllerWithRBACTestCase):
         kvp_db = KeyValuePair.add_or_update(kvp_db)
         kvp_db = KeyValuePairAPI.from_model(kvp_db)
         self.kvps["kvp_3"] = kvp_db
-
-        name = get_key_reference(
-            scope=FULL_USER_SCOPE, name="test_user_scope_2", user="user1"
-        )
-        kvp_api = KeyValuePairSetAPI(
-            name=name, value="user_secret", scope=FULL_USER_SCOPE, secret=True
-        )
-        kvp_db = KeyValuePairSetAPI.to_model(kvp_api)
-        kvp_db = KeyValuePair.add_or_update(kvp_db)
-        kvp_db = KeyValuePairAPI.from_model(kvp_db)
-        self.kvps["kvp_4"] = kvp_db
 
         name = get_key_reference(
             scope=FULL_USER_SCOPE, name="test_user_scope_3", user="user2"
@@ -141,10 +99,6 @@ class KeyValuesControllerRBACTestCase(APIControllerWithRBACTestCase):
         kvp_db = KeyValuePair.add_or_update(kvp_db)
         kvp_db = KeyValuePairAPI.from_model(kvp_db)
         self.kvps["kvp_8"] = kvp_db
-
-        self.system_scoped_items_count = 2
-        self.user_scoped_items_count = 6
-        self.user_scoped_items_per_user_count = {"user1": 2, "user2": 1}
 
         # key_value_pair_set grant permissions on user
         # list permission type for user
@@ -181,6 +135,7 @@ class KeyValuesControllerRBACTestCase(APIControllerWithRBACTestCase):
             permission_types=[PermissionType.KEY_VALUE_VIEW],
         )
         grant_13_db = PermissionGrant.add_or_update(grant_13_db)
+
         # delete permission type for system user
         grant_14_db = PermissionGrantDB(
             resource_uid="key_value_pair:st2kv.system:test_system_scope",
@@ -199,18 +154,22 @@ class KeyValuesControllerRBACTestCase(APIControllerWithRBACTestCase):
         role_1_db = RoleDB(name="user1", permission_grants=permission_grants)
         role_1_db = Role.add_or_update(role_1_db)
         self.roles["user_1"] = role_1_db
-        # view permission type for system user
-        grant_2_db = PermissionGrantDB(
-            resource_uid="key_value_pair:st2kv.system:user3:test_system_scope",
-            resource_type=ResourceType.KEY_VALUE_PAIR,
-            permission_types=[PermissionType.KEY_VALUE_VIEW],
-        )
-        grant_2_db = PermissionGrant.add_or_update(grant_2_db)
-        permission_grants = [str(grant_2_db.id)]
-        role_1_db = RoleDB(name="user3", permission_grants=permission_grants)
-        role_1_db = Role.add_or_update(role_1_db)
-        self.roles["user_3"] = role_1_db
 
+        user_db = self.users["user_1"]
+        role_assignment_db = UserRoleAssignmentDB(
+            user=user_db.name,
+            role=self.roles["user_1"].name,
+            source="assignments/%s.yaml" % user_db.name,
+        )
+        UserRoleAssignment.add_or_update(role_assignment_db)
+
+    def test_get_all_system_scope_success(self):
+        # mock user
+        user_2_db = UserDB(name="user2")
+        user_2_db = User.add_or_update(user_2_db)
+        self.users["user_2"] = user_2_db
+
+        # role assignemnt
         grant_db = PermissionGrantDB(
             resource_uid="key_value_pair:st2kv.system:",
             resource_type=ResourceType.KEY_VALUE_PAIR,
@@ -227,53 +186,7 @@ class KeyValuesControllerRBACTestCase(APIControllerWithRBACTestCase):
         role_1_db = RoleDB(name="user_2", permission_grants=permission_grants)
         role_1_db = Role.add_or_update(role_1_db)
         self.roles["user_2"] = role_1_db
-        # view permission type for user
-        grant_1_db = PermissionGrantDB(
-            resource_uid="key_value_pair:st2kv.user:user4:test_user_scope_4",
-            resource_type=ResourceType.KEY_VALUE_PAIR,
-            permission_types=[PermissionType.KEY_VALUE_VIEW],
-        )
-        grant_1_db = PermissionGrant.add_or_update(grant_1_db)
-        permission_grants = [str(grant_1_db.id)]
-        role_1_db = RoleDB(name="user4", permission_grants=permission_grants)
-        role_1_db = Role.add_or_update(role_1_db)
-        self.roles["user_4"] = role_1_db
 
-        grant_5_db = PermissionGrantDB(
-            resource_uid="key_value_pair:st2kv.user:user5:test_user_scope_1",
-            resource_type=ResourceType.KEY_VALUE_PAIR,
-            permission_types=[PermissionType.KEY_VALUE_VIEW],
-        )
-        grant_5_db = PermissionGrant.add_or_update(grant_5_db)
-        grant_6_db = PermissionGrantDB(
-            resource_uid="key_value_pair:st2kv.user:user5:test_user_scope_8",
-            resource_type=ResourceType.KEY_VALUE_PAIR,
-            permission_types=[PermissionType.KEY_VALUE_DELETE],
-        )
-        grant_6_db = PermissionGrant.add_or_update(grant_6_db)
-        permission_grants = [str(grant_5_db.id), str(grant_6_db.id)]
-        role_2_db = RoleDB(name="user5", permission_grants=permission_grants)
-        role_2_db = Role.add_or_update(role_2_db)
-        self.roles["user_5"] = role_2_db
-        # set permission type for user
-        grant_7_db = PermissionGrantDB(
-            resource_uid="key_value_pair:st2kv.user:user6:test_new_key_3",
-            resource_type=ResourceType.KEY_VALUE_PAIR,
-            permission_types=[PermissionType.KEY_VALUE_SET],
-        )
-        grant_7_db = PermissionGrant.add_or_update(grant_7_db)
-        grant_8_db = PermissionGrantDB(
-            resource_uid="key_value_pair:st2kv.user:user6:test_new_key_3",
-            resource_type=ResourceType.KEY_VALUE_PAIR,
-            permission_types=[PermissionType.KEY_VALUE_VIEW],
-        )
-        grant_8_db = PermissionGrant.add_or_update(grant_8_db)
-        permission_grants = [str(grant_7_db.id), str(grant_8_db.id)]
-        role_1_db = RoleDB(name="user6", permission_grants=permission_grants)
-        role_1_db = Role.add_or_update(role_1_db)
-        self.roles["user_6"] = role_1_db
-
-        # Role assignments
         user_db = self.users["user_2"]
         role_assignment_db = UserRoleAssignmentDB(
             user=user_db.name,
@@ -282,71 +195,20 @@ class KeyValuesControllerRBACTestCase(APIControllerWithRBACTestCase):
         )
         UserRoleAssignment.add_or_update(role_assignment_db)
 
-        user_db = self.users["user_1"]
-        role_assignment_db = UserRoleAssignmentDB(
-            user=user_db.name,
-            role=self.roles["user_1"].name,
-            source="assignments/%s.yaml" % user_db.name,
-        )
-        UserRoleAssignment.add_or_update(role_assignment_db)
-
-        user_db = self.users["user_3"]
-        role_assignment_db = UserRoleAssignmentDB(
-            user=user_db.name,
-            role=self.roles["user_3"].name,
-            source="assignments/%s.yaml" % user_db.name,
-        )
-        UserRoleAssignment.add_or_update(role_assignment_db)
-
-        user_db = self.users["user_4"]
-        role_assignment_db = UserRoleAssignmentDB(
-            user=user_db.name,
-            role=self.roles["user_4"].name,
-            source="assignments/%s.yaml" % user_db.name,
-        )
-        UserRoleAssignment.add_or_update(role_assignment_db)
-
-        user_db = self.users["user_5"]
-        role_assignment_db = UserRoleAssignmentDB(
-            user=user_db.name,
-            role=self.roles["user_5"].name,
-            source="assignments/%s.yaml" % user_db.name,
-        )
-        UserRoleAssignment.add_or_update(role_assignment_db)
-
-        user_db = self.users["user_6"]
-        role_assignment_db = UserRoleAssignmentDB(
-            user=user_db.name,
-            role=self.roles["user_6"].name,
-            source="assignments/%s.yaml" % user_db.name,
-        )
-        UserRoleAssignment.add_or_update(role_assignment_db)
-
-    def test_get_all_system_scope_success(self):
         # Regular user, should be able to view all the system scoped items
         self.use_user(self.users["user_2"])
 
         resp = self.app.get("/v1/keys")
         self.assertEqual(resp.status_int, 200)
-        self.assertEqual(len(resp.json), self.system_scoped_items_count)
         for item in resp.json:
             self.assertEqual(item["scope"], FULL_SYSTEM_SCOPE)
-
-        # Verify second item is encrypted
-        self.assertTrue(resp.json[1]["secret"])
-        self.assertTrue(len(resp.json[1]["value"]) > 50)
 
         # limit=-1 admin user
         self.use_user(self.users["admin"])
         resp = self.app.get("/v1/keys/?limit=-1")
         self.assertEqual(resp.status_int, 200)
-        self.assertEqual(len(resp.json), self.system_scoped_items_count)
         for item in resp.json:
             self.assertEqual(item["scope"], FULL_SYSTEM_SCOPE)
-
-        # Verify second item is encrypted
-        self.assertTrue(resp.json[1]["secret"])
-        self.assertTrue(len(resp.json[1]["value"]) > 50)
 
     def test_get_all_user_scope_success(self):
         # Regular user should be able to view all the items scoped to themselves
@@ -354,25 +216,9 @@ class KeyValuesControllerRBACTestCase(APIControllerWithRBACTestCase):
 
         resp = self.app.get("/v1/keys?scope=st2kv.user")
         self.assertEqual(resp.status_int, 200)
-        self.assertEqual(len(resp.json), self.user_scoped_items_per_user_count["user1"])
         for item in resp.json:
             self.assertEqual(item["scope"], FULL_USER_SCOPE)
             self.assertEqual(item["user"], "user1")
-
-        # Verify second item is encrypted
-        self.assertTrue(resp.json[1]["secret"])
-        self.assertTrue(len(resp.json[1]["value"]) > 50)
-
-        resp = self.app.get("/v1/keys?scope=st2kv.user")
-        self.assertEqual(resp.status_int, 200)
-        self.assertEqual(len(resp.json), self.user_scoped_items_per_user_count["user1"])
-        for item in resp.json:
-            self.assertEqual(item["scope"], FULL_USER_SCOPE)
-            self.assertEqual(item["user"], "user1")
-
-        # Verify second item is encrypted
-        self.assertTrue(resp.json[1]["secret"])
-        self.assertTrue(len(resp.json[1]["value"]) > 50)
 
     def test_get_all_scope_system_decrypt_admin_success(self):
         # Admin should be able to view all system scoped decrypted values
@@ -380,13 +226,8 @@ class KeyValuesControllerRBACTestCase(APIControllerWithRBACTestCase):
 
         resp = self.app.get("/v1/keys?decrypt=True")
         self.assertEqual(resp.status_int, 200)
-        self.assertEqual(len(resp.json), self.system_scoped_items_count)
         for item in resp.json:
             self.assertEqual(item["scope"], FULL_SYSTEM_SCOPE)
-
-        # Verify second item is decrypted
-        self.assertTrue(resp.json[1]["secret"])
-        self.assertEqual(resp.json[1]["value"], "value_secret")
 
     def test_get_all_scope_all_admin_decrypt_success(self):
         # Admin users should be able to view all items (including user scoped ones) when using
@@ -395,27 +236,17 @@ class KeyValuesControllerRBACTestCase(APIControllerWithRBACTestCase):
 
         resp = self.app.get("/v1/keys?scope=all&decrypt=True")
         self.assertEqual(resp.status_int, 200)
-        expected_count = self.system_scoped_items_count + self.user_scoped_items_count
-        self.assertEqual(len(resp.json), expected_count)
-
-        # Verify second item is decrypted
-        self.assertTrue(resp.json[1]["secret"])
-        self.assertEqual(resp.json[1]["scope"], FULL_SYSTEM_SCOPE)
-        self.assertEqual(resp.json[1]["value"], "value_secret")
 
         # Verify user scoped items are available and decrypted
-        self.assertTrue(resp.json[3]["secret"])
         self.assertEqual(resp.json[3]["scope"], FULL_USER_SCOPE)
-        self.assertEqual(resp.json[3]["user"], "user1")
-        self.assertEqual(resp.json[3]["value"], "user_secret")
+        self.assertEqual(resp.json[3]["user"], "user4")
+        self.assertEqual(resp.json[3]["value"], "valueu121")
 
         self.assertEqual(resp.json[4]["scope"], FULL_USER_SCOPE)
-        self.assertEqual(resp.json[4]["user"], "user2")
+        self.assertEqual(resp.json[4]["user"], "user5")
 
         resp = self.app.get("/v1/keys?scope=all&decrypt=True&limit=-1")
         self.assertEqual(resp.status_int, 200)
-        expected_count = self.system_scoped_items_count + self.user_scoped_items_count
-        self.assertEqual(len(resp.json), expected_count)
 
     def test_get_all_non_admin_decrypt_failure(self):
         # Non admin shouldn't be able to view decrypted items
@@ -438,6 +269,30 @@ class KeyValuesControllerRBACTestCase(APIControllerWithRBACTestCase):
         )
 
     def test_get_one_system_scope_success(self):
+        user_3_db = UserDB(name="user3")
+        user_3_db = User.add_or_update(user_3_db)
+        self.users["user_3"] = user_3_db
+
+        # view permission type for system user
+        grant_2_db = PermissionGrantDB(
+            resource_uid="key_value_pair:st2kv.system:user3:test_system_scope",
+            resource_type=ResourceType.KEY_VALUE_PAIR,
+            permission_types=[PermissionType.KEY_VALUE_VIEW],
+        )
+        grant_2_db = PermissionGrant.add_or_update(grant_2_db)
+        permission_grants = [str(grant_2_db.id)]
+        role_1_db = RoleDB(name="user3", permission_grants=permission_grants)
+        role_1_db = Role.add_or_update(role_1_db)
+        self.roles["user_3"] = role_1_db
+
+        user_db = self.users["user_3"]
+        role_assignment_db = UserRoleAssignmentDB(
+            user=user_db.name,
+            role=self.roles["user_3"].name,
+            source="assignments/%s.yaml" % user_db.name,
+        )
+        UserRoleAssignment.add_or_update(role_assignment_db)
+
         self.use_user(self.users["user_3"])
 
         resp = self.app.get("/v1/keys/%s" % (self.kvps["kvp_1"].name))
@@ -452,6 +307,17 @@ class KeyValuesControllerRBACTestCase(APIControllerWithRBACTestCase):
         self.assertEqual(resp.json["user"], "user1")
 
     def test_get_one_user_scope_decrypt_success(self):
+        name = get_key_reference(
+            scope=FULL_USER_SCOPE, name="test_user_scope_2", user="user1"
+        )
+        kvp_api = KeyValuePairSetAPI(
+            name=name, value="user_secret", scope=FULL_USER_SCOPE, secret=True
+        )
+        kvp_db = KeyValuePairSetAPI.to_model(kvp_api)
+        kvp_db = KeyValuePair.add_or_update(kvp_db)
+        kvp_db = KeyValuePairAPI.from_model(kvp_db)
+        self.kvps["kvp_4"] = kvp_db
+
         # User can request decrypted value of the item scoped to themselves
         self.use_user(self.users["user_1"])
 
@@ -464,6 +330,36 @@ class KeyValuesControllerRBACTestCase(APIControllerWithRBACTestCase):
         self.assertEqual(resp.json["value"], "user_secret")
 
     def test_get_one_user_scope_non_current_user_failure(self):
+        # mock user
+        user_2_db = UserDB(name="user2")
+        user_2_db = User.add_or_update(user_2_db)
+        self.users["user_2"] = user_2_db
+
+        grant_db = PermissionGrantDB(
+            resource_uid="key_value_pair:st2kv.system:",
+            resource_type=ResourceType.KEY_VALUE_PAIR,
+            permission_types=[PermissionType.KEY_VALUE_LIST],
+        )
+        grant_db = PermissionGrant.add_or_update(grant_db)
+        grant_9_db = PermissionGrantDB(
+            resource_uid="key_value_pair:st2kv.user:user2:test_user_scope_3",
+            resource_type=ResourceType.KEY_VALUE_PAIR,
+            permission_types=[PermissionType.KEY_VALUE_VIEW],
+        )
+        grant_9_db = PermissionGrant.add_or_update(grant_9_db)
+        permission_grants = [str(grant_db.id), str(grant_9_db.id)]
+        role_1_db = RoleDB(name="user_2", permission_grants=permission_grants)
+        role_1_db = Role.add_or_update(role_1_db)
+        self.roles["user_2"] = role_1_db
+
+        # role assignemnt
+        user_db = self.users["user_2"]
+        role_assignment_db = UserRoleAssignmentDB(
+            user=user_db.name,
+            role=self.roles["user_2"].name,
+            source="assignments/%s.yaml" % user_db.name,
+        )
+        UserRoleAssignment.add_or_update(role_assignment_db)
         # User should only be able to retrieved user-scoped items which are scoped to themselves
         self.use_user(self.users["user_1"])
 
@@ -515,6 +411,36 @@ class KeyValuesControllerRBACTestCase(APIControllerWithRBACTestCase):
         self.assertEqual(resp.json["user"], "user2")
 
     def test_set_user_scoped_item_arbitrary_user_non_admin_failure(self):
+        user_6_db = UserDB(name="user6")
+        user_6_db = User.add_or_update(user_6_db)
+        self.users["user_6"] = user_6_db
+
+        # set permission type for user
+        grant_7_db = PermissionGrantDB(
+            resource_uid="key_value_pair:st2kv.user:user6:test_new_key_3",
+            resource_type=ResourceType.KEY_VALUE_PAIR,
+            permission_types=[PermissionType.KEY_VALUE_SET],
+        )
+        grant_7_db = PermissionGrant.add_or_update(grant_7_db)
+        grant_8_db = PermissionGrantDB(
+            resource_uid="key_value_pair:st2kv.user:user6:test_new_key_3",
+            resource_type=ResourceType.KEY_VALUE_PAIR,
+            permission_types=[PermissionType.KEY_VALUE_VIEW],
+        )
+        grant_8_db = PermissionGrant.add_or_update(grant_8_db)
+        permission_grants = [str(grant_7_db.id), str(grant_8_db.id)]
+        role_1_db = RoleDB(name="user6", permission_grants=permission_grants)
+        role_1_db = Role.add_or_update(role_1_db)
+        self.roles["user_6"] = role_1_db
+
+        user_db = self.users["user_6"]
+        role_assignment_db = UserRoleAssignmentDB(
+            user=user_db.name,
+            role=self.roles["user_6"].name,
+            source="assignments/%s.yaml" % user_db.name,
+        )
+        UserRoleAssignment.add_or_update(role_assignment_db)
+
         # Non admin user can't set user scoped item for arbitrary user but just for themselves
         self.use_user(self.users["user_6"])
 
@@ -563,6 +489,35 @@ class KeyValuesControllerRBACTestCase(APIControllerWithRBACTestCase):
         self.assertEqual(resp.status_code, http_client.NOT_FOUND)
 
     def test_delete_user_scoped_item_non_admin_scoped_to_itself_success(self):
+        user_5_db = UserDB(name="user5")
+        user_5_db = User.add_or_update(user_5_db)
+        self.users["user_5"] = user_5_db
+
+        grant_5_db = PermissionGrantDB(
+            resource_uid="key_value_pair:st2kv.user:user5:test_user_scope_1",
+            resource_type=ResourceType.KEY_VALUE_PAIR,
+            permission_types=[PermissionType.KEY_VALUE_VIEW],
+        )
+        grant_5_db = PermissionGrant.add_or_update(grant_5_db)
+        grant_6_db = PermissionGrantDB(
+            resource_uid="key_value_pair:st2kv.user:user5:test_user_scope_8",
+            resource_type=ResourceType.KEY_VALUE_PAIR,
+            permission_types=[PermissionType.KEY_VALUE_DELETE],
+        )
+        grant_6_db = PermissionGrant.add_or_update(grant_6_db)
+        permission_grants = [str(grant_5_db.id), str(grant_6_db.id)]
+        role_2_db = RoleDB(name="user5", permission_grants=permission_grants)
+        role_2_db = Role.add_or_update(role_2_db)
+        self.roles["user_5"] = role_2_db
+
+        user_db = self.users["user_5"]
+        role_assignment_db = UserRoleAssignmentDB(
+            user=user_db.name,
+            role=self.roles["user_5"].name,
+            source="assignments/%s.yaml" % user_db.name,
+        )
+        UserRoleAssignment.add_or_update(role_assignment_db)
+
         # Non-admin user can delete user scoped item scoped to themselves
         self.use_user(self.users["user_5"])
 
