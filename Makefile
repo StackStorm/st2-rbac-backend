@@ -77,10 +77,10 @@ all: requirements lint
 all-ci: compile .flake8 .pylint
 
 .PHONY: lint
-lint: requirements flake8 pylint
+lint: requirements flake8 pylint black-check
 
 .PHONY: .lint
-.lint: compile .flake8 .pylint
+.lint: compile .flake8 .pylint .black-check
 
 .PHONY: flake8
 flake8: requirements .clone_st2_repo .flake8
@@ -113,6 +113,20 @@ compilepy3:
 	@echo "==================== pylint ===================="
 	@echo
 	. $(VIRTUALENV_DIR)/bin/activate; pylint -j $(PYLINT_CONCURRENCY) -E --rcfile=./lint-configs/python/.pylintrc --load-plugins=pylint_plugins.api_models --load-plugins=pylint_plugins.db_models st2rbac_backend/
+
+.PHONY: .black-check
+.black-check:
+	@echo
+	@echo "================== black ===================="
+	@echo
+	. $(VIRTUALENV_DIR)/bin/activate; black --config pyproject.toml st2rbac_backend bin setup.py -l 100 --check
+
+.PHONY: .black-format
+.black-format:
+	@echo
+	@echo "================== black ===================="
+	@echo
+	. $(VIRTUALENV_DIR)/bin/activate; black --config pyproject.toml st2rbac_backend bin setup.py -l 100
 
 .PHONY: .unit-tests
 .unit-tests:

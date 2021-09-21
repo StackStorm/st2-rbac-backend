@@ -26,9 +26,7 @@ from st2common.script_setup import teardown as common_teardown
 from st2rbac_backend.loader import RBACDefinitionsLoader
 from st2rbac_backend.syncer import RBACDefinitionsDBSyncer
 
-__all__ = [
-    'main'
-]
+__all__ = ["main"]
 
 
 def setup(argv):
@@ -43,14 +41,16 @@ def apply_definitions():
     loader = RBACDefinitionsLoader()
     result = loader.load()
 
-    role_definition_apis = list(result['roles'].values())
-    role_assignment_apis = list(result['role_assignments'].values())
-    group_to_role_map_apis = list(result['group_to_role_maps'].values())
+    role_definition_apis = list(result["roles"].values())
+    role_assignment_apis = list(result["role_assignments"].values())
+    group_to_role_map_apis = list(result["group_to_role_maps"].values())
 
     syncer = RBACDefinitionsDBSyncer()
-    result = syncer.sync(role_definition_apis=role_definition_apis,
-                         role_assignment_apis=role_assignment_apis,
-                         group_to_role_map_apis=group_to_role_map_apis)
+    result = syncer.sync(
+        role_definition_apis=role_definition_apis,
+        role_assignment_apis=role_assignment_apis,
+        group_to_role_map_apis=group_to_role_map_apis,
+    )
 
     return result
 
