@@ -99,6 +99,7 @@ class PermissionsResolver(BaseRBACPermissionResolver):
         return self._user_has_global_permission(
             user_db=user_db, permission_type=permission_type
         )
+        return self._user_has_global_permission(user_db=user_db, permission_type=permission_type)
 
     def _user_has_global_permission(self, user_db, permission_type):
         """
@@ -392,10 +393,12 @@ class SensorPermissionsResolver(ContentPackResourcePermissionsResolver):
     """
 
     resource_type = ResourceType.SENSOR
+
     view_grant_permission_types = [
         PermissionType.SENSOR_ALL,
         PermissionType.SENSOR_MODIFY,
     ]
+    view_grant_permission_types = [PermissionType.SENSOR_ALL, PermissionType.SENSOR_MODIFY]
 
     def user_has_permission(self, user_db, permission_type):
         assert permission_type in [PermissionType.SENSOR_LIST]
@@ -491,6 +494,7 @@ class ActionAliasPermissionsResolver(ContentPackResourcePermissionsResolver):
             return self._user_has_list_permission(
                 user_db=user_db, permission_type=permission_type
             )
+            return self._user_has_list_permission(user_db=user_db, permission_type=permission_type)
         elif permission_type in [
             PermissionType.ACTION_ALIAS_MATCH,
             PermissionType.ACTION_ALIAS_HELP,
@@ -549,11 +553,14 @@ class RulePermissionsResolver(ContentPackResourcePermissionsResolver):
         :param trigger: "trigger" attribute of the RuleAPI object.
         :type trigger: ``dict``
         """
+
         log_context = {
             "user_db": user_db,
             "trigger": trigger,
             "resolver": self.__class__.__name__,
         }
+
+        log_context = {"user_db": user_db, "trigger": trigger, "resolver": self.__class__.__name__}
 
         trigger_type = trigger["type"]
         trigger_parameters = trigger.get("parameters", {})
@@ -657,6 +664,9 @@ class RuleEnforcementPermissionsResolver(PermissionsResolver):
                 "Rule UID or ID or PACK not present in enforcement object. " +
                 ("UID = %s, ID = %s, PACK = %s" % (rule_uid, rule_id, rule_pack)) +
                 "Cannot assess access permissions without it. Defaulting to DENY."
+                "Rule UID or ID or PACK not present in enforcement object. "
+                + ("UID = %s, ID = %s, PACK = %s" % (rule_uid, rule_id, rule_pack))
+                + "Cannot assess access permissions without it. Defaulting to DENY."
             )
             return False
 
@@ -682,6 +692,9 @@ class RuleEnforcementPermissionsResolver(PermissionsResolver):
             permission_types = RulePermissionsResolver.view_grant_permission_types[
                 :
             ] + [rule_permission_type]
+            permission_types = RulePermissionsResolver.view_grant_permission_types[:] + [
+                rule_permission_type
+            ]
 
         # Check grants on the pack of the rule to which enforcement belongs to
         resource_types = [ResourceType.PACK]
@@ -696,6 +709,7 @@ class RuleEnforcementPermissionsResolver(PermissionsResolver):
             self._log(
                 "Found a grant on the enforcement rule parent pack", extra=log_context
             )
+            self._log("Found a grant on the enforcement rule parent pack", extra=log_context)
             return True
 
         # Check grants on the rule the enforcement belongs to
@@ -800,6 +814,7 @@ class ExecutionPermissionsResolver(PermissionsResolver):
         return self._user_has_list_permission(
             user_db=user_db, permission_type=permission_type
         )
+        return self._user_has_list_permission(user_db=user_db, permission_type=permission_type)
 
     def user_has_resource_db_permission(self, user_db, resource_db, permission_type):
         log_context = {
@@ -835,6 +850,7 @@ class ExecutionPermissionsResolver(PermissionsResolver):
             PermissionType.EXECUTION_RE_RUN,
             PermissionType.EXECUTION_STOP,
         ]:
+        elif permission_type in [PermissionType.EXECUTION_RE_RUN, PermissionType.EXECUTION_STOP]:
             action_permission_type = PermissionType.ACTION_EXECUTE
         elif permission_type == PermissionType.EXECUTION_ALL:
             action_permission_type = PermissionType.ACTION_ALL
@@ -857,6 +873,7 @@ class ExecutionPermissionsResolver(PermissionsResolver):
             self._log(
                 "Found a grant on the execution action parent pack", extra=log_context
             )
+            self._log("Found a grant on the execution action parent pack", extra=log_context)
             return True
 
         # Check grants on the action the execution belongs to
@@ -1306,6 +1323,7 @@ class InquiryPermissionsResolver(PermissionsResolver):
             user_db=user_db,
             resource_types=resource_types,
             permission_types=permission_types,
+            user_db=user_db, resource_types=resource_types, permission_types=permission_types
         )
 
         if len(permission_grants) >= 1:
@@ -1343,6 +1361,7 @@ class InquiryPermissionsResolver(PermissionsResolver):
                 self._log(
                     "Found a grant on the parent pack for an inquiry workflow",
                     extra=log_context,
+                    "Found a grant on the parent pack for an inquiry workflow", extra=log_context
                 )
                 return True
 
