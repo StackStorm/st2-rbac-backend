@@ -96,9 +96,7 @@ class PermissionsResolver(BaseRBACPermissionResolver):
         rules_list, action_list, etc.).
         """
         assert PermissionType.get_permission_name(permission_type) == "list"
-        return self._user_has_global_permission(
-            user_db=user_db, permission_type=permission_type
-        )
+        return self._user_has_global_permission(user_db=user_db, permission_type=permission_type)
 
     def _user_has_global_permission(self, user_db, permission_type):
         """
@@ -152,10 +150,7 @@ class PermissionsResolver(BaseRBACPermissionResolver):
         elif SystemRole.ADMIN in user_role_names:
             # Admin has all the permissions
             return True
-        elif (
-            SystemRole.OBSERVER in user_role_names and
-            permission_name in READ_PERMISSION_NAMES
-        ):
+        elif SystemRole.OBSERVER in user_role_names and permission_name in READ_PERMISSION_NAMES:
             # Observer role has "view" permission on all the resources
             return True
 
@@ -209,9 +204,7 @@ class ContentPackResourcePermissionsResolver(PermissionsResolver):
     # A list of resource-specific permission types which grant / imply "view" permission type
     view_grant_permission_types = []
 
-    def _user_has_resource_permission(
-        self, user_db, pack_uid, resource_uid, permission_type
-    ):
+    def _user_has_resource_permission(self, user_db, pack_uid, resource_uid, permission_type):
         log_context = {
             "user_db": user_db,
             "pack_uid": pack_uid,
@@ -289,9 +282,7 @@ class RunnerPermissionsResolver(PermissionsResolver):
 
     def user_has_permission(self, user_db, permission_type):
         assert permission_type in [PermissionType.RUNNER_LIST]
-        return self._user_has_list_permission(
-            user_db=user_db, permission_type=permission_type
-        )
+        return self._user_has_list_permission(user_db=user_db, permission_type=permission_type)
 
     def user_has_resource_db_permission(self, user_db, resource_db, permission_type):
         log_context = {
@@ -341,9 +332,7 @@ class PackPermissionsResolver(PermissionsResolver):
         assert permission_type in GLOBAL_PACK_PERMISSION_TYPES
 
         if permission_type == PermissionType.PACK_LIST:
-            return self._user_has_list_permission(
-                user_db=user_db, permission_type=permission_type
-            )
+            return self._user_has_list_permission(user_db=user_db, permission_type=permission_type)
         else:
             return self._user_has_global_permission(
                 user_db=user_db, permission_type=permission_type
@@ -399,9 +388,7 @@ class SensorPermissionsResolver(ContentPackResourcePermissionsResolver):
 
     def user_has_permission(self, user_db, permission_type):
         assert permission_type in [PermissionType.SENSOR_LIST]
-        return self._user_has_list_permission(
-            user_db=user_db, permission_type=permission_type
-        )
+        return self._user_has_list_permission(user_db=user_db, permission_type=permission_type)
 
     def user_has_resource_db_permission(self, user_db, resource_db, permission_type):
         sensor_uid = resource_db.get_uid()
@@ -430,12 +417,8 @@ class ActionPermissionsResolver(ContentPackResourcePermissionsResolver):
 
     def user_has_permission(self, user_db, permission_type):
         assert permission_type in [PermissionType.ACTION_LIST]
-        self._log(
-            "debugging action permissions under user_has_permission", permission_type
-        )
-        return self._user_has_list_permission(
-            user_db=user_db, permission_type=permission_type
-        )
+        self._log("debugging action permissions under user_has_permission", permission_type)
+        return self._user_has_list_permission(user_db=user_db, permission_type=permission_type)
 
     def user_has_resource_api_permission(self, user_db, resource_api, permission_type):
         assert permission_type in [PermissionType.ACTION_CREATE]
@@ -488,9 +471,7 @@ class ActionAliasPermissionsResolver(ContentPackResourcePermissionsResolver):
         ]
 
         if permission_type == PermissionType.ACTION_ALIAS_LIST:
-            return self._user_has_list_permission(
-                user_db=user_db, permission_type=permission_type
-            )
+            return self._user_has_list_permission(user_db=user_db, permission_type=permission_type)
         elif permission_type in [
             PermissionType.ACTION_ALIAS_MATCH,
             PermissionType.ACTION_ALIAS_HELP,
@@ -587,9 +568,7 @@ class RulePermissionsResolver(ContentPackResourcePermissionsResolver):
 
     def user_has_permission(self, user_db, permission_type):
         assert permission_type in [PermissionType.RULE_LIST]
-        return self._user_has_list_permission(
-            user_db=user_db, permission_type=permission_type
-        )
+        return self._user_has_list_permission(user_db=user_db, permission_type=permission_type)
 
     def user_has_resource_api_permission(self, user_db, resource_api, permission_type):
         assert permission_type in [PermissionType.RULE_CREATE]
@@ -624,9 +603,7 @@ class RuleEnforcementPermissionsResolver(PermissionsResolver):
     def user_has_permission(self, user_db, permission_type):
         assert permission_type in [PermissionType.RULE_ENFORCEMENT_LIST]
         permission_type = PermissionType.RULE_LIST
-        return self._user_has_list_permission(
-            user_db=user_db, permission_type=permission_type
-        )
+        return self._user_has_list_permission(user_db=user_db, permission_type=permission_type)
 
     def user_has_resource_db_permission(self, user_db, resource_db, permission_type):
         log_context = {
@@ -654,9 +631,9 @@ class RuleEnforcementPermissionsResolver(PermissionsResolver):
 
         if not rule_uid or not rule_id or not rule_pack:
             LOG.error(
-                "Rule UID or ID or PACK not present in enforcement object. " +
-                ("UID = %s, ID = %s, PACK = %s" % (rule_uid, rule_id, rule_pack)) +
-                "Cannot assess access permissions without it. Defaulting to DENY."
+                "Rule UID or ID or PACK not present in enforcement object. "
+                + ("UID = %s, ID = %s, PACK = %s" % (rule_uid, rule_id, rule_pack))
+                + "Cannot assess access permissions without it. Defaulting to DENY."
             )
             return False
 
@@ -679,9 +656,9 @@ class RuleEnforcementPermissionsResolver(PermissionsResolver):
         )
 
         if rule_permission_type == view_permission_type:
-            permission_types = RulePermissionsResolver.view_grant_permission_types[
-                :
-            ] + [rule_permission_type]
+            permission_types = RulePermissionsResolver.view_grant_permission_types[:] + [
+                rule_permission_type
+            ]
 
         # Check grants on the pack of the rule to which enforcement belongs to
         resource_types = [ResourceType.PACK]
@@ -693,9 +670,7 @@ class RuleEnforcementPermissionsResolver(PermissionsResolver):
         )
 
         if len(permission_grants) >= 1:
-            self._log(
-                "Found a grant on the enforcement rule parent pack", extra=log_context
-            )
+            self._log("Found a grant on the enforcement rule parent pack", extra=log_context)
             return True
 
         # Check grants on the rule the enforcement belongs to
@@ -730,9 +705,7 @@ class KeyValuePermissionsResolver(PermissionsResolver):
 
     def user_has_permission(self, user_db, permission_type):
         assert permission_type in [PermissionType.KEY_VALUE_LIST]
-        return self._user_has_list_permission(
-            user_db=user_db, permission_type=permission_type
-        )
+        return self._user_has_list_permission(user_db=user_db, permission_type=permission_type)
 
     def user_has_resource_db_permission(self, user_db, resource_db, permission_type):
         log_context = {
@@ -794,9 +767,7 @@ class ExecutionPermissionsResolver(PermissionsResolver):
             PermissionType.EXECUTION_LIST,
             PermissionType.EXECUTION_VIEWS_FILTERS_LIST,
         ]
-        return self._user_has_list_permission(
-            user_db=user_db, permission_type=permission_type
-        )
+        return self._user_has_list_permission(user_db=user_db, permission_type=permission_type)
 
     def user_has_resource_db_permission(self, user_db, resource_db, permission_type):
         log_context = {
@@ -851,9 +822,7 @@ class ExecutionPermissionsResolver(PermissionsResolver):
         )
 
         if len(permission_grants) >= 1:
-            self._log(
-                "Found a grant on the execution action parent pack", extra=log_context
-            )
+            self._log("Found a grant on the execution action parent pack", extra=log_context)
             return True
 
         # Check grants on the action the execution belongs to
@@ -880,9 +849,7 @@ class WebhookPermissionsResolver(PermissionsResolver):
 
     def user_has_permission(self, user_db, permission_type):
         assert permission_type in [PermissionType.WEBHOOK_LIST]
-        return self._user_has_list_permission(
-            user_db=user_db, permission_type=permission_type
-        )
+        return self._user_has_list_permission(user_db=user_db, permission_type=permission_type)
 
     def user_has_resource_db_permission(self, user_db, resource_db, permission_type):
         log_context = {
@@ -932,9 +899,7 @@ class TimerPermissionsResolver(PermissionsResolver):
 
     def user_has_permission(self, user_db, permission_type):
         assert permission_type in [PermissionType.TIMER_LIST]
-        return self._user_has_list_permission(
-            user_db=user_db, permission_type=permission_type
-        )
+        return self._user_has_list_permission(user_db=user_db, permission_type=permission_type)
 
     def user_has_resource_db_permission(self, user_db, resource_db, permission_type):
         log_context = {
@@ -984,15 +949,11 @@ class ApiKeyPermissionResolver(PermissionsResolver):
 
     def user_has_permission(self, user_db, permission_type):
         assert permission_type in [PermissionType.API_KEY_LIST]
-        return self._user_has_list_permission(
-            user_db=user_db, permission_type=permission_type
-        )
+        return self._user_has_list_permission(user_db=user_db, permission_type=permission_type)
 
     def user_has_resource_api_permission(self, user_db, resource_api, permission_type):
         assert permission_type in [PermissionType.API_KEY_CREATE]
-        return self._user_has_global_permission(
-            user_db=user_db, permission_type=permission_type
-        )
+        return self._user_has_global_permission(user_db=user_db, permission_type=permission_type)
 
     def user_has_resource_db_permission(self, user_db, resource_db, permission_type):
         log_context = {
@@ -1042,9 +1003,7 @@ class TracePermissionsResolver(PermissionsResolver):
 
     def user_has_permission(self, user_db, permission_type):
         assert permission_type in [PermissionType.TRACE_LIST]
-        return self._user_has_list_permission(
-            user_db=user_db, permission_type=permission_type
-        )
+        return self._user_has_list_permission(user_db=user_db, permission_type=permission_type)
 
     def user_has_resource_db_permission(self, user_db, resource_db, permission_type):
         log_context = {
@@ -1094,9 +1053,7 @@ class TriggerPermissionsResolver(PermissionsResolver):
 
     def user_has_permission(self, user_db, permission_type):
         assert permission_type in [PermissionType.TRIGGER_LIST]
-        return self._user_has_list_permission(
-            user_db=user_db, permission_type=permission_type
-        )
+        return self._user_has_list_permission(user_db=user_db, permission_type=permission_type)
 
     def user_has_resource_db_permission(self, user_db, resource_db, permission_type):
         log_context = {
@@ -1146,9 +1103,7 @@ class PolicyTypePermissionsResolver(PermissionsResolver):
 
     def user_has_permission(self, user_db, permission_type):
         assert permission_type in [PermissionType.POLICY_TYPE_LIST]
-        return self._user_has_list_permission(
-            user_db=user_db, permission_type=permission_type
-        )
+        return self._user_has_list_permission(user_db=user_db, permission_type=permission_type)
 
     def user_has_resource_db_permission(self, user_db, resource_db, permission_type):
         log_context = {
@@ -1204,9 +1159,7 @@ class PolicyPermissionsResolver(ContentPackResourcePermissionsResolver):
 
     def user_has_permission(self, user_db, permission_type):
         assert permission_type in [PermissionType.POLICY_LIST]
-        return self._user_has_list_permission(
-            user_db=user_db, permission_type=permission_type
-        )
+        return self._user_has_list_permission(user_db=user_db, permission_type=permission_type)
 
     def user_has_resource_api_permission(self, user_db, resource_api, permission_type):
         assert permission_type in [PermissionType.POLICY_CREATE]
@@ -1237,9 +1190,7 @@ class StreamPermissionsResolver(PermissionsResolver):
 
     def user_has_permission(self, user_db, permission_type):
         assert permission_type in [PermissionType.STREAM_VIEW]
-        return self._user_has_global_permission(
-            user_db=user_db, permission_type=permission_type
-        )
+        return self._user_has_global_permission(user_db=user_db, permission_type=permission_type)
 
 
 class InquiryPermissionsResolver(PermissionsResolver):
@@ -1256,9 +1207,7 @@ class InquiryPermissionsResolver(PermissionsResolver):
             PermissionType.INQUIRY_LIST,
             PermissionType.INQUIRY_ALL,
         ]
-        return self._user_has_list_permission(
-            user_db=user_db, permission_type=permission_type
-        )
+        return self._user_has_list_permission(user_db=user_db, permission_type=permission_type)
 
     def user_has_resource_db_permission(self, user_db, resource_db, permission_type):
         """
