@@ -31,7 +31,10 @@ from st2common.models.db.rbac import PermissionGrantDB
 from st2rbac_backend.resolvers import KeyValuePermissionsResolver
 from tests.unit.test_rbac_resolvers import BasePermissionsResolverTestCase
 
-__all__ = ["KeyValuePermissionsResolver"]
+__all__ = [
+    "KeyValueSystemScopePermissionsResolverTestCase",
+    "KeyValueUserScopePermissionsResolverTestCase",
+]
 
 
 class KeyValueSystemScopePermissionsResolverTestCase(BasePermissionsResolverTestCase):
