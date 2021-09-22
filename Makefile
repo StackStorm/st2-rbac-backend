@@ -119,14 +119,14 @@ compilepy3:
 	@echo
 	@echo "================== black ===================="
 	@echo
-	. $(VIRTUALENV_DIR)/bin/activate; black --config pyproject.toml st2rbac_backend bin setup.py -l 100 --check
+	. $(VIRTUALENV_DIR)/bin/activate; black st2rbac_backend bin setup.py -l 100 --check
 
 .PHONY: .black-format
 .black-format:
 	@echo
 	@echo "================== black ===================="
 	@echo
-	. $(VIRTUALENV_DIR)/bin/activate; black --config pyproject.toml st2rbac_backend bin setup.py -l 100
+	. $(VIRTUALENV_DIR)/bin/activate; black st2rbac_backend bin setup.py -l 100
 
 .PHONY: .unit-tests
 .unit-tests:
