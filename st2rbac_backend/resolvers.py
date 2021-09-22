@@ -63,6 +63,7 @@ READ_PERMISSION_NAMES = ["view", "list", "search"]
 class PermissionsResolver(BaseRBACPermissionResolver):
     """
     Base Permissions Resolver class.
+
     Permission resolver classes implement permission resolving / checking logic for a particular
     resource type.
     """
@@ -135,6 +136,7 @@ class PermissionsResolver(BaseRBACPermissionResolver):
     def _user_has_system_role_permission(self, user_db, permission_type):
         """
         Check the user system roles and return True if user has the required permission.
+
         :rtype: ``bool``
         """
         permission_name = PermissionType.get_permission_name(permission_type)
@@ -508,9 +510,12 @@ class RulePermissionsResolver(ContentPackResourcePermissionsResolver):
     def user_has_trigger_permission(self, user_db, trigger):
         """
         Check if the user has access to the provided trigger.
+
         This method is to be used during rule create and update where we check if the user has the
         necessary trigger permissions.
+
         Note: Right now we only support webhook triggers.
+
         :param trigger: "trigger" attribute of the RuleAPI object.
         :type trigger: ``dict``
         """
@@ -1187,6 +1192,7 @@ class InquiryPermissionsResolver(PermissionsResolver):
         """
         Method for checking user permissions on an existing resource (e.g. get one, edit, delete
         operations).
+
         NOTE:
         Because we're borrowing the ActionExecutionDB model, the resource_db parameter is
         effectively ignored. All other filters are passed to get_all_permission_grants_for_user.
@@ -1281,6 +1287,7 @@ class InquiryPermissionsResolver(PermissionsResolver):
 def get_resolver_for_resource_type(resource_type):
     """
     Return resolver instance for the provided resource type.
+
     :rtype: Instance of :class:`PermissionsResolver`
     """
     if resource_type == ResourceType.RUNNER:
@@ -1329,6 +1336,7 @@ def get_resolver_for_resource_type(resource_type):
 def get_resolver_for_permission_type(permission_type):
     """
     Return resolver instance for the provided permission type.
+
     :rtype: Instance of :class:`PermissionsResolver`
     """
     resource_type = PermissionType.get_resource_type(permission_type=permission_type)
