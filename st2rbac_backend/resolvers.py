@@ -63,7 +63,6 @@ READ_PERMISSION_NAMES = ["view", "list", "search"]
 class PermissionsResolver(BaseRBACPermissionResolver):
     """
     Base Permissions Resolver class.
-
     Permission resolver classes implement permission resolving / checking logic for a particular
     resource type.
     """
@@ -136,7 +135,6 @@ class PermissionsResolver(BaseRBACPermissionResolver):
     def _user_has_system_role_permission(self, user_db, permission_type):
         """
         Check the user system roles and return True if user has the required permission.
-
         :rtype: ``bool``
         """
         permission_name = PermissionType.get_permission_name(permission_type)
@@ -381,10 +379,7 @@ class SensorPermissionsResolver(ContentPackResourcePermissionsResolver):
     """
 
     resource_type = ResourceType.SENSOR
-    view_grant_permission_types = [
-        PermissionType.SENSOR_ALL,
-        PermissionType.SENSOR_MODIFY,
-    ]
+    view_grant_permission_types = [PermissionType.SENSOR_ALL, PermissionType.SENSOR_MODIFY]
 
     def user_has_permission(self, user_db, permission_type):
         assert permission_type in [PermissionType.SENSOR_LIST]
@@ -417,15 +412,11 @@ class ActionPermissionsResolver(ContentPackResourcePermissionsResolver):
 
     def user_has_permission(self, user_db, permission_type):
         assert permission_type in [PermissionType.ACTION_LIST]
-        self._log("debugging action permissions under user_has_permission", permission_type)
         return self._user_has_list_permission(user_db=user_db, permission_type=permission_type)
 
     def user_has_resource_api_permission(self, user_db, resource_api, permission_type):
         assert permission_type in [PermissionType.ACTION_CREATE]
-        self._log(
-            "debugging action permissions under user_has_resource_api_permission",
-            permission_type,
-        )
+
         action_uid = resource_api.get_uid()
         pack_uid = resource_api.get_pack_uid()
         return self._user_has_resource_permission(
@@ -436,10 +427,6 @@ class ActionPermissionsResolver(ContentPackResourcePermissionsResolver):
         )
 
     def user_has_resource_db_permission(self, user_db, resource_db, permission_type):
-        self._log(
-            "debugging action permissions under user_has_resource_db_permission",
-            permission_type,
-        )
         action_uid = resource_db.get_uid()
         pack_uid = resource_db.get_pack_uid()
         return self._user_has_resource_permission(
@@ -521,20 +508,13 @@ class RulePermissionsResolver(ContentPackResourcePermissionsResolver):
     def user_has_trigger_permission(self, user_db, trigger):
         """
         Check if the user has access to the provided trigger.
-
         This method is to be used during rule create and update where we check if the user has the
         necessary trigger permissions.
-
         Note: Right now we only support webhook triggers.
-
         :param trigger: "trigger" attribute of the RuleAPI object.
         :type trigger: ``dict``
         """
-        log_context = {
-            "user_db": user_db,
-            "trigger": trigger,
-            "resolver": self.__class__.__name__,
-        }
+        log_context = {"user_db": user_db, "trigger": trigger, "resolver": self.__class__.__name__}
 
         trigger_type = trigger["type"]
         trigger_parameters = trigger.get("parameters", {})
@@ -799,10 +779,7 @@ class ExecutionPermissionsResolver(PermissionsResolver):
         # Note: "action_execute" also grants / implies "execution_re_run" and "execution_stop"
         if permission_type == PermissionType.EXECUTION_VIEW:
             action_permission_type = PermissionType.ACTION_VIEW
-        elif permission_type in [
-            PermissionType.EXECUTION_RE_RUN,
-            PermissionType.EXECUTION_STOP,
-        ]:
+        elif permission_type in [PermissionType.EXECUTION_RE_RUN, PermissionType.EXECUTION_STOP]:
             action_permission_type = PermissionType.ACTION_EXECUTE
         elif permission_type == PermissionType.EXECUTION_ALL:
             action_permission_type = PermissionType.ACTION_ALL
@@ -1203,17 +1180,13 @@ class InquiryPermissionsResolver(PermissionsResolver):
     ]
 
     def user_has_permission(self, user_db, permission_type):
-        assert permission_type in [
-            PermissionType.INQUIRY_LIST,
-            PermissionType.INQUIRY_ALL,
-        ]
+        assert permission_type in [PermissionType.INQUIRY_LIST, PermissionType.INQUIRY_ALL]
         return self._user_has_list_permission(user_db=user_db, permission_type=permission_type)
 
     def user_has_resource_db_permission(self, user_db, resource_db, permission_type):
         """
         Method for checking user permissions on an existing resource (e.g. get one, edit, delete
         operations).
-
         NOTE:
         Because we're borrowing the ActionExecutionDB model, the resource_db parameter is
         effectively ignored. All other filters are passed to get_all_permission_grants_for_user.
@@ -1249,9 +1222,7 @@ class InquiryPermissionsResolver(PermissionsResolver):
         # Check for explicit Inquiry grants first
         resource_types = [ResourceType.INQUIRY]
         permission_grants = rbac_service.get_all_permission_grants_for_user(
-            user_db=user_db,
-            resource_types=resource_types,
-            permission_types=permission_types,
+            user_db=user_db, resource_types=resource_types, permission_types=permission_types
         )
 
         if len(permission_grants) >= 1:
@@ -1273,10 +1244,7 @@ class InquiryPermissionsResolver(PermissionsResolver):
 
             # Check grants on the pack of the workflow that the Inquiry was generated from
             resource_types = [ResourceType.PACK]
-            permission_types = [
-                PermissionType.ACTION_ALL,
-                PermissionType.ACTION_EXECUTE,
-            ]
+            permission_types = [PermissionType.ACTION_ALL, PermissionType.ACTION_EXECUTE]
             permission_grants = rbac_service.get_all_permission_grants_for_user(
                 user_db=user_db,
                 resource_uid=wf_action_pack_uid,
@@ -1287,17 +1255,13 @@ class InquiryPermissionsResolver(PermissionsResolver):
             if len(permission_grants) >= 1:
                 log_context["wf_action_pack_uid"] = wf_action_pack_uid
                 self._log(
-                    "Found a grant on the parent pack for an inquiry workflow",
-                    extra=log_context,
+                    "Found a grant on the parent pack for an inquiry workflow", extra=log_context
                 )
                 return True
 
             # Check grants on the workflow that the Inquiry was generated from
             resource_types = [ResourceType.ACTION]
-            permission_types = [
-                PermissionType.ACTION_ALL,
-                PermissionType.ACTION_EXECUTE,
-            ]
+            permission_types = [PermissionType.ACTION_ALL, PermissionType.ACTION_EXECUTE]
             permission_grants = rbac_service.get_all_permission_grants_for_user(
                 user_db=user_db,
                 resource_uid=wf_action_uid,
@@ -1317,7 +1281,6 @@ class InquiryPermissionsResolver(PermissionsResolver):
 def get_resolver_for_resource_type(resource_type):
     """
     Return resolver instance for the provided resource type.
-
     :rtype: Instance of :class:`PermissionsResolver`
     """
     if resource_type == ResourceType.RUNNER:
@@ -1366,7 +1329,6 @@ def get_resolver_for_resource_type(resource_type):
 def get_resolver_for_permission_type(permission_type):
     """
     Return resolver instance for the provided permission type.
-
     :rtype: Instance of :class:`PermissionsResolver`
     """
     resource_type = PermissionType.get_resource_type(permission_type=permission_type)
