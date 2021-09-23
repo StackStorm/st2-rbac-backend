@@ -477,3 +477,150 @@ class KeyValueUserScopePermissionsResolverTestCase(BasePermissionsResolverTestCa
             resource_db=resource_db,
             permission_types=all_permission_types,
         )
+
+    def test_get_system_key_user_permissions_success(self):
+
+        resolver = KeyValuePermissionsResolver()
+        user_1_db = UserDB(name="testuser1")
+        user_1_db = User.add_or_update(user_1_db)
+        self.users["testuser1"] = user_1_db
+
+        kvp_1_db = KeyValuePairDB(
+            uid="key_value_pair:st2kv.system:key1",
+            scope="st2kv.system",
+            name="key1",
+            value="val1",
+        )
+        kvp_1_db = KeyValuePair.add_or_update(kvp_1_db)
+        self.resources["user_role_2"] = kvp_1_db
+
+        resource_db = self.resources["user_role_2"]
+
+        grant_db = PermissionGrantDB(
+            resource_uid=self.resources["user_role_2"].get_uid(),
+            resource_type=ResourceType.KEY_VALUE_PAIR,
+            permission_types=[PermissionType.KEY_VALUE_VIEW],
+        )
+        grant_db = PermissionGrant.add_or_update(grant_db)
+        permission_grants = [str(grant_db.id)]
+
+        role_1_db = RoleDB(
+            name="key_value_pair_list_grant",
+            permission_grants=permission_grants,
+        )
+        role_1_db = Role.add_or_update(role_1_db)
+        self.roles["key_value_pair_list_grant"] = role_1_db
+
+        user_db = self.users["testuser1"]
+        role_assignment_db = UserRoleAssignmentDB(
+            user=user_db.name,
+            role=self.roles["key_value_pair_list_grant"].name,
+            source="assignments/%s.yaml" % user_db.name,
+        )
+        UserRoleAssignment.add_or_update(role_assignment_db)
+
+        # Default for user on user owned KVPs
+        self.assertUserHasResourceDbPermission(
+            resolver=resolver,
+            user_db=user_db,
+            resource_db=resource_db,
+            permission_type=PermissionType.KEY_VALUE_VIEW,
+        )
+
+    def test_set_system_key_user_permissions_success(self):
+
+        resolver = KeyValuePermissionsResolver()
+        user_1_db = UserDB(name="testuser1")
+        user_1_db = User.add_or_update(user_1_db)
+        self.users["testuser1"] = user_1_db
+
+        kvp_1_db = KeyValuePairDB(
+            uid="key_value_pair:st2kv.system:key2",
+            scope="st2kv.system",
+            name="key2",
+            value="val2",
+        )
+        kvp_1_db = KeyValuePair.add_or_update(kvp_1_db)
+        self.resources["user_role_3"] = kvp_1_db
+
+        resource_db = self.resources["user_role_3"]
+
+        grant_db = PermissionGrantDB(
+            resource_uid=self.resources["user_role_3"].get_uid(),
+            resource_type=ResourceType.KEY_VALUE_PAIR,
+            permission_types=[PermissionType.KEY_VALUE_SET],
+        )
+        grant_db = PermissionGrant.add_or_update(grant_db)
+        permission_grants = [str(grant_db.id)]
+
+        role_1_db = RoleDB(
+            name="key_value_pair_create_grant",
+            permission_grants=permission_grants,
+        )
+        role_1_db = Role.add_or_update(role_1_db)
+        self.roles["key_value_pair_create_grant"] = role_1_db
+
+        user_db = self.users["testuser1"]
+        role_assignment_db = UserRoleAssignmentDB(
+            user=user_db.name,
+            role=self.roles["key_value_pair_create_grant"].name,
+            source="assignments/%s.yaml" % user_db.name,
+        )
+        UserRoleAssignment.add_or_update(role_assignment_db)
+
+        # Default for user on user owned KVPs
+        self.assertUserHasResourceDbPermission(
+            resolver=resolver,
+            user_db=user_db,
+            resource_db=resource_db,
+            permission_type=PermissionType.KEY_VALUE_SET,
+        )
+
+    def test_delete_system_key_user_permissions_success(self):
+
+        resolver = KeyValuePermissionsResolver()
+        user_1_db = UserDB(name="testuser1")
+        user_1_db = User.add_or_update(user_1_db)
+        self.users["testuser1"] = user_1_db
+
+        kvp_1_db = KeyValuePairDB(
+            uid="key_value_pair:st2kv.system:key1",
+            scope="st2kv.system",
+            name="key2",
+            value="val2",
+        )
+        kvp_1_db = KeyValuePair.add_or_update(kvp_1_db)
+        self.resources["user_role_4"] = kvp_1_db
+
+        resource_db = self.resources["user_role_4"]
+
+        grant_db = PermissionGrantDB(
+            resource_uid=self.resources["user_role_4"].get_uid(),
+            resource_type=ResourceType.KEY_VALUE_PAIR,
+            permission_types=[PermissionType.KEY_VALUE_DELETE],
+        )
+        grant_db = PermissionGrant.add_or_update(grant_db)
+        permission_grants = [str(grant_db.id)]
+
+        role_1_db = RoleDB(
+            name="key_value_pair_delete_grant",
+            permission_grants=permission_grants,
+        )
+        role_1_db = Role.add_or_update(role_1_db)
+        self.roles["key_value_pair_delete_grant"] = role_1_db
+
+        user_db = self.users["testuser1"]
+        role_assignment_db = UserRoleAssignmentDB(
+            user=user_db.name,
+            role=self.roles["key_value_pair_delete_grant"].name,
+            source="assignments/%s.yaml" % user_db.name,
+        )
+        UserRoleAssignment.add_or_update(role_assignment_db)
+
+        # Default for user on user owned KVPs
+        self.assertUserHasResourceDbPermission(
+            resolver=resolver,
+            user_db=user_db,
+            resource_db=resource_db,
+            permission_type=PermissionType.KEY_VALUE_DELETE,
+        )
