@@ -723,7 +723,7 @@ class KeyValuePermissionsResolver(PermissionsResolver):
             # grant / imply "view" permission
             permission_types = self.view_grant_permission_types[:] + [permission_type]
         else:
-            permission_types = [PermissionType.KEY_VALUE_ALL, permission_type]
+            permission_types = [permission_type]
 
         permission_grants = rbac_service.get_all_permission_grants_for_user(
             user_db=user_db,
