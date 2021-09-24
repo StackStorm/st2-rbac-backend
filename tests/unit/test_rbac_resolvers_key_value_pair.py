@@ -39,6 +39,7 @@ __all__ = [
     "KeyValueUserScopePermissionsResolverTestCase",
 ]
 
+
 class KeyValuePermissionsResolverTestCase(BasePermissionsResolverTestCase):
     @classmethod
     def setUpClass(cls):
