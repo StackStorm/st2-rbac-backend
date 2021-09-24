@@ -688,7 +688,7 @@ class KeyValueUserScopePermissionsResolverTestCase(KeyValuePermissionsResolverTe
                 permission_types=self.write_permission_types,
             )
 
-    def test_user_permissions_on_another_user_kvps(self):
+    def test_user_permissions_for_another_user_kvps(self):
         resolver = KeyValuePermissionsResolver()
 
         # Setup users. No explicit grant, role, and assignment records should be
@@ -762,6 +762,59 @@ class KeyValueUserScopePermissionsResolverTestCase(KeyValuePermissionsResolverTe
         self.assertUserDoesntHaveResourceDbPermissions(
             resolver=resolver,
             user_db=user_2_db,
+            resource_db=kvp_1_db,
+            permission_types=self.write_permission_types,
+        )
+
+    def test_admin_permissions_for_user_scoped_kvps(self):
+        resolver = KeyValuePermissionsResolver()
+
+        admin_user_db = self.users["admin"]
+
+        # Setup users. No explicit grant, role, and assignment records should be
+        # required for user to access their KVPs
+        user_1_db = UserDB(name="user105")
+        user_1_db = User.add_or_update(user_1_db)
+        self.users[user_1_db.name] = user_1_db
+
+        # Insert user scoped key value pairs for user1.
+        key_1_name = "mykey5"
+        key_1_ref = get_key_reference(FULL_USER_SCOPE, key_1_name, user_1_db.name)
+        kvp_1_db = KeyValuePairDB(
+            uid="%s:%s:%s" % (ResourceType.KEY_VALUE_PAIR, FULL_USER_SCOPE, key_1_ref),
+            scope=FULL_USER_SCOPE,
+            name=key_1_ref,
+            value="myval5",
+        )
+        kvp_1_db = KeyValuePair.add_or_update(kvp_1_db)
+        self.resources[kvp_1_db.uid] = kvp_1_db
+
+        # Admin user should not have general list permissions on user1's kvps.
+        self.assertUserDoesntHaveResourceDbPermission(
+            resolver=resolver,
+            user_db=admin_user_db,
+            resource_db=KeyValuePairDB(scope="%s:%s" % (FULL_USER_SCOPE, user_1_db.name)),
+            permission_type=PermissionType.KEY_VALUE_PAIR_LIST,
+        )
+
+        # User2 should not have any permissions on another user1's kvp.
+        self.assertUserDoesntHaveResourceDbPermission(
+            resolver=resolver,
+            user_db=admin_user_db,
+            resource_db=kvp_1_db,
+            permission_type=PermissionType.KEY_VALUE_PAIR_ALL,
+        )
+
+        self.assertUserDoesntHaveResourceDbPermissions(
+            resolver=resolver,
+            user_db=admin_user_db,
+            resource_db=kvp_1_db,
+            permission_types=self.read_permission_types,
+        )
+
+        self.assertUserDoesntHaveResourceDbPermissions(
+            resolver=resolver,
+            user_db=admin_user_db,
             resource_db=kvp_1_db,
             permission_types=self.write_permission_types,
         )

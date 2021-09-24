@@ -26,7 +26,7 @@ from st2common import log as logging
 from st2common.models.db.pack import PackDB
 from st2common.models.db.webhook import WebhookDB
 from st2common.models.system.common import ResourceReference
-from st2common.constants.keyvalue import FULL_USER_SCOPE
+from st2common.constants.keyvalue import FULL_SYSTEM_SCOPE, FULL_USER_SCOPE
 from st2common.constants.triggers import WEBHOOK_TRIGGER_TYPE
 from st2common.persistence.execution import ActionExecution
 from st2common.rbac.backends.base import BaseRBACPermissionResolver
@@ -718,7 +718,7 @@ class KeyValuePermissionsResolver(PermissionsResolver):
             user_db=user_db, permission_type=permission_type
         )
 
-        if has_system_role_permission:
+        if resource_db.scope == FULL_SYSTEM_SCOPE and has_system_role_permission:
             self._log("Found a matching grant via system role", extra=log_context)
             return True
 
