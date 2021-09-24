@@ -275,7 +275,7 @@ class KeyValuesControllerRBACTestCase(APIControllerWithRBACTestCase):
 
         # view permission type for system user
         grant_2_db = PermissionGrantDB(
-            resource_uid="key_value_pair:st2kv.system:user3:test_system_scope",
+            resource_uid="key_value_pair:st2kv.system:test_system_scope",
             resource_type=ResourceType.KEY_VALUE_PAIR,
             permission_types=[PermissionType.KEY_VALUE_PAIR_VIEW],
         )
