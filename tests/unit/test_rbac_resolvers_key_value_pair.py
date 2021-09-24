@@ -73,7 +73,9 @@ class KeyValueSystemScopePermissionsResolverTestCase(KeyValuePermissionsResolver
         kvp_1_db = KeyValuePair.add_or_update(kvp_1_db)
         self.resources[kvp_1_db.uid] = kvp_1_db
 
-        kvp_2_db = KeyValuePairDB(scope=FULL_SYSTEM_SCOPE,
+        kvp_2_db = KeyValuePairDB(
+            uid="%s:%s:key2" % (ResourceType.KEY_VALUE_PAIR, FULL_SYSTEM_SCOPE),
+            scope=FULL_SYSTEM_SCOPE,
             name="key2",
             value="val2",
         )
@@ -582,7 +584,7 @@ class KeyValueUserScopePermissionsResolverTestCase(KeyValuePermissionsResolverTe
     def test_user_permissions_for_user_scope_kvps(self):
         resolver = KeyValuePermissionsResolver()
 
-        # Setup users. No explicit grant, role, and assignment records should be 
+        # Setup users. No explicit grant, role, and assignment records should be
         # required for user to access their KVPs
         user_1_db = UserDB(name="user101")
         user_1_db = User.add_or_update(user_1_db)
@@ -688,7 +690,7 @@ class KeyValueUserScopePermissionsResolverTestCase(KeyValuePermissionsResolverTe
     def test_user_permissions_on_another_user_kvps(self):
         resolver = KeyValuePermissionsResolver()
 
-        # Setup users. No explicit grant, role, and assignment records should be 
+        # Setup users. No explicit grant, role, and assignment records should be
         # required for user to access their KVPs
         user_1_db = UserDB(name="user103")
         user_1_db = User.add_or_update(user_1_db)
