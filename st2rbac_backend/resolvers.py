@@ -26,6 +26,7 @@ from st2common import log as logging
 from st2common.models.db.pack import PackDB
 from st2common.models.db.webhook import WebhookDB
 from st2common.models.system.common import ResourceReference
+from st2common.constants.keyvalue import FULL_USER_SCOPE
 from st2common.constants.triggers import WEBHOOK_TRIGGER_TYPE
 from st2common.persistence.execution import ActionExecution
 from st2common.rbac.backends.base import BaseRBACPermissionResolver
@@ -681,15 +682,26 @@ class KeyValuePermissionsResolver(PermissionsResolver):
     """
 
     resource_type = ResourceType.KEY_VALUE_PAIR
+
     view_grant_permission_types = [
-        PermissionType.KEY_VALUE_ALL,
-        PermissionType.KEY_VALUE_DELETE,
-        PermissionType.KEY_VALUE_SET,
-        PermissionType.KEY_VALUE_LIST,
+        PermissionType.get_permission_type(resource_type, "list"),
+        PermissionType.get_permission_type(resource_type, "set"),
+        PermissionType.get_permission_type(resource_type, "delete"),
+        PermissionType.get_permission_type(resource_type, "all"),
     ]
 
+    list_permission_type = PermissionType.get_permission_type(resource_type, "list")
+
+    view_permission_types = [
+        PermissionType.get_permission_type(resource_type, "list"),
+        PermissionType.get_permission_type(resource_type, "view"),
+    ]
+
+    all_permission_type = PermissionType.get_permission_type(resource_type, "all")
+
     def user_has_permission(self, user_db, permission_type):
-        assert permission_type in [PermissionType.KEY_VALUE_LIST]
+        assert permission_type in [self.list_permission_type]
+
         return self._user_has_list_permission(user_db=user_db, permission_type=permission_type)
 
     def user_has_resource_db_permission(self, user_db, resource_db, permission_type):
@@ -710,25 +722,37 @@ class KeyValuePermissionsResolver(PermissionsResolver):
             self._log("Found a matching grant via system role", extra=log_context)
             return True
 
-        # Check custom roles
-        view_permission_type = PermissionType.get_permission_type(
-            resource_type="key_value", permission_name="view"
-        )
+        # Second check if this is for user scoped key-value pairs
+        key_prefix = user_db.name + ":"
+        if (resource_db.scope == "%s:%s" % (FULL_USER_SCOPE, user_db.name)) or (
+            resource_db.scope == FULL_USER_SCOPE and resource_db.name.startswith(key_prefix)
+        ):
+            self._log("Found default grant for the user scoped key value pair", extra=log_context)
+            return True
+
+        # Third check if this is a user scoped key-value pairs for another user
+        key_prefix = user_db.name + ":"
+        if resource_db.scope.startswith(
+            "%s:" % FULL_USER_SCOPE
+        ) and resource_db.scope != "%s:%s" % (FULL_USER_SCOPE, user_db.name):
+            self._log("User is trying to access another user's key value pairs", extra=log_context)
+            return False
+        if resource_db.scope == FULL_USER_SCOPE and not resource_db.name.startswith(key_prefix):
+            self._log("User is trying to access another user's key value pair", extra=log_context)
+            return False
 
         # Check custom roles and permission grants
-        resource_uid = resource_db.get_uid()
-        resource_types = [ResourceType.KEY_VALUE_PAIR]
-        if permission_type == view_permission_type:
-            # Note: Some permissions such as "create", "delete" and "all" also
+        if permission_type in self.view_permission_types:
+            # Note: Some permissions such as "create", "modify", "delete" and "execute" also
             # grant / imply "view" permission
             permission_types = self.view_grant_permission_types[:] + [permission_type]
         else:
-            permission_types = [PermissionType.KEY_VALUE_ALL, permission_type]
+            permission_types = [self.all_permission_type, permission_type]
 
         permission_grants = rbac_service.get_all_permission_grants_for_user(
             user_db=user_db,
-            resource_uid=resource_uid,
-            resource_types=resource_types,
+            resource_uid=resource_db.get_uid(),
+            resource_types=[self.resource_type],
             permission_types=permission_types,
         )
 
@@ -737,6 +761,7 @@ class KeyValuePermissionsResolver(PermissionsResolver):
             return True
 
         self._log("No matching grants found", extra=log_context)
+
         return False
 
 

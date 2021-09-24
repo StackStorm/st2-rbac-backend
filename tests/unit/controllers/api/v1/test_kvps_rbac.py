@@ -105,26 +105,26 @@ class KeyValuesControllerRBACTestCase(APIControllerWithRBACTestCase):
         grant_1_db = PermissionGrantDB(
             resource_uid="key_value_pair:st2kv.user:user1:",
             resource_type=ResourceType.KEY_VALUE_PAIR,
-            permission_types=[PermissionType.KEY_VALUE_LIST],
+            permission_types=[PermissionType.KEY_VALUE_PAIR_LIST],
         )
         grant_1_db = PermissionGrant.add_or_update(grant_1_db)
         # view permission type for user
         grant_10_db = PermissionGrantDB(
             resource_uid="key_value_pair:st2kv.user:user1:test_user_scope_3",
             resource_type=ResourceType.KEY_VALUE_PAIR,
-            permission_types=[PermissionType.KEY_VALUE_VIEW],
+            permission_types=[PermissionType.KEY_VALUE_PAIR_VIEW],
         )
         grant_10_db = PermissionGrant.add_or_update(grant_10_db)
         grant_11_db = PermissionGrantDB(
             resource_uid="key_value_pair:st2kv.user:user1:test_user_scope_2",
             resource_type=ResourceType.KEY_VALUE_PAIR,
-            permission_types=[PermissionType.KEY_VALUE_VIEW],
+            permission_types=[PermissionType.KEY_VALUE_PAIR_VIEW],
         )
         grant_11_db = PermissionGrant.add_or_update(grant_11_db)
         grant_12_db = PermissionGrantDB(
             resource_uid="key_value_pair:st2kv.user:user1:test_user_scope_1",
             resource_type=ResourceType.KEY_VALUE_PAIR,
-            permission_types=[PermissionType.KEY_VALUE_VIEW],
+            permission_types=[PermissionType.KEY_VALUE_PAIR_VIEW],
         )
         grant_12_db = PermissionGrant.add_or_update(grant_12_db)
 
@@ -132,7 +132,7 @@ class KeyValuesControllerRBACTestCase(APIControllerWithRBACTestCase):
         grant_13_db = PermissionGrantDB(
             resource_uid="key_value_pair:st2kv.system:user1:test_system_scope",
             resource_type=ResourceType.KEY_VALUE_PAIR,
-            permission_types=[PermissionType.KEY_VALUE_VIEW],
+            permission_types=[PermissionType.KEY_VALUE_PAIR_VIEW],
         )
         grant_13_db = PermissionGrant.add_or_update(grant_13_db)
 
@@ -140,7 +140,7 @@ class KeyValuesControllerRBACTestCase(APIControllerWithRBACTestCase):
         grant_14_db = PermissionGrantDB(
             resource_uid="key_value_pair:st2kv.system:test_system_scope",
             resource_type=ResourceType.KEY_VALUE_PAIR,
-            permission_types=[PermissionType.KEY_VALUE_DELETE],
+            permission_types=[PermissionType.KEY_VALUE_PAIR_DELETE],
         )
         grant_14_db = PermissionGrant.add_or_update(grant_14_db)
         permission_grants = [
@@ -173,13 +173,13 @@ class KeyValuesControllerRBACTestCase(APIControllerWithRBACTestCase):
         grant_db = PermissionGrantDB(
             resource_uid="key_value_pair:st2kv.system:",
             resource_type=ResourceType.KEY_VALUE_PAIR,
-            permission_types=[PermissionType.KEY_VALUE_LIST],
+            permission_types=[PermissionType.KEY_VALUE_PAIR_LIST],
         )
         grant_db = PermissionGrant.add_or_update(grant_db)
         grant_9_db = PermissionGrantDB(
             resource_uid="key_value_pair:st2kv.user:user2:test_user_scope_3",
             resource_type=ResourceType.KEY_VALUE_PAIR,
-            permission_types=[PermissionType.KEY_VALUE_VIEW],
+            permission_types=[PermissionType.KEY_VALUE_PAIR_VIEW],
         )
         grant_9_db = PermissionGrant.add_or_update(grant_9_db)
         permission_grants = [str(grant_db.id), str(grant_9_db.id)]
@@ -277,7 +277,7 @@ class KeyValuesControllerRBACTestCase(APIControllerWithRBACTestCase):
         grant_2_db = PermissionGrantDB(
             resource_uid="key_value_pair:st2kv.system:user3:test_system_scope",
             resource_type=ResourceType.KEY_VALUE_PAIR,
-            permission_types=[PermissionType.KEY_VALUE_VIEW],
+            permission_types=[PermissionType.KEY_VALUE_PAIR_VIEW],
         )
         grant_2_db = PermissionGrant.add_or_update(grant_2_db)
         permission_grants = [str(grant_2_db.id)]
@@ -338,13 +338,13 @@ class KeyValuesControllerRBACTestCase(APIControllerWithRBACTestCase):
         grant_db = PermissionGrantDB(
             resource_uid="key_value_pair:st2kv.system:",
             resource_type=ResourceType.KEY_VALUE_PAIR,
-            permission_types=[PermissionType.KEY_VALUE_LIST],
+            permission_types=[PermissionType.KEY_VALUE_PAIR_LIST],
         )
         grant_db = PermissionGrant.add_or_update(grant_db)
         grant_9_db = PermissionGrantDB(
             resource_uid="key_value_pair:st2kv.user:user2:test_user_scope_3",
             resource_type=ResourceType.KEY_VALUE_PAIR,
-            permission_types=[PermissionType.KEY_VALUE_VIEW],
+            permission_types=[PermissionType.KEY_VALUE_PAIR_VIEW],
         )
         grant_9_db = PermissionGrant.add_or_update(grant_9_db)
         permission_grants = [str(grant_db.id), str(grant_9_db.id)]
@@ -419,13 +419,13 @@ class KeyValuesControllerRBACTestCase(APIControllerWithRBACTestCase):
         grant_7_db = PermissionGrantDB(
             resource_uid="key_value_pair:st2kv.user:user6:test_new_key_3",
             resource_type=ResourceType.KEY_VALUE_PAIR,
-            permission_types=[PermissionType.KEY_VALUE_SET],
+            permission_types=[PermissionType.KEY_VALUE_PAIR_SET],
         )
         grant_7_db = PermissionGrant.add_or_update(grant_7_db)
         grant_8_db = PermissionGrantDB(
             resource_uid="key_value_pair:st2kv.user:user6:test_new_key_3",
             resource_type=ResourceType.KEY_VALUE_PAIR,
-            permission_types=[PermissionType.KEY_VALUE_VIEW],
+            permission_types=[PermissionType.KEY_VALUE_PAIR_VIEW],
         )
         grant_8_db = PermissionGrant.add_or_update(grant_8_db)
         permission_grants = [str(grant_7_db.id), str(grant_8_db.id)]
@@ -496,13 +496,13 @@ class KeyValuesControllerRBACTestCase(APIControllerWithRBACTestCase):
         grant_5_db = PermissionGrantDB(
             resource_uid="key_value_pair:st2kv.user:user5:test_user_scope_1",
             resource_type=ResourceType.KEY_VALUE_PAIR,
-            permission_types=[PermissionType.KEY_VALUE_VIEW],
+            permission_types=[PermissionType.KEY_VALUE_PAIR_VIEW],
         )
         grant_5_db = PermissionGrant.add_or_update(grant_5_db)
         grant_6_db = PermissionGrantDB(
             resource_uid="key_value_pair:st2kv.user:user5:test_user_scope_8",
             resource_type=ResourceType.KEY_VALUE_PAIR,
-            permission_types=[PermissionType.KEY_VALUE_DELETE],
+            permission_types=[PermissionType.KEY_VALUE_PAIR_DELETE],
         )
         grant_6_db = PermissionGrant.add_or_update(grant_6_db)
         permission_grants = [str(grant_5_db.id), str(grant_6_db.id)]
