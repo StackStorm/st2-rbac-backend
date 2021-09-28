@@ -702,7 +702,8 @@ class KeyValuePermissionsResolver(PermissionsResolver):
     def user_has_permission(self, user_db, permission_type):
         assert permission_type in [self.list_permission_type]
 
-        return self._user_has_list_permission(user_db=user_db, permission_type=permission_type)
+        # By default, user has access to their own user scoped KVPs, thus user has list permission.
+        return True
 
     def user_has_resource_db_permission(self, user_db, resource_db, permission_type):
         log_context = {
