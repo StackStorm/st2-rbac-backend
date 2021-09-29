@@ -35,7 +35,6 @@ from st2common.rbac.types import PermissionType
 from st2common.rbac.types import ResourceType
 from st2common.rbac.types import SystemRole
 from st2common.rbac.types import GLOBAL_PACK_PERMISSION_TYPES
-from st2common.models.db.rbac import RoleDB
 
 LOG = logging.getLogger(__name__)
 
@@ -748,15 +747,6 @@ class KeyValuePermissionsResolver(PermissionsResolver):
             # Note: Some permissions such as "create", "modify", "delete" and "execute" also
             # grant / imply "view" permission
             permission_types = self.view_grant_permission_types[:] + [permission_type]
-            # Create role, permission grant for the permission types which doesn't exist
-            result = rbac_service.get_role_by_name(name=permission_type)
-            user_role = rbac_service.get_role_assignments_for_user(user_db, include_remote=True)
-            if len(user_role) > 0:
-               role = user_role[0].role
-            if result is None and (role == PermissionType.KEY_VALUE_PAIR_VIEW or role == PermissionType.KEY_VALUE_PAIR_LIST):
-                role_db = rbac_service.create_role(name=permission_type, description="Role of %s" % permission_type)
-                role_details = rbac_service.assign_role_to_user(role_db=role_db, user_db=user_db, source='assignments/%s.yaml' % user_db.name)
-                permission_grant = rbac_service.create_permission_grant_for_resource_db(role_db=role_db, resource_db=resource_db, permission_types=permission_types)        
         else:
             permission_types = [self.all_permission_type, permission_type]
 
