@@ -39,7 +39,12 @@ LOG = logging.getLogger(__name__)
 
 http_client = six.moves.http_client
 
-__all__ = ["KeyValuesControllerRBACTestCase", "KeyValueSystemScopeControllerRBACTestCase", "KeyValueUserScopeControllerRBACTestCase"]
+__all__ = [
+    "KeyValuesControllerRBACTestCase",
+    "KeyValueSystemScopeControllerRBACTestCase",
+    "KeyValueUserScopeControllerRBACTestCase",
+]
+
 
 class KeyValuesControllerRBACTestCase(APIControllerWithRBACTestCase):
     @classmethod
@@ -61,6 +66,7 @@ class KeyValuesControllerRBACTestCase(APIControllerWithRBACTestCase):
             PermissionType.KEY_VALUE_PAIR_SET,
             PermissionType.KEY_VALUE_PAIR_DELETE,
         ]
+
 
 class KeyValueSystemScopeControllerRBACTestCase(KeyValuesControllerRBACTestCase):
     def setUp(self):
@@ -87,74 +93,79 @@ class KeyValueSystemScopeControllerRBACTestCase(KeyValuesControllerRBACTestCase)
 
     def test_user_get_all_for_system_scope_kvps(self):
 
-            kvp_1_uid = "%s:%s:key1" % (ResourceType.KEY_VALUE_PAIR, FULL_SYSTEM_SCOPE)
-            # kvp_1_db = self.kvps[kvp_1_uid]
+        kvp_1_uid = "%s:%s:key1" % (ResourceType.KEY_VALUE_PAIR, FULL_SYSTEM_SCOPE)
+        # kvp_1_db = self.kvps[kvp_1_uid]
 
-            # Setup user, grant, role, and assignment records
-            user_db = UserDB(name="system_key1_all")
-            user_db = User.add_or_update(user_db)
-            self.users[user_db.name] = user_db
+        # Setup user, grant, role, and assignment records
+        user_db = UserDB(name="system_key1_all")
+        user_db = User.add_or_update(user_db)
+        self.users[user_db.name] = user_db
 
-            # role assignment
-            grant_db = PermissionGrantDB(
+        # role assignment
+        grant_db = PermissionGrantDB(
             resource_uid=kvp_1_uid,
             resource_type=ResourceType.KEY_VALUE_PAIR,
             permission_types=[PermissionType.KEY_VALUE_PAIR_ALL],
-            )
-            grant_db = PermissionGrant.add_or_update(grant_db)
+        )
+        grant_db = PermissionGrant.add_or_update(grant_db)
 
-            role_db = RoleDB(
-                name="custom_role_system_key1_all_grant",
-                permission_grants=[str(grant_db.id)],
-            )
-            role_db = Role.add_or_update(role_db)
-            self.roles[role_db.name] = role_db
+        role_db = RoleDB(
+            name="custom_role_system_key1_all_grant",
+            permission_grants=[str(grant_db.id)],
+        )
+        role_db = Role.add_or_update(role_db)
+        self.roles[role_db.name] = role_db
 
-            role_assignment_db = UserRoleAssignmentDB(
-                user=user_db.name,
-                role=role_db.name,
-                source="assignments/%s.yaml" % user_db.name,
-            )
-            UserRoleAssignment.add_or_update(role_assignment_db)
+        role_assignment_db = UserRoleAssignmentDB(
+            user=user_db.name,
+            role=role_db.name,
+            source="assignments/%s.yaml" % user_db.name,
+        )
+        UserRoleAssignment.add_or_update(role_assignment_db)
 
-            # # User should not have general list permissions on system kvps.
-            self.use_user(self.users["system_key1_all"])
+        # # User should not have general list permissions on system kvps.
+        self.use_user(self.users["system_key1_all"])
 
-            # User should have read and write permissions on system kvp key1.
-            data1 = {
+        # User should have read and write permissions on system kvp key1.
+        data1 = {
             "name": "key1",
             "value": "val1",
             "scope": FULL_SYSTEM_SCOPE,
             "user": "system_key1_all",
-            }
-            resp = self.app.put_json("/v1/keys/key1", data1, expect_errors=True)
-            self.assertEqual(resp.status_int, 200)
+        }
+        resp = self.app.put_json("/v1/keys/key1", data1, expect_errors=True)
+        self.assertEqual(resp.status_int, 200)
 
-            resp = self.app.get("/v1/keys/%s"  % (self.kvps["kvp_1_api"].name))
-            self.assertEqual(resp.status_code, http_client.OK)
-            resp = self.app.get("/v1/keys/key1?scope=st2kv.system")
-            self.assertEqual(resp.status_int, 200)
+        resp = self.app.get("/v1/keys/%s" % (self.kvps["kvp_1_api"].name))
+        self.assertEqual(resp.status_code, http_client.OK)
+        resp = self.app.get("/v1/keys/key1?scope=st2kv.system")
+        self.assertEqual(resp.status_int, 200)
 
-            resp = self.app.delete("/v1/keys/%s" % (self.kvps["kvp_1_api"].name))
-            self.assertEqual(resp.status_code, http_client.NO_CONTENT)
+        resp = self.app.delete("/v1/keys/%s" % (self.kvps["kvp_1_api"].name))
+        self.assertEqual(resp.status_code, http_client.NO_CONTENT)
 
-            # User should have no read and no write permissions on system kvp key2.
-            data = {
+        # User should have no read and no write permissions on system kvp key2.
+        data = {
             "name": "key2",
             "value": "val2",
             "scope": FULL_SYSTEM_SCOPE,
             "user": "system_key1_all",
-            }
-            resp = self.app.put_json("/v1/keys/key2", data, expect_errors=True)
-            self.assertEqual(resp.status_code, http_client.FORBIDDEN)
-            resp = self.app.delete("/v1/keys/%s" % (self.kvps["kvp_2_api"].name), expect_errors=True)
-            self.assertEqual(resp.status_code, http_client.FORBIDDEN)
+        }
+        resp = self.app.put_json("/v1/keys/key2", data, expect_errors=True)
+        self.assertEqual(resp.status_code, http_client.FORBIDDEN)
+        resp = self.app.delete(
+            "/v1/keys/%s" % (self.kvps["kvp_2_api"].name), expect_errors=True
+        )
+        self.assertEqual(resp.status_code, http_client.FORBIDDEN)
 
-            resp = self.app.get("/v1/keys/%s?scope=st2kv.system"  % (self.kvps["kvp_2_api"].name), expect_errors=True)
-            self.assertEqual(resp.status_code, http_client.FORBIDDEN)
-            resp = self.app.get("/v1/keys/key2?scope=st2kv.system", expect_errors=True)
-            self.assertEqual(resp.status_code, http_client.FORBIDDEN)
- 
+        resp = self.app.get(
+            "/v1/keys/%s?scope=st2kv.system" % (self.kvps["kvp_2_api"].name),
+            expect_errors=True,
+        )
+        self.assertEqual(resp.status_code, http_client.FORBIDDEN)
+        resp = self.app.get("/v1/keys/key2?scope=st2kv.system", expect_errors=True)
+        self.assertEqual(resp.status_code, http_client.FORBIDDEN)
+
     def test_admin_get_all_for_system_scope_kvps(self):
         # Admin user should have general list permissions on system kvps.
         self.use_user(self.users["admin"])
@@ -173,10 +184,10 @@ class KeyValueSystemScopeControllerRBACTestCase(KeyValuesControllerRBACTestCase)
             self.assertEqual(resp.status_int, 200)
 
             data1 = {
-            "name": "key1",
-            "value": "val1",
-            "scope": FULL_SYSTEM_SCOPE,
-            "user": "system_key1_all",
+                "name": "key1",
+                "value": "val1",
+                "scope": FULL_SYSTEM_SCOPE,
+                "user": "system_key1_all",
             }
             resp = self.app.put_json("/v1/keys/key1", data1, expect_errors=True)
             self.assertEqual(resp.status_int, 200)
@@ -188,7 +199,7 @@ class KeyValueSystemScopeControllerRBACTestCase(KeyValuesControllerRBACTestCase)
             self.assertEqual(resp.status_code, http_client.NO_CONTENT)
 
     def test_observer_for_system_scope_kvps(self):
-     
+
         # Observer user should have general list permissions on system kvps.
         self.use_user(self.users["observer"])
         resp = self.app.get("/v1/keys?limit=-1", expect_errors=True)
@@ -208,17 +219,17 @@ class KeyValueSystemScopeControllerRBACTestCase(KeyValuesControllerRBACTestCase)
             self.assertEqual(resp.status_int, 200)
 
             data1 = {
-            "name": "key1",
-            "value": "val1",
-            "scope": FULL_SYSTEM_SCOPE,
-            "user": "system_key1_all",
+                "name": "key1",
+                "value": "val1",
+                "scope": FULL_SYSTEM_SCOPE,
+                "user": "system_key1_all",
             }
             resp = self.app.put_json("/v1/keys/key1", data1, expect_errors=True)
             self.assertEqual(resp.status_code, http_client.FORBIDDEN)
 
             resp = self.app.delete("/v1/keys/%s" % (k), expect_errors=True)
             self.assertEqual(resp.status_code, http_client.FORBIDDEN)
-    
+
     def test_get_one_system_scope(self):
 
         kvp_1_uid = "%s:%s:key1" % (ResourceType.KEY_VALUE_PAIR, FULL_SYSTEM_SCOPE)
@@ -262,10 +273,12 @@ class KeyValueSystemScopeControllerRBACTestCase(KeyValuesControllerRBACTestCase)
             "value": "val2",
             "scope": FULL_SYSTEM_SCOPE,
             "user": "system_key1_all",
-            }
+        }
         resp = self.app.put_json("/v1/keys/key2", data, expect_errors=True)
         self.assertEqual(resp.status_code, http_client.FORBIDDEN)
-        resp = self.app.delete("/v1/keys/%s" % (self.kvps["kvp_2_api"].name), expect_errors=True)
+        resp = self.app.delete(
+            "/v1/keys/%s" % (self.kvps["kvp_2_api"].name), expect_errors=True
+        )
         self.assertEqual(resp.status_code, http_client.FORBIDDEN)
 
     def test_get_all_scope_system_decrypt_admin(self):
@@ -371,17 +384,13 @@ class KeyValueUserScopeControllerRBACTestCase(KeyValuesControllerRBACTestCase):
         self.use_user(self.users["user101"])
 
         # Insert user scoped key value pairs for user1.
-        name = get_key_reference(
-            scope=FULL_USER_SCOPE, name="mykey1", user="myval1"
-        )
+        name = get_key_reference(scope=FULL_USER_SCOPE, name="mykey1", user="myval1")
         kvp_db = KeyValuePairDB(name=name, value="myval1", scope=FULL_USER_SCOPE)
         kvp_db = KeyValuePair.add_or_update(kvp_db)
         kvp_db = KeyValuePairAPI.from_model(kvp_db)
         self.kvps["kvp_3_api"] = kvp_db
 
-        name = get_key_reference(
-            scope=FULL_USER_SCOPE, name="mykey2", user="myval2"
-        )
+        name = get_key_reference(scope=FULL_USER_SCOPE, name="mykey2", user="myval2")
         kvp_db = KeyValuePairDB(name=name, value="myval2", scope=FULL_USER_SCOPE)
         kvp_db = KeyValuePair.add_or_update(kvp_db)
         kvp_db = KeyValuePairAPI.from_model(kvp_db)
@@ -400,50 +409,60 @@ class KeyValueUserScopeControllerRBACTestCase(KeyValuesControllerRBACTestCase):
         for item in resp.json:
             self.assertEqual(item["scope"], FULL_USER_SCOPE)
             self.assertEqual(item["user"], "user101")
-        
+
         # User1 should have all permission on the user1's kvps
         data1 = {
-        "name": "mykey1",
-        "value": "myval1",
-        "scope": FULL_USER_SCOPE,
-        "user": "user101",
+            "name": "mykey1",
+            "value": "myval1",
+            "scope": FULL_USER_SCOPE,
+            "user": "user101",
         }
         resp = self.app.put_json("/v1/keys/mykey1?scope=st2kv.user", data1)
         self.assertEqual(resp.status_int, 200)
 
-        resp = self.app.get("/v1/keys/%s?scope=st2kv.user" % (self.kvps["kvp_3_api"].name))
+        resp = self.app.get(
+            "/v1/keys/%s?scope=st2kv.user" % (self.kvps["kvp_3_api"].name)
+        )
         self.assertEqual(resp.status_int, 200)
 
-        resp = self.app.delete("/v1/keys/%s?scope=st2kv.user" % (self.kvps["kvp_3_api"].name))
+        resp = self.app.delete(
+            "/v1/keys/%s?scope=st2kv.user" % (self.kvps["kvp_3_api"].name)
+        )
         self.assertEqual(resp.status_code, http_client.NO_CONTENT)
 
         data2 = {
-        "name": "mykey2",
-        "value": "myval2",
-        "scope": FULL_USER_SCOPE,
-        "user": "user101",
+            "name": "mykey2",
+            "value": "myval2",
+            "scope": FULL_USER_SCOPE,
+            "user": "user101",
         }
         resp = self.app.put_json("/v1/keys/mykey2?scope=st2kv.user", data2)
         self.assertEqual(resp.status_int, 200)
 
-        resp = self.app.get("/v1/keys/%s?scope=st2kv.user" % (self.kvps["kvp_4_api"].name))
+        resp = self.app.get(
+            "/v1/keys/%s?scope=st2kv.user" % (self.kvps["kvp_4_api"].name)
+        )
         self.assertEqual(resp.status_int, 200)
         self.assertEqual(resp.json["scope"], FULL_USER_SCOPE)
         self.assertEqual(resp.json["user"], "user101")
 
-        resp = self.app.delete("/v1/keys/%s?scope=st2kv.user" % (self.kvps["kvp_4_api"].name))
+        resp = self.app.delete(
+            "/v1/keys/%s?scope=st2kv.user" % (self.kvps["kvp_4_api"].name)
+        )
         self.assertEqual(resp.status_code, http_client.NO_CONTENT)
 
         # User2 should not have any permissions on user1's kvps.
         self.use_user(self.users["user102"])
 
         data1 = {
-        "name": "mykey1",
-        "value": "myval1",
-        "scope": FULL_USER_SCOPE,
-        "user": "user101",
+            "name": "mykey1",
+            "value": "myval1",
+            "scope": FULL_USER_SCOPE,
+            "user": "user101",
         }
-        resp = self.app.put_json("/v1/keys/mykey1?scope=st2kv.user", data1, expect_errors=True)
+        resp = self.app.put_json(
+            "/v1/keys/mykey1?scope=st2kv.user", data1, expect_errors=True
+        )
         self.assertEqual(resp.status_code, http_client.FORBIDDEN)
 
     def test_user_permission_for_another_user_scope(self):
@@ -463,9 +482,7 @@ class KeyValueUserScopeControllerRBACTestCase(KeyValuesControllerRBACTestCase):
         self.use_user(self.users["user103"])
 
         # Insert user scoped key value pairs for user1.
-        name = get_key_reference(
-            scope=FULL_USER_SCOPE, name="mykey3", user="myval3"
-        )
+        name = get_key_reference(scope=FULL_USER_SCOPE, name="mykey3", user="myval3")
         kvp_db = KeyValuePairDB(name=name, value="myval3", scope=FULL_USER_SCOPE)
         kvp_db = KeyValuePair.add_or_update(kvp_db)
         kvp_db = KeyValuePairAPI.from_model(kvp_db)
@@ -473,9 +490,9 @@ class KeyValueUserScopeControllerRBACTestCase(KeyValuesControllerRBACTestCase):
 
         # role assignment
         grant_db = PermissionGrantDB(
-        resource_uid=kvp_4_uid,
-        resource_type=ResourceType.KEY_VALUE_PAIR,
-        permission_types=[PermissionType.KEY_VALUE_PAIR_ALL],
+            resource_uid=kvp_4_uid,
+            resource_type=ResourceType.KEY_VALUE_PAIR,
+            permission_types=[PermissionType.KEY_VALUE_PAIR_ALL],
         )
         grant_db = PermissionGrant.add_or_update(grant_db)
 
@@ -497,12 +514,14 @@ class KeyValueUserScopeControllerRBACTestCase(KeyValuesControllerRBACTestCase):
 
         # User2 should not have any permissions on user1's kvps.
         data1 = {
-        "name": "mykey3",
-        "value": "myval3",
-        "scope": FULL_USER_SCOPE,
-        "user": "user103",
+            "name": "mykey3",
+            "value": "myval3",
+            "scope": FULL_USER_SCOPE,
+            "user": "user103",
         }
-        resp = self.app.put_json("/v1/keys/mykey3?scope=st2kv.user", data1, expect_errors=True)
+        resp = self.app.put_json(
+            "/v1/keys/mykey3?scope=st2kv.user", data1, expect_errors=True
+        )
         self.assertEqual(resp.status_code, http_client.FORBIDDEN)
 
     def test_set_user_scoped_item_arbitrary_user_admin_success(self):
@@ -510,9 +529,7 @@ class KeyValueUserScopeControllerRBACTestCase(KeyValuesControllerRBACTestCase):
         self.kvps = {}
 
         # Insert user scoped key value pairs for user1.
-        name = get_key_reference(
-            scope=FULL_USER_SCOPE, name="mykey5", user="myval5"
-        )
+        name = get_key_reference(scope=FULL_USER_SCOPE, name="mykey5", user="myval5")
         kvp_db = KeyValuePairDB(name=name, value="myval5", scope=FULL_USER_SCOPE)
         kvp_db = KeyValuePair.add_or_update(kvp_db)
         kvp_db = KeyValuePairAPI.from_model(kvp_db)
@@ -559,7 +576,8 @@ class KeyValueUserScopeControllerRBACTestCase(KeyValuesControllerRBACTestCase):
         self.kvps["kvp_7_api"] = kvp_db
 
         resp = self.app.get(
-            "/v1/keys/%s?decrypt=True" % (self.kvps["kvp_7_api"].name), expect_errors=True
+            "/v1/keys/%s?decrypt=True" % (self.kvps["kvp_7_api"].name),
+            expect_errors=True,
         )
         self.assertEqual(resp.status_code, http_client.FORBIDDEN)
         self.assertTrue(
