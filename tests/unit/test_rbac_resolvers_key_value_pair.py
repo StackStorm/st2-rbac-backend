@@ -789,30 +789,30 @@ class KeyValueUserScopePermissionsResolverTestCase(KeyValuePermissionsResolverTe
         kvp_1_db = KeyValuePair.add_or_update(kvp_1_db)
         self.resources[kvp_1_db.uid] = kvp_1_db
 
-        # Admin user should not have general list permissions on user1's kvps.
-        self.assertUserDoesntHaveResourceDbPermission(
+        # Admin user should have general list permissions on user1's kvps.
+        self.assertUserHasResourceDbPermission(
             resolver=resolver,
             user_db=admin_user_db,
             resource_db=KeyValuePairDB(scope="%s:%s" % (FULL_USER_SCOPE, user_1_db.name)),
             permission_type=PermissionType.KEY_VALUE_PAIR_LIST,
         )
 
-        # User2 should not have any permissions on another user1's kvp.
-        self.assertUserDoesntHaveResourceDbPermission(
+        # User2 should have any permissions on another user1's kvp.
+        self.assertUserHasResourceDbPermission(
             resolver=resolver,
             user_db=admin_user_db,
             resource_db=kvp_1_db,
             permission_type=PermissionType.KEY_VALUE_PAIR_ALL,
         )
 
-        self.assertUserDoesntHaveResourceDbPermissions(
+        self.assertUserHasResourceDbPermissions(
             resolver=resolver,
             user_db=admin_user_db,
             resource_db=kvp_1_db,
             permission_types=self.read_permission_types,
         )
 
-        self.assertUserDoesntHaveResourceDbPermissions(
+        self.assertUserHasResourceDbPermissions(
             resolver=resolver,
             user_db=admin_user_db,
             resource_db=kvp_1_db,
