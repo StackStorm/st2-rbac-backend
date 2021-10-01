@@ -468,24 +468,6 @@ class KeyValueUserScopeControllerRBACTestCase(KeyValuesControllerRBACTestCase):
 
         self.use_user(self.users["user104"])
 
-        # User2 should not have any permissions on user1's kvps.
-        data1 = {
-            "name": "mykey3",
-            "value": "myval3",
-            "scope": FULL_USER_SCOPE,
-            "user": "user103",
-        }
-        resp = self.app.put_json(
-            "/v1/keys/mykey3?scope=st2kv.user", data1, expect_errors=True
-        )
-        self.assertEqual(resp.status_code, http_client.FORBIDDEN)
-
-        resp = self.app.get("/v1/keys/mykey3", expect_errors=True)
-        self.assertEqual(resp.status_code, http_client.FORBIDDEN)
-
-        resp = self.app.delete("/v1/keys/mykey3", expect_errors=True)
-        self.assertEqual(resp.status_code, http_client.FORBIDDEN)
-
     def test_get_one_user_scope_decrypt(self):
         self.kvps = {}
         kvp_4_uid = "%s:%s:test_user_scope_5" % (
