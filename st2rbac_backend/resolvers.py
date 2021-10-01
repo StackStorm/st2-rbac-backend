@@ -734,24 +734,32 @@ class KeyValuePermissionsResolver(PermissionsResolver):
         # Third check if this is a user scoped key-value pairs for another user
         # Currently, admin user has access to another user's key-value pairs.
         key_prefix = user_db.name + ":"
-        if (not has_system_role_permission
-                and resource_db.scope.startswith("%s:" % FULL_USER_SCOPE)
-                and resource_db.scope != "%s:%s" % (FULL_USER_SCOPE, user_db.name)):
+        if (
+            not has_system_role_permission
+            and resource_db.scope.startswith("%s:" % FULL_USER_SCOPE)
+            and resource_db.scope != "%s:%s" % (FULL_USER_SCOPE, user_db.name)
+        ):
             self._log("User is trying to access another user's key value pairs", extra=log_context)
             return False
-        if (not has_system_role_permission
-                and resource_db.scope == FULL_USER_SCOPE
-                and not resource_db.name.startswith(key_prefix)):
+        if (
+            not has_system_role_permission
+            and resource_db.scope == FULL_USER_SCOPE
+            and not resource_db.name.startswith(key_prefix)
+        ):
             self._log("User is trying to access another user's key value pair", extra=log_context)
             return False
-        if (has_system_role_permission
-                and resource_db.scope.startswith("%s:" % FULL_USER_SCOPE)
-                and resource_db.scope != "%s:%s" % (FULL_USER_SCOPE, user_db.name)):
+        if (
+            has_system_role_permission
+            and resource_db.scope.startswith("%s:" % FULL_USER_SCOPE)
+            and resource_db.scope != "%s:%s" % (FULL_USER_SCOPE, user_db.name)
+        ):
             self._log("User is trying to access another user's key value pairs", extra=log_context)
             return True
-        if (has_system_role_permission
-                and resource_db.scope == FULL_USER_SCOPE
-                and not resource_db.name.startswith(key_prefix)):
+        if (
+            has_system_role_permission
+            and resource_db.scope == FULL_USER_SCOPE
+            and not resource_db.name.startswith(key_prefix)
+        ):
             self._log("User is trying to access another user's key value pair", extra=log_context)
             return True
 
