@@ -109,8 +109,6 @@ class KeyValueSystemScopeControllerRBACTestCase(KeyValuesControllerRBACTestCase)
     def test_observer_for_system_scope_kvps(self):
         # Observer user should have general list permissions on system kvps.
         self.use_user(self.users["observer"])
-        resp = self.app.get("/v1/keys?limit=-1", expect_errors=True)
-        self.assertEqual(resp.status_int, 200)
 
         resp = self.app.get("/v1/keys/")
         self.assertEqual(resp.status_int, 200)
@@ -135,37 +133,6 @@ class KeyValueSystemScopeControllerRBACTestCase(KeyValuesControllerRBACTestCase)
 
             resp = self.app.delete("/v1/keys/%s" % (k), expect_errors=True)
             self.assertEqual(resp.status_code, http_client.FORBIDDEN)
-
-    def test_user_default_for_system_scope_kvps(self):
-        user_1_db = UserDB(name="no_roles")
-        user_1_db = User.add_or_update(user_1_db)
-        self.users[user_1_db.name] = user_1_db
-
-        user_2_db = UserDB(name="1_custom_role_no_permissions")
-        user_2_db = User.add_or_update(user_2_db)
-        self.users[user_2_db.name] = user_2_db
-
-        self.use_user(self.users["no_roles"])
-        # User with no roles should not have any permission on the system kvp
-        resp = self.app.get(
-            "/v1/keys/%s" % (self.kvps["kvp_1_api"].name), expect_errors=True
-        )
-        self.assertEqual(resp.status_code, http_client.FORBIDDEN)
-        resp = self.app.get(
-            "/v1/keys/%s" % (self.kvps["kvp_2_api"].name), expect_errors=True
-        )
-        self.assertEqual(resp.status_code, http_client.FORBIDDEN)
-
-        self.use_user(self.users["1_custom_role_no_permissions"])
-        # User with no roles should not have any permission on the system kvp
-        resp = self.app.get(
-            "/v1/keys/%s" % (self.kvps["kvp_1_api"].name), expect_errors=True
-        )
-        self.assertEqual(resp.status_code, http_client.FORBIDDEN)
-        resp = self.app.get(
-            "/v1/keys/%s" % (self.kvps["kvp_2_api"].name), expect_errors=True
-        )
-        self.assertEqual(resp.status_code, http_client.FORBIDDEN)
 
     def test_get_one_system_scope(self):
 
@@ -202,22 +169,8 @@ class KeyValueSystemScopeControllerRBACTestCase(KeyValuesControllerRBACTestCase)
 
         self.use_user(self.users["system_key1_read"])
 
-        # User should have read but no write permissions on system kvp key1.
         resp = self.app.get("/v1/keys/key1")
         self.assertEqual(resp.status_int, 200)
-
-        data = {
-            "name": "key1",
-            "value": "val1",
-            "scope": FULL_SYSTEM_SCOPE,
-        }
-        resp = self.app.put_json(
-            "/v1/keys/key1?scope=st2kv.system", data, expect_errors=True
-        )
-        self.assertEqual(resp.status_code, http_client.FORBIDDEN)
-
-        resp = self.app.delete("/v1/keys/key1?scope=st2kv.system", expect_errors=True)
-        self.assertEqual(resp.status_code, http_client.FORBIDDEN)
 
     def test_get_all_scope_system_decrypt_admin(self):
         # Admin should be able to view all system scoped decrypted values
@@ -297,21 +250,6 @@ class KeyValueSystemScopeControllerRBACTestCase(KeyValuesControllerRBACTestCase)
         resp = self.app.get("/v1/keys/")
         self.assertEqual(resp.status_int, 200)
 
-        resp = self.app.delete(
-            "/v1/keys/test_new_key_3?scope=st2kv.system", expect_errors=True
-        )
-        self.assertEqual(resp.status_code, http_client.FORBIDDEN)
-
-        data = {
-            "name": "test_new_key_4",
-            "value": "testvalue4",
-            "scope": FULL_SYSTEM_SCOPE,
-        }
-        resp = self.app.put_json(
-            "/v1/keys/test_new_key_4?scope=system", data, expect_errors=True
-        )
-        self.assertEqual(resp.status_code, http_client.FORBIDDEN)
-
     def test_user_custom_delete_for_system_scope_kvps(self):
         kvp_1_uid = "%s:%s:key1" % (
             ResourceType.KEY_VALUE_PAIR,
@@ -366,11 +304,6 @@ class KeyValueSystemScopeControllerRBACTestCase(KeyValuesControllerRBACTestCase)
             "/v1/keys/%s?scope=st2kv.system" % (self.kvps["kvp_1_api"].name)
         )
         self.assertEqual(resp.status_code, http_client.NO_CONTENT)
-
-        resp = self.app.delete(
-            "/v1/keys/test_new_key_3?scope=st2kv.system", expect_errors=True
-        )
-        self.assertEqual(resp.status_code, http_client.FORBIDDEN)
 
     def test_user_custom_all_for_system_scope_kvps(self):
         kvp_1_uid = "%s:%s:test_new_key_3" % (
@@ -573,16 +506,6 @@ class KeyValueUserScopeControllerRBACTestCase(KeyValuesControllerRBACTestCase):
 
         resp = self.app.delete("/v1/keys/mykey3", expect_errors=True)
         self.assertEqual(resp.status_code, http_client.FORBIDDEN)
-
-        resp = self.app.get(
-            "/v1/keys/%s?scope=st2kv.user&user=user103" % (self.kvps["kvp_4_api"].name),
-            expect_errors=True,
-        )
-        self.assertEqual(resp.status_code, http_client.FORBIDDEN)
-        self.assertTrue(
-            '"user" attribute can only be provided by admins'
-            in resp.json["faultstring"]
-        )
 
     def test_get_one_user_scope_decrypt(self):
         self.kvps = {}
