@@ -123,17 +123,6 @@ class KeyValueSystemScopeControllerRBACTestCase(KeyValuesControllerRBACTestCase)
             resp = self.app.get("/v1/keys/%s?scope=st2kv.system" % (k))
             self.assertEqual(resp.status_int, 200)
 
-            data1 = {
-                "name": "key1",
-                "value": "val1",
-                "scope": FULL_SYSTEM_SCOPE,
-            }
-            resp = self.app.put_json("/v1/keys/key1", data1, expect_errors=True)
-            self.assertEqual(resp.status_code, http_client.FORBIDDEN)
-
-            resp = self.app.delete("/v1/keys/%s" % (k), expect_errors=True)
-            self.assertEqual(resp.status_code, http_client.FORBIDDEN)
-
     def test_get_one_system_scope(self):
 
         kvp_1_uid = "%s:%s:key1" % (ResourceType.KEY_VALUE_PAIR, FULL_SYSTEM_SCOPE)
@@ -286,16 +275,6 @@ class KeyValueSystemScopeControllerRBACTestCase(KeyValuesControllerRBACTestCase)
         UserRoleAssignment.add_or_update(role_assignment_db)
 
         self.use_user(self.users["user_9"])
-
-        data = {
-            "name": "test_new_key_4",
-            "value": "testvalue4",
-            "scope": FULL_SYSTEM_SCOPE,
-        }
-        resp = self.app.put_json(
-            "/v1/keys/test_new_key_4?scope=st2kv.system", data, expect_errors=True
-        )
-        self.assertEqual(resp.status_code, http_client.FORBIDDEN)
 
         resp = self.app.get("/v1/keys/%s" % (self.kvps["kvp_1_api"].name))
         self.assertEqual(resp.status_int, 200)
@@ -557,14 +536,6 @@ class KeyValueUserScopeControllerRBACTestCase(KeyValuesControllerRBACTestCase):
         self.assertEqual(resp.json["user"], "user105")
         self.assertTrue(resp.json["secret"])
         self.assertEqual(resp.json["value"], "user_secret")
-
-        # Non-admin user can't access decrypted system scoped items. They can only access decrypted
-        # items which are scoped to themselves.
-        resp = self.app.get("/v1/keys?decrypt=True", expect_errors=True)
-        self.assertEqual(resp.status_code, http_client.FORBIDDEN)
-        self.assertTrue(
-            "Decrypt option requires administrator access" in resp.json["faultstring"]
-        )
 
     def test_admin_for_user_scope_kvps(self):
         # Admin user can delete user-scoped datastore item scoped to arbitrary user
