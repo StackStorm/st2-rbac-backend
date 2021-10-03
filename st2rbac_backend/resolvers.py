@@ -723,8 +723,10 @@ class KeyValuePermissionsResolver(PermissionsResolver):
             self._log("Found a matching grant via system role", extra=log_context)
             return True
 
-        # Second check if this is for user scoped key-value pairs
+        # Set key prefix to user scope
         key_prefix = user_db.name + ":"
+
+        # Second check if this is for user scoped key-value pairs
         if (resource_db.scope == "%s:%s" % (FULL_USER_SCOPE, user_db.name)) or (
             resource_db.scope == FULL_USER_SCOPE and resource_db.name.startswith(key_prefix)
         ):
@@ -733,7 +735,6 @@ class KeyValuePermissionsResolver(PermissionsResolver):
 
         # Third check if this is a user scoped key-value pairs for another user
         # Currently, admin user has access to another user's key-value pairs.
-        key_prefix = user_db.name + ":"
         if (
             not has_system_role_permission
             and resource_db.scope.startswith("%s:" % FULL_USER_SCOPE)
