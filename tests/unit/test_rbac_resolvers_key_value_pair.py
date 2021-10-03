@@ -797,7 +797,7 @@ class KeyValueUserScopePermissionsResolverTestCase(KeyValuePermissionsResolverTe
             permission_type=PermissionType.KEY_VALUE_PAIR_LIST,
         )
 
-        # User2 should have any permissions on another user1's kvp.
+        # Admin user should have all permissions to another user1's kvp.
         self.assertUserHasResourceDbPermission(
             resolver=resolver,
             user_db=admin_user_db,
