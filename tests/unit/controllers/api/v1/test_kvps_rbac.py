@@ -73,21 +73,25 @@ class KeyValueSystemScopeControllerRBACTestCase(KeyValuesControllerRBACTestCase)
         super(KeyValueSystemScopeControllerRBACTestCase, self).setUp()
 
         # Insert system scoped key value pairs.
-        kvp_1_db = KeyValuePairDB(
+        kvp_1_api = KeyValuePairSetAPI(
             uid="%s:%s:key1" % (ResourceType.KEY_VALUE_PAIR, FULL_SYSTEM_SCOPE),
             scope=FULL_SYSTEM_SCOPE,
             name="key1",
             value="val1",
+            secret=True,
         )
+        kvp_1_db = KeyValuePairSetAPI.to_model(kvp_1_api)
         kvp_1_db = KeyValuePair.add_or_update(kvp_1_db)
         self.resources[kvp_1_db.uid] = kvp_1_db
 
-        kvp_2_db = KeyValuePairDB(
+        kvp_2_api = KeyValuePairSetAPI(
             uid="%s:%s:key2" % (ResourceType.KEY_VALUE_PAIR, FULL_SYSTEM_SCOPE),
             scope=FULL_SYSTEM_SCOPE,
             name="key2",
             value="val2",
+            secret=True,
         )
+        kvp_2_db = KeyValuePairSetAPI.to_model(kvp_2_api)
         kvp_2_db = KeyValuePair.add_or_update(kvp_2_db)
         self.resources[kvp_2_db.uid] = kvp_2_db
 
@@ -132,6 +136,13 @@ class KeyValueSystemScopeControllerRBACTestCase(KeyValuesControllerRBACTestCase)
         self.assertEqual(resp.status_int, http_client.OK)
         self.assertEqual(len(resp.json), 2)
         self.assertTrue(all([item["scope"] == FULL_SYSTEM_SCOPE for item in resp.json]))
+        self.assertTrue(all([len(item["value"]) > 10 for item in resp.json]))
+
+        resp = self.app.get("/v1/keys?limit=-1&decrypt=True")
+        self.assertEqual(resp.status_int, http_client.OK)
+        self.assertEqual(len(resp.json), 2)
+        self.assertTrue(all([item["scope"] == FULL_SYSTEM_SCOPE for item in resp.json]))
+        self.assertListEqual([item["value"] for item in resp.json], ["val1", "val2"])
 
         resp = self.app.get("/v1/keys/")
         self.assertEqual(resp.status_int, http_client.OK)
@@ -157,7 +168,7 @@ class KeyValueSystemScopeControllerRBACTestCase(KeyValuesControllerRBACTestCase)
             k, v = "key" + str(i), "val" + str(i)
 
             # view permission
-            resp = self.app.get("/v1/keys/%s" % k)
+            resp = self.app.get("/v1/keys/%s?decrypt=True" % k)
             self.assertEqual(resp.status_int, http_client.OK)
             self.assertEqual(resp.json["value"], v)
 
@@ -166,11 +177,12 @@ class KeyValueSystemScopeControllerRBACTestCase(KeyValuesControllerRBACTestCase)
                 "name": k,
                 "value": "value for %s" % k,
                 "scope": FULL_SYSTEM_SCOPE,
+                "secret": True,
             }
             resp = self.app.put_json("/v1/keys/%s" % k, d)
             self.assertEqual(resp.status_int, http_client.OK)
 
-            resp = self.app.get("/v1/keys/%s?scope=st2kv.system" % k)
+            resp = self.app.get("/v1/keys/%s?decrypt=True&scope=st2kv.system" % k)
             self.assertEqual(resp.status_int, http_client.OK)
             self.assertEqual(resp.json["value"], "value for %s" % k)
 
@@ -189,11 +201,16 @@ class KeyValueSystemScopeControllerRBACTestCase(KeyValuesControllerRBACTestCase)
         resp = self.app.get("/v1/keys?limit=-1", expect_errors=True)
         self.assertEqual(resp.status_int, http_client.FORBIDDEN)
 
+        # Observer does not have decrypt permission on system kvps.
+        resp = self.app.get("/v1/keys?decrypt=True", expect_errors=True)
+        self.assertEqual(resp.status_int, http_client.FORBIDDEN)
+
         # Observer should have general list permissions on system kvps.
         resp = self.app.get("/v1/keys/")
         self.assertEqual(resp.status_int, http_client.OK)
         self.assertEqual(len(resp.json), 2)
         self.assertTrue(all([item["scope"] == FULL_SYSTEM_SCOPE for item in resp.json]))
+        self.assertTrue(all([len(item["value"]) > 10 for item in resp.json]))
 
         resp = self.app.get("/v1/keys?scope=all")
         self.assertEqual(resp.status_int, http_client.OK)
@@ -214,7 +231,7 @@ class KeyValueSystemScopeControllerRBACTestCase(KeyValuesControllerRBACTestCase)
             k, v = "key" + str(i), "val" + str(i)
 
             # view permission
-            resp = self.app.get("/v1/keys/%s" % k)
+            resp = self.app.get("/v1/keys/%s?decrypt=True" % k)
             self.assertEqual(resp.status_int, http_client.OK)
             self.assertEqual(resp.json["value"], v)
 
@@ -223,11 +240,12 @@ class KeyValueSystemScopeControllerRBACTestCase(KeyValuesControllerRBACTestCase)
                 "name": k,
                 "value": "value for %s" % k,
                 "scope": FULL_SYSTEM_SCOPE,
+                "secret": True,
             }
             resp = self.app.put_json("/v1/keys/%s" % k, d, expect_errors=True)
             self.assertEqual(resp.status_int, http_client.FORBIDDEN)
 
-            resp = self.app.get("/v1/keys/%s?scope=st2kv.system" % k)
+            resp = self.app.get("/v1/keys/%s?decrypt=True&scope=st2kv.system" % k)
             self.assertEqual(resp.status_int, http_client.OK)
             self.assertEqual(resp.json["value"], v)
 
@@ -235,9 +253,8 @@ class KeyValueSystemScopeControllerRBACTestCase(KeyValuesControllerRBACTestCase)
             resp = self.app.delete("/v1/keys/%s" % k, expect_errors=True)
             self.assertEqual(resp.status_code, http_client.FORBIDDEN)
 
-            resp = self.app.get("/v1/keys/%s?scope=st2kv.system" % k)
+            resp = self.app.get("/v1/keys/%s?decrypt=True&scope=st2kv.system" % k)
             self.assertEqual(resp.status_int, http_client.OK)
-            self.assertEqual(resp.json["value"], v)
 
     def test_user_default_permissions_for_system_scope_kvps(self):
         # Set context to user
@@ -331,7 +348,7 @@ class KeyValueSystemScopeControllerRBACTestCase(KeyValuesControllerRBACTestCase)
 
         # User should have read but no write permissions on system kvp key1.
         k, v = "key1", "val1"
-        resp = self.app.get("/v1/keys/%s?scope=system" % k)
+        resp = self.app.get("/v1/keys/%s?decrypt=True&scope=system" % k)
         self.assertEqual(resp.status_int, http_client.OK)
         self.assertEqual(resp.json["value"], v)
 
@@ -407,7 +424,7 @@ class KeyValueSystemScopeControllerRBACTestCase(KeyValuesControllerRBACTestCase)
 
         # User should have read and write permissions on system kvp key1.
         k, v = "key1", "val1"
-        resp = self.app.get("/v1/keys/%s?scope=system" % k)
+        resp = self.app.get("/v1/keys/%s?decrypt=True&scope=system" % k)
         self.assertEqual(resp.status_int, http_client.OK)
         self.assertEqual(resp.json["value"], v)
 
@@ -415,11 +432,12 @@ class KeyValueSystemScopeControllerRBACTestCase(KeyValuesControllerRBACTestCase)
             "name": k,
             "value": "value for %s" % k,
             "scope": FULL_SYSTEM_SCOPE,
+            "secret": True,
         }
         resp = self.app.put_json("/v1/keys/%s?scope=system" % k, d)
         self.assertEqual(resp.status_int, http_client.OK)
 
-        resp = self.app.get("/v1/keys/%s?scope=system" % k)
+        resp = self.app.get("/v1/keys/%s?decrypt=True&scope=system" % k)
         self.assertEqual(resp.status_int, http_client.OK)
         self.assertEqual(resp.json["value"], "value for %s" % k)
 
@@ -490,7 +508,7 @@ class KeyValueSystemScopeControllerRBACTestCase(KeyValuesControllerRBACTestCase)
 
         # User should have read and set but no delete permissions on system kvp key1.
         k, v = "key1", "val1"
-        resp = self.app.get("/v1/keys/%s?scope=system" % k)
+        resp = self.app.get("/v1/keys/%s?decrypt=True&scope=system" % k)
         self.assertEqual(resp.status_int, http_client.OK)
         self.assertEqual(resp.json["value"], v)
 
@@ -498,11 +516,12 @@ class KeyValueSystemScopeControllerRBACTestCase(KeyValuesControllerRBACTestCase)
             "name": k,
             "value": "value for %s" % k,
             "scope": FULL_SYSTEM_SCOPE,
+            "secret": True,
         }
         resp = self.app.put_json("/v1/keys/%s?scope=system" % k, d)
         self.assertEqual(resp.status_int, http_client.OK)
 
-        resp = self.app.get("/v1/keys/%s?scope=system" % k)
+        resp = self.app.get("/v1/keys/%s?decrypt=True&scope=system" % k)
         self.assertEqual(resp.status_int, http_client.OK)
         self.assertEqual(resp.json["value"], "value for %s" % k)
 
@@ -570,7 +589,7 @@ class KeyValueSystemScopeControllerRBACTestCase(KeyValuesControllerRBACTestCase)
 
         # User should have read and delete but no set permissions on system kvp key1.
         k, v = "key1", "val1"
-        resp = self.app.get("/v1/keys/%s?scope=system" % k)
+        resp = self.app.get("/v1/keys/%s?decrypt=True&scope=system" % k)
         self.assertEqual(resp.status_int, http_client.OK)
         self.assertEqual(resp.json["value"], v)
 
@@ -649,7 +668,7 @@ class KeyValueSystemScopeControllerRBACTestCase(KeyValuesControllerRBACTestCase)
 
         # User should have read and write permissions on system kvp key1.
         k, v = "key1", "val1"
-        resp = self.app.get("/v1/keys/%s?scope=system" % k)
+        resp = self.app.get("/v1/keys/%s?decrypt=True&scope=system" % k)
         self.assertEqual(resp.status_int, http_client.OK)
         self.assertEqual(resp.json["value"], v)
 
@@ -657,11 +676,12 @@ class KeyValueSystemScopeControllerRBACTestCase(KeyValuesControllerRBACTestCase)
             "name": k,
             "value": "value for %s" % k,
             "scope": FULL_SYSTEM_SCOPE,
+            "secret": True,
         }
         resp = self.app.put_json("/v1/keys/%s?scope=system" % k, d)
         self.assertEqual(resp.status_int, http_client.OK)
 
-        resp = self.app.get("/v1/keys/%s?scope=system" % k)
+        resp = self.app.get("/v1/keys/%s?decrypt=True&scope=system" % k)
         self.assertEqual(resp.status_int, http_client.OK)
         self.assertEqual(resp.json["value"], "value for %s" % k)
 
@@ -719,12 +739,14 @@ class KeyValueUserScopeControllerRBACTestCase(KeyValuesControllerRBACTestCase):
 
         key_1_name = "mykey1"
         key_1_ref = get_key_reference(FULL_USER_SCOPE, key_1_name, user_1_db.name)
-        kvp_1_db = KeyValuePairDB(
+        kvp_1_api = KeyValuePairSetAPI(
             uid="%s:%s:%s" % (ResourceType.KEY_VALUE_PAIR, FULL_USER_SCOPE, key_1_ref),
             scope=FULL_USER_SCOPE,
             name=key_1_ref,
             value="myval1",
+            secret=True,
         )
+        kvp_1_db = KeyValuePairSetAPI.to_model(kvp_1_api)
         kvp_1_db = KeyValuePair.add_or_update(kvp_1_db)
         self.resources[kvp_1_db.uid] = kvp_1_db
 
@@ -735,12 +757,14 @@ class KeyValueUserScopeControllerRBACTestCase(KeyValuesControllerRBACTestCase):
 
         key_2_name = "mykey2"
         key_2_ref = get_key_reference(FULL_USER_SCOPE, key_2_name, user_2_db.name)
-        kvp_2_db = KeyValuePairDB(
+        kvp_2_api = KeyValuePairSetAPI(
             uid="%s:%s:%s" % (ResourceType.KEY_VALUE_PAIR, FULL_USER_SCOPE, key_2_ref),
             scope=FULL_USER_SCOPE,
             name=key_2_ref,
             value="myval2",
+            secret=True,
         )
+        kvp_2_db = KeyValuePairSetAPI.to_model(kvp_2_api)
         kvp_2_db = KeyValuePair.add_or_update(kvp_2_db)
         self.resources[kvp_2_db.uid] = kvp_2_db
 
@@ -771,8 +795,8 @@ class KeyValueUserScopeControllerRBACTestCase(KeyValuesControllerRBACTestCase):
         self.assertTrue(all([item["scope"] == FULL_USER_SCOPE for item in resp.json]))
 
         # User should have read and write permissions to his/her own kvps.
-        k, v = key_1_name, kvp_1_db.value
-        resp = self.app.get("/v1/keys/%s?scope=user" % k)
+        k, v = key_1_name, kvp_1_api.value
+        resp = self.app.get("/v1/keys/%s?decrypt=True&scope=user" % k)
         self.assertEqual(resp.status_int, http_client.OK)
         self.assertEqual(resp.json["value"], v)
 
@@ -780,11 +804,12 @@ class KeyValueUserScopeControllerRBACTestCase(KeyValuesControllerRBACTestCase):
             "name": key_1_ref,
             "value": "value for %s" % k,
             "scope": FULL_USER_SCOPE,
+            "secret": True,
         }
         resp = self.app.put_json("/v1/keys/%s?scope=user" % k, d)
         self.assertEqual(resp.status_int, http_client.OK)
 
-        resp = self.app.get("/v1/keys/%s?scope=user" % k)
+        resp = self.app.get("/v1/keys/%s?decrypt=True&scope=user" % k)
         self.assertEqual(resp.status_int, http_client.OK)
         self.assertEqual(resp.json["value"], "value for %s" % k)
 
@@ -807,12 +832,14 @@ class KeyValueUserScopeControllerRBACTestCase(KeyValuesControllerRBACTestCase):
         # Insert user scoped key value pairs for user1.
         key_1_name = "mykey3"
         key_1_ref = get_key_reference(FULL_USER_SCOPE, key_1_name, user_1_db.name)
-        kvp_1_db = KeyValuePairDB(
+        kvp_1_api = KeyValuePairSetAPI(
             uid="%s:%s:%s" % (ResourceType.KEY_VALUE_PAIR, FULL_USER_SCOPE, key_1_ref),
             scope=FULL_USER_SCOPE,
             name=key_1_ref,
             value="myval3",
+            secret=True,
         )
+        kvp_1_db = KeyValuePairSetAPI.to_model(kvp_1_api)
         kvp_1_db = KeyValuePair.add_or_update(kvp_1_db)
         self.resources[kvp_1_db.uid] = kvp_1_db
 
@@ -889,12 +916,14 @@ class KeyValueUserScopeControllerRBACTestCase(KeyValuesControllerRBACTestCase):
 
         key_1_name = "mykey5"
         key_1_ref = get_key_reference(FULL_USER_SCOPE, key_1_name, user_1_db.name)
-        kvp_1_db = KeyValuePairDB(
+        kvp_1_api = KeyValuePairSetAPI(
             uid="%s:%s:%s" % (ResourceType.KEY_VALUE_PAIR, FULL_USER_SCOPE, key_1_ref),
             scope=FULL_USER_SCOPE,
             name=key_1_ref,
             value="myval5",
+            secret=True,
         )
+        kvp_1_db = KeyValuePairSetAPI.to_model(kvp_1_api)
         kvp_1_db = KeyValuePair.add_or_update(kvp_1_db)
         self.resources[kvp_1_db.uid] = kvp_1_db
 
@@ -912,6 +941,13 @@ class KeyValueUserScopeControllerRBACTestCase(KeyValuesControllerRBACTestCase):
         self.assertEqual(resp.json[0]["name"], key_1_name)
         self.assertEqual(resp.json[0]["user"], user_1_db.name)
 
+        resp = self.app.get("/v1/keys?decrypt=True&scope=user&user=%s" % user_1_db.name)
+        self.assertEqual(resp.status_int, http_client.OK)
+        self.assertEqual(len(resp.json), 1)
+        self.assertEqual(resp.json[0]["name"], key_1_name)
+        self.assertEqual(resp.json[0]["user"], user_1_db.name)
+        self.assertEqual(resp.json[0]["value"], kvp_1_api.value)
+
         resp = self.app.get("/v1/keys?scope=all")
         self.assertEqual(resp.status_int, http_client.OK)
         self.assertEqual(len(resp.json), 2)
@@ -927,8 +963,8 @@ class KeyValueUserScopeControllerRBACTestCase(KeyValuesControllerRBACTestCase):
         self.assertEqual(len(resp.json), 0)
 
         # Admin user should have read and write permissions to user1's kvps.
-        k, v = key_1_name, kvp_1_db.value
-        url = "/v1/keys/%s?scope=user&user=%s" % (k, user_1_db.name)
+        k, v = key_1_name, kvp_1_api.value
+        url = "/v1/keys/%s?decrypt=True&scope=user&user=%s" % (k, user_1_db.name)
         resp = self.app.get(url)
         self.assertEqual(resp.status_int, http_client.OK)
         self.assertEqual(resp.json["value"], v)
@@ -938,6 +974,7 @@ class KeyValueUserScopeControllerRBACTestCase(KeyValuesControllerRBACTestCase):
             "value": "value for %s" % k,
             "scope": FULL_USER_SCOPE,
             "user": user_1_db.name,
+            "secret": True,
         }
         resp = self.app.put_json(url, d)
         self.assertEqual(resp.status_int, http_client.OK)
