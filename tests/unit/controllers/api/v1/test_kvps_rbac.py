@@ -16,14 +16,12 @@
 import six
 
 from st2common.constants.keyvalue import FULL_SYSTEM_SCOPE, FULL_USER_SCOPE
-from st2common.constants.keyvalue import USER_SEPARATOR
 from st2common.services.keyvalues import get_key_reference
 from st2common.persistence.auth import User
 from st2common.models.db.auth import UserDB
 from st2common.models.db.keyvalue import KeyValuePairDB
 from st2common.persistence.keyvalue import KeyValuePair
 from st2common.models.api.keyvalue import KeyValuePairSetAPI
-from st2common.models.api.keyvalue import KeyValuePairAPI
 from st2common.models.db.rbac import UserRoleAssignmentDB
 from st2common.models.db.rbac import PermissionGrantDB
 from st2common.rbac.types import PermissionType
@@ -284,7 +282,7 @@ class KeyValueSystemScopeControllerRBACTestCase(KeyValuesControllerRBACTestCase)
 
         # User should not have read and write permission on the system kvps
         for i in range(1, 3):
-            k, v = "key" + str(i), "val" + str(i)
+            k = "key" + str(i)
 
             # view permission
             resp = self.app.get("/v1/keys/%s?scope=system" % k, expect_errors=True)
@@ -347,7 +345,7 @@ class KeyValueSystemScopeControllerRBACTestCase(KeyValuesControllerRBACTestCase)
         self.assertEqual(resp.json[0]["scope"], FULL_SYSTEM_SCOPE)
 
         # User should have read but no write permissions on system kvp key1.
-        k, v = "key1", "val1"
+        k, v = kvp_1_db.name, "val1"
         resp = self.app.get("/v1/keys/%s?decrypt=True&scope=system" % k)
         self.assertEqual(resp.status_int, http_client.OK)
         self.assertEqual(resp.json["value"], v)
@@ -364,15 +362,15 @@ class KeyValueSystemScopeControllerRBACTestCase(KeyValuesControllerRBACTestCase)
         self.assertEqual(resp.status_code, http_client.FORBIDDEN)
 
         # User should not have read and write permissions on system kvp key2.
-        k, v = "key2", "val2"
+        k = kvp_2_db.name
         resp = self.app.get("/v1/keys/%s?scope=system" % k, expect_errors=True)
         self.assertEqual(resp.status_int, http_client.FORBIDDEN)
 
-        d = { 
+        d = {
             "name": k,
             "value": "value for %s" % k,
             "scope": FULL_SYSTEM_SCOPE,
-        }   
+        }
         resp = self.app.put_json("/v1/keys/%s?scope=system" % k, d, expect_errors=True)
         self.assertEqual(resp.status_int, http_client.FORBIDDEN)
 
@@ -423,7 +421,7 @@ class KeyValueSystemScopeControllerRBACTestCase(KeyValuesControllerRBACTestCase)
         self.assertEqual(resp.json[0]["scope"], FULL_SYSTEM_SCOPE)
 
         # User should have read and write permissions on system kvp key1.
-        k, v = "key1", "val1"
+        k, v = kvp_1_db.name, "val1"
         resp = self.app.get("/v1/keys/%s?decrypt=True&scope=system" % k)
         self.assertEqual(resp.status_int, http_client.OK)
         self.assertEqual(resp.json["value"], v)
@@ -448,7 +446,7 @@ class KeyValueSystemScopeControllerRBACTestCase(KeyValuesControllerRBACTestCase)
         self.assertEqual(resp.status_int, http_client.NOT_FOUND)
 
         # User should not have read and write permissions on system kvp key2.
-        k, v = "key2", "val2"
+        k = kvp_2_db.name
         resp = self.app.get("/v1/keys/%s?scope=system" % k, expect_errors=True)
         self.assertEqual(resp.status_int, http_client.FORBIDDEN)
 
@@ -507,7 +505,7 @@ class KeyValueSystemScopeControllerRBACTestCase(KeyValuesControllerRBACTestCase)
         self.assertEqual(resp.json[0]["scope"], FULL_SYSTEM_SCOPE)
 
         # User should have read and set but no delete permissions on system kvp key1.
-        k, v = "key1", "val1"
+        k, v = kvp_1_db.name, "val1"
         resp = self.app.get("/v1/keys/%s?decrypt=True&scope=system" % k)
         self.assertEqual(resp.status_int, http_client.OK)
         self.assertEqual(resp.json["value"], v)
@@ -529,7 +527,7 @@ class KeyValueSystemScopeControllerRBACTestCase(KeyValuesControllerRBACTestCase)
         self.assertEqual(resp.status_code, http_client.FORBIDDEN)
 
         # User should not have read and write permissions on system kvp key2.
-        k, v = "key2", "val2"
+        k = kvp_2_db.name
         resp = self.app.get("/v1/keys/%s?scope=system" % k, expect_errors=True)
         self.assertEqual(resp.status_int, http_client.FORBIDDEN)
 
@@ -588,7 +586,7 @@ class KeyValueSystemScopeControllerRBACTestCase(KeyValuesControllerRBACTestCase)
         self.assertEqual(resp.json[0]["scope"], FULL_SYSTEM_SCOPE)
 
         # User should have read and delete but no set permissions on system kvp key1.
-        k, v = "key1", "val1"
+        k, v = kvp_1_db.name, "val1"
         resp = self.app.get("/v1/keys/%s?decrypt=True&scope=system" % k)
         self.assertEqual(resp.status_int, http_client.OK)
         self.assertEqual(resp.json["value"], v)
@@ -608,7 +606,7 @@ class KeyValueSystemScopeControllerRBACTestCase(KeyValuesControllerRBACTestCase)
         self.assertEqual(resp.status_int, http_client.NOT_FOUND)
 
         # User should not have read and write permissions on system kvp key2.
-        k, v = "key2", "val2"
+        k = kvp_2_db.name
         resp = self.app.get("/v1/keys/%s?scope=system" % k, expect_errors=True)
         self.assertEqual(resp.status_int, http_client.FORBIDDEN)
 
@@ -667,7 +665,7 @@ class KeyValueSystemScopeControllerRBACTestCase(KeyValuesControllerRBACTestCase)
         self.assertEqual(resp.json[0]["scope"], FULL_SYSTEM_SCOPE)
 
         # User should have read and write permissions on system kvp key1.
-        k, v = "key1", "val1"
+        k, v = kvp_1_db.name, "val1"
         resp = self.app.get("/v1/keys/%s?decrypt=True&scope=system" % k)
         self.assertEqual(resp.status_int, http_client.OK)
         self.assertEqual(resp.json["value"], v)
@@ -692,7 +690,7 @@ class KeyValueSystemScopeControllerRBACTestCase(KeyValuesControllerRBACTestCase)
         self.assertEqual(resp.status_int, http_client.NOT_FOUND)
 
         # User should not have read and write permissions on system kvp key2.
-        k, v = "key2", "val2"
+        k = kvp_2_db.name
         resp = self.app.get("/v1/keys/%s?scope=system" % k, expect_errors=True)
         self.assertEqual(resp.status_int, http_client.FORBIDDEN)
 
@@ -891,7 +889,7 @@ class KeyValueUserScopeControllerRBACTestCase(KeyValuesControllerRBACTestCase):
         self.assertEqual(len(resp.json), 0)
 
         # User2 should not have read and write permissions on user1's kvp.
-        k, v = key_1_name, kvp_1_db.value
+        k = key_1_name
         url = "/v1/keys/%s?scope=user&user=%s" % (k, user_1_db.name)
         resp = self.app.get(url, expect_errors=True)
         self.assertEqual(resp.status_int, http_client.FORBIDDEN)
