@@ -97,7 +97,6 @@ class ActionControllerRBACTestCase(APIControllerWithRBACTestCase,
             fixtures_dict={'actions': [file_name]})['actions'][file_name]
 
         # Insert mock users, roles and assignments
-
         # Users
         user_2_db = UserDB(name='action_create')
         user_2_db = User.add_or_update(user_2_db)
@@ -283,7 +282,6 @@ class ActionControllerRBACTestCase(APIControllerWithRBACTestCase,
         user_db = self.users["action_clone"]
         self.use_user(user_db)
         self.__do_post(ACTION_2)
-        self.__do_post(ACTION_3)
         dest_data_body = {
             "dest_pack": ACTION_3["pack"],
             "dest_action": "clone_action_2",
@@ -324,7 +322,7 @@ class ActionControllerRBACTestCase(APIControllerWithRBACTestCase,
     def test_clone_action_no_source_action_view_permission(self):
         user_db = self.users["action_create"]
         self.use_user(user_db)
-        self.__do_post(ACTION_2)
+        post_resp = self.__do_post(ACTION_2)
         user_db = self.users["no_permissions"]
         self.use_user(user_db)
         dest_data_body = {
@@ -336,7 +334,7 @@ class ActionControllerRBACTestCase(APIControllerWithRBACTestCase,
                                      source_ref_or_id,
                                      expect_errors=True)
         expected_msg = ('User "no_permissions" doesn\'t have required permission '
-                        '"action_view" on resource "action:examples:ma.dummy.action"')
+                        '"action_view" on resource "%s"' % (post_resp.json["uid"]))
         self.assertEqual(clone_resp.status_code, http_client.UNAUTHORIZED)
         self.assertEqual(clone_resp.json["faultstring"], expected_msg)
 
@@ -348,7 +346,6 @@ class ActionControllerRBACTestCase(APIControllerWithRBACTestCase,
         user_db = self.users["action_clone"]
         self.use_user(user_db)
         self.__do_post(ACTION_2)
-        self.__do_post(ACTION_3)
         user_db = self.users["no_create_permission"]
         self.use_user(user_db)
         dest_data_body = {
@@ -359,8 +356,9 @@ class ActionControllerRBACTestCase(APIControllerWithRBACTestCase,
         clone_resp = self.__do_clone(dest_data_body,
                                      source_ref_or_id,
                                      expect_errors=True)
-        expected_msg = ('User "no_create_permission" doesn\'t have required permission '
-                        '"action_create" on resource "action:clonepack:clone_action_4"')
+        expected_msg = ('User "no_create_permission" doesn\'t have required '
+                        'permission "action_create" on resource "action:%s:%s"'
+                        % (ACTION_3["pack"], dest_data_body["dest_action"]))
         self.assertEqual(clone_resp.status_code, http_client.UNAUTHORIZED)
         self.assertEqual(clone_resp.json["faultstring"], expected_msg)
 
@@ -384,8 +382,9 @@ class ActionControllerRBACTestCase(APIControllerWithRBACTestCase,
         clone_resp = self.__do_clone(dest_data_body,
                                      source_ref_or_id,
                                      expect_errors=True)
-        expected_msg = ('User "no_create_permission" doesn\'t have required permission '
-                        '"action_create" on resource "action:clonepack:ma.dummy.clone_action"')
+        expected_msg = ('User "no_create_permission" doesn\'t have required '
+                        'permission "action_create" on resource "action:%s:%s"'
+                        % (ACTION_3["pack"], ACTION_3["name"]))
         self.assertEqual(clone_resp.status_code, http_client.UNAUTHORIZED)
         self.assertEqual(clone_resp.json["faultstring"], expected_msg)
 
@@ -409,8 +408,9 @@ class ActionControllerRBACTestCase(APIControllerWithRBACTestCase,
         clone_resp = self.__do_clone(dest_data_body,
                                      source_ref_or_id,
                                      expect_errors=True)
-        expected_msg = ('User "no_delete_permission" doesn\'t have required permission '
-                        '"action_delete" on resource "action:clonepack:ma.dummy.clone_action"')
+        expected_msg = ('User "no_delete_permission" doesn\'t have required '
+                        'permission "action_delete" on resource "action:%s:%s"'
+                        % (ACTION_3["pack"], ACTION_3["name"]))
         self.assertEqual(clone_resp.status_code, http_client.UNAUTHORIZED)
         self.assertEqual(clone_resp.json["faultstring"], expected_msg)
 
