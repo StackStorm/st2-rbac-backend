@@ -17,7 +17,7 @@ ROOT_DIR ?= $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 CURRENT_DIR ?= $(shell pwd)
 VIRTUALENV_DIR ?= virtualenv
 ST2_REPO_PATH ?= /tmp/st2
-ST2_REPO_URL ?= git@github.com:stackstorm/st2.git
+ST2_REPO_URL ?= git@github.com:StackStorm/st2.git
 ST2_REPO_BRANCH ?= master
 
 # nasty hack to get a space into a variable
