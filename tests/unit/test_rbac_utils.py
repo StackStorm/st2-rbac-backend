@@ -97,3 +97,13 @@ class RBACUtilsTestCase(DbTestCase):
 
         # Regular user
         self.assertFalse(rbac_utils.user_has_role(user_db=self.regular_user, role=SystemRole.ADMIN))
+
+    def test_has_system_role(self):
+        # Make sure RBAC is enabled for the tests
+        cfg.CONF.set_override(name='enable', override=True, group='rbac')
+
+        # Admin user
+        self.assertTrue(rbac_utils.user_has_system_role(user_db=self.admin_user))
+
+        # Regular user
+        self.assertFalse(rbac_utils.user_has_system_role(user_db=self.regular_user))

@@ -242,6 +242,26 @@ class RBACUtils(BaseRBACUtils):
         return role in user_role_names
 
     @staticmethod
+    def user_has_system_role(user_db):
+        """
+        :param user: User object to check for.
+        :type user: :class:`UserDB`
+
+        :rtype: ``bool``
+        """
+        user_role_dbs = rbac_service.get_roles_for_user(user_db=user_db)
+        user_role_names = [role_db.name for role_db in user_role_dbs]
+
+        if (
+            SystemRole.SYSTEM_ADMIN in user_role_names
+            or SystemRole.ADMIN in user_role_names
+            or SystemRole.OBSERVER in user_role_names
+        ):
+            return True
+
+        return False
+
+    @staticmethod
     def user_has_permission(user_db, permission_type):
         """
         Check that the provided user has specified permission.
