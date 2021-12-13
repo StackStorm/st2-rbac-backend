@@ -360,7 +360,7 @@ class ActionControllerRBACTestCase(APIControllerWithRBACTestCase,
         source_ref_or_id = "%s.%s" % (ACTION_2["pack"], ACTION_2["name"])
         clone_resp = self.__do_clone(dest_data_body,
                                      source_ref_or_id,
-                                     expect_errors=True)        
+                                     expect_errors=True)
         expected_msg = ('User "%s" doesn\'t have required permission '
                         '"action_create" on resource "action:%s:%s"'
                         % (user_db.name, ACTION_3["pack"], dest_data_body["dest_action"]))
