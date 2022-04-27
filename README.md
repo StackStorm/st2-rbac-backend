@@ -1,9 +1,9 @@
-# StackStorm Enterprise RBAC Backend for StackStorm Enterprise Edition
+# RBAC Backend for StackStorm
+[![RBAC Unit Tests Status](https://circleci.com/gh/StackStorm/st2-rbac-backend/tree/master.svg?style=shield)](https://circleci.com/gh/StackStorm/st2-rbac-backend) 
 
-[![Circle CI Build Status](https://circleci.com/gh/extremenetworks/st2-enterprise-rbac-backend.svg?style=shield&circle-token=eaf1bdcfc552072706ef0a6e68049f285dd33a03)](https://circleci.com/gh/extremenetworks/st2-enterprise-rbac-backend)
-
-StackStorm RBAC backend for enterprise version which contains all the proprietary RBAC
-(permission resolving) business logic.
+The RBAC backend started as part of StackStorm core repo and then moved out into a separate
+repo for enterprise purposes. Some enterprise features such as RBAC has been made open
+sourced as part of the donation to Linux Foundation in 2019.
 
 NOTE: Due to the original code structure and the code originally living as part of the
 open source StackStorm/st2 repo, some of the utility RBAC code is still part of the open
@@ -22,7 +22,7 @@ NOTE: This happens automatically when using bwc installer script.
 ...
 [rbac]
 enable = True
-backend = enterprise
+backend = default
 ...
 3. Restart all the services - ``sudo st2ctl restart``
 
@@ -57,6 +57,14 @@ Keep in mind that you can also simply symlink your working copy of ``StackStorm/
 ``/tmp/st2``. This way you can test changes with your work which hasn't been committed / pushed
 upstream yet.
 
-## Copyright
+## Copyright, License, and Contributors Agreement
 
-Copyright (C) 2019 Extreme Networks, Inc - All Rights Reserved.
+Copyright 2015-2020 Extreme Networks, Inc.
+
+Copyright 2020 StackStorm, Inc.
+
+Licensed under the Apache License, Version 2.0 (the "License"); you may not use this work except in compliance with the License. You may obtain a copy of the License in the [LICENSE](LICENSE) file, or at:
+
+[http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
+
+By contributing you agree that these contributions are your own (or approved by your employer) and you grant a full, complete, irrevocable copyright license to all users and developers of the project, present and future, pursuant to the license of the project.

@@ -1,52 +1,38 @@
-# Copyright (C) 2019 Extreme Networks, Inc - All Rights Reserved
-# Unauthorized copying of this file, via any medium is strictly prohibited
-# Proprietary and confidential
+# Copyright 2020 The StackStorm Authors.
+# Copyright (C) 2020 Extreme Networks, Inc - All Rights Reserved
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 ROOT_DIR ?= $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
-
-PKG_NAME := st2-rbac-backend
-PKG_RELEASE ?= 1
-WHEELSDIR ?= opt/stackstorm/share/wheels
+CURRENT_DIR ?= $(shell pwd)
 VIRTUALENV_DIR ?= virtualenv
 ST2_REPO_PATH ?= /tmp/st2
 ST2_REPO_URL ?= git@github.com:StackStorm/st2.git
-#ST2_REPO_URL ?= git@github.com:StackStorm/st2-private.git
 ST2_REPO_BRANCH ?= master
 
-ifneq (,$(wildcard /etc/debian_version))
-	DEBIAN := 1
-	DEB_DISTRO := $(shell lsb_release -cs)
-else
-	REDHAT := 1
-	DEB_DISTRO := unstable
-endif
-
-ifeq ($(DEB_DISTRO),bionic)
-	PYTHON_BINARY := /usr/bin/python3
-	PIP_BINARY := /usr/local/bin/pip3
-else
-	PYTHON_BINARY := python
-	PIP_BINARY := pip
-endif
-
-# NOTE: We remove trailing "0" which is added at the end by newer versions of pip
-# For example: 3.0.dev0 -> 3.0.dev
-PKG_VERSION := $(shell $(PYTHON_BINARY) setup.py --version 2> /dev/null | sed 's/\.dev[0-9]$$/dev/')
-CHANGELOG_COMMENT ?= "automated build, version: $(PKG_VERSION)"
-
 # nasty hack to get a space into a variable
+empty:=
+space_char:= $(empty) $(empty)
 colon := :
 comma := ,
 dot := .
 slash := /
-space_char :=
-space_char +=
 
 # All components are prefixed by st2
 COMPONENTS = $(wildcard $(ST2_REPO_PATH)/st2*)
 COMPONENTS_RUNNERS := $(wildcard $(ST2_REPO_PATH)/contrib/runners/*)
 COMPONENTS_WITH_RUNNERS := $(COMPONENTS) $(COMPONENTS_RUNNERS)
-COMPONENT_PYTHONPATH = $(subst $(space_char),:,$(realpath $(COMPONENTS_WITH_RUNNERS))):$(ST2_REPO_PATH)
+COMPONENT_PYTHONPATH = $(subst $(space_char),:,$(realpath $(COMPONENTS_WITH_RUNNERS))):$(ST2_REPO_PATH):$(CURRENT_DIR)
 COMPONENTS_TEST := $(foreach component,$(filter-out $(COMPONENT_SPECIFIC_TESTS),$(COMPONENTS_WITH_RUNNERS)),$(component))
 COMPONENTS_TEST_COMMA := $(subst $(slash),$(dot),$(subst $(space_char),$(comma),$(COMPONENTS_TEST)))
 COMPONENTS_TEST_MODULES := $(subst $(slash),$(dot),$(COMPONENTS_TEST_DIRS))
@@ -74,20 +60,14 @@ endif
 # Target for debugging Makefile variable assembly
 .PHONY: play
 play:
-	@echo "DEBIAN=$(DEBIAN)"
-	@echo "REDHAT=$(REDHAT)"
-	@echo "DEB_DISTRO=$(DEB_DISTRO)"
-	@echo "PYTHON_BINARY=$(PYTHON_BINARY)"
-	@echo "PIP_BINARY=$(PIP_BINARY)"
-	@echo "PKG_VERSION=$(PKG_VERSION)"
-	@echo "PKG_RELEASE=$(PKG_RELEASE)"
-	@echo
 	@echo COMPONENTS=$(COMPONENTS)
 	@echo COMPONENTS_RUNNERS=$(COMPONENTS_RUNNERS)
 	@echo COMPONENTS_WITH_RUNNERS=$(COMPONENTS_WITH_RUNNERS)
 	@echo COMPONENT_PYTHONPATH=$(COMPONENT_PYTHONPATH)
 	@echo TRAVIS_PULL_REQUEST=$(TRAVIS_PULL_REQUEST)
 	@echo NOSE_OPTS=$(NOSE_OPTS)
+	@echo
+	@echo "`cat /etc/os-release`"
 	@echo
 
 .PHONY: all
@@ -97,10 +77,10 @@ all: requirements lint
 all-ci: compile .flake8 .pylint
 
 .PHONY: lint
-lint: requirements flake8 pylint
+lint: requirements flake8 pylint black-check
 
 .PHONY: .lint
-.lint: compile .flake8 .pylint
+.lint: compile .flake8 .pylint .black-check
 
 .PHONY: flake8
 flake8: requirements .clone_st2_repo .flake8
@@ -125,14 +105,28 @@ compilepy3:
 	@echo
 	@echo "==================== flake8 ===================="
 	@echo
-	. $(VIRTUALENV_DIR)/bin/activate; flake8 --config=lint-configs/python/.flake8-proprietary st2rbac_enterprise_backend/ tests/
+	. $(VIRTUALENV_DIR)/bin/activate; flake8 --config=lint-configs/python/.flake8 st2rbac_backend/ tests/
 
 .PHONY: .pylint
 .pylint:
 	@echo
 	@echo "==================== pylint ===================="
 	@echo
-	. $(VIRTUALENV_DIR)/bin/activate; pylint -j $(PYLINT_CONCURRENCY) -E --rcfile=./lint-configs/python/.pylintrc --load-plugins=pylint_plugins.api_models --load-plugins=pylint_plugins.db_models st2rbac_enterprise_backend/
+	. $(VIRTUALENV_DIR)/bin/activate; pylint -j $(PYLINT_CONCURRENCY) -E --rcfile=./lint-configs/python/.pylintrc --load-plugins=pylint_plugins.api_models --load-plugins=pylint_plugins.db_models st2rbac_backend/
+
+.PHONY: .black-check
+.black-check:
+	@echo
+	@echo "================== black ===================="
+	@echo
+	. $(VIRTUALENV_DIR)/bin/activate; black st2rbac_backend bin setup.py -l 100 --check
+
+.PHONY: .black-format
+.black-format:
+	@echo
+	@echo "================== black ===================="
+	@echo
+	. $(VIRTUALENV_DIR)/bin/activate; black st2rbac_backend bin setup.py -l 100
 
 .PHONY: .unit-tests
 .unit-tests:
@@ -178,36 +172,64 @@ compilepy3:
 		echo "==========================================================="; \
 		echo "Installing runner:" $$component; \
 		echo "==========================================================="; \
-        (. $(VIRTUALENV_DIR)/bin/activate; cd $$component; python setup.py develop --no-deps); \
+        	(. $(VIRTUALENV_DIR)/bin/activate; cd $$component; python3 setup.py develop --no-deps); \
 	done
 	@echo ""
 	@echo "================== register metrics drivers ======================"
 	@echo ""
-
 	# Install st2common to register metrics drivers
-	(. $(VIRTUALENV_DIR)/bin/activate; cd $(ST2_REPO_PATH)/st2common; python setup.py develop --no-deps)
-
+	(. $(VIRTUALENV_DIR)/bin/activate; cd $(ST2_REPO_PATH)/st2common; python3 setup.py develop --no-deps)
 	@echo ""
 	@echo "================== register rbac backend ======================"
 	@echo ""
-	(. $(VIRTUALENV_DIR)/bin/activate; python setup.py develop --no-deps)
+	(. $(VIRTUALENV_DIR)/bin/activate; python3 setup.py develop --no-deps)
 
-
+# NOTE: We pass --no-deps to the script so we don't install all the
+# package dependencies which are already installed as part of "requirements"
+# make targets. This speeds up the build
 .PHONY: requirements
-requirements: virtualenv .clone_st2_repo .install-runners-and-deps
+requirements: .clone_st2_repo virtualenv
 	@echo
 	@echo "==================== requirements ===================="
 	@echo
-	. $(VIRTUALENV_DIR)/bin/activate && $(VIRTUALENV_DIR)/bin/pip install --cache-dir $(HOME)/.pip-cache $(PIP_OPTIONS) -r /tmp/st2/requirements.txt
-	. $(VIRTUALENV_DIR)/bin/activate && $(VIRTUALENV_DIR)/bin/pip install --cache-dir $(HOME)/.pip-cache $(PIP_OPTIONS) -r /tmp/st2/test-requirements.txt
+	#. $(VIRTUALENV_DIR)/bin/activate && $(VIRTUALENV_DIR)/bin/pip install --cache-dir $(HOME)/.pip-cache $(PIP_OPTIONS) -r /tmp/st2/requirements.txt
+	#. $(VIRTUALENV_DIR)/bin/activate && $(VIRTUALENV_DIR)/bin/pip install --cache-dir $(HOME)/.pip-cache $(PIP_OPTIONS) -r /tmp/st2/test-requirements.txt
+	$(eval PIP_VERSION := $(shell grep 'PIP_VERSION ?= ' /tmp/st2/Makefile | awk '{ print $$3}'))
+	$(VIRTUALENV_DIR)/bin/pip install --upgrade "pip==$(PIP_VERSION)"
+	$(VIRTUALENV_DIR)/bin/pip install --cache-dir $(HOME)/.pip-cache $(PIP_OPTIONS) -r $(ST2_REPO_PATH)/requirements.txt
+	$(VIRTUALENV_DIR)/bin/pip install --cache-dir $(HOME)/.pip-cache $(PIP_OPTIONS) -r $(ST2_REPO_PATH)/test-requirements.txt
+	$(VIRTUALENV_DIR)/bin/pip install --cache-dir $(HOME)/.pip-cache $(PIP_OPTIONS) -r requirements.txt
+	$(VIRTUALENV_DIR)/bin/pip install --cache-dir $(HOME)/.pip-cache $(PIP_OPTIONS) -r test-requirements.txt
+	@echo ""
+	@echo "================== install runners ===================="
+	@echo ""
+	@for component in $(COMPONENTS_RUNNERS); do \
+        echo "==========================================================="; \
+        echo "Installing runner:" $$component; \
+        echo "==========================================================="; \
+        (. $(VIRTUALENV_DIR)/bin/activate; cd $$component; python3 setup.py develop); \
+	done
+	@echo ""
+	@echo "================== register metrics drivers ======================"
+	@echo ""
+	# Install st2common to register metrics drivers
+	(. $(VIRTUALENV_DIR)/bin/activate; cd $(ST2_REPO_PATH)/st2common; python3 setup.py develop --no-deps)
+	@echo ""
+	@echo "================== register rbac backend ======================"
+	@echo ""
+	(. $(VIRTUALENV_DIR)/bin/activate; python3 setup.py develop --no-deps)
 
 .PHONY: requirements-ci
 requirements-ci:
 	@echo
 	@echo "==================== requirements-ci ===================="
 	@echo
-	. $(VIRTUALENV_DIR)/bin/activate && $(VIRTUALENV_DIR)/bin/pip install --cache-dir $(HOME)/.pip-cache $(PIP_OPTIONS) -r /tmp/st2/requirements.txt
-	. $(VIRTUALENV_DIR)/bin/activate && $(VIRTUALENV_DIR)/bin/pip install --cache-dir $(HOME)/.pip-cache $(PIP_OPTIONS) -r /tmp/st2/test-requirements.txt
+	#. $(VIRTUALENV_DIR)/bin/activate && $(VIRTUALENV_DIR)/bin/pip install --cache-dir $(HOME)/.pip-cache $(PIP_OPTIONS) -r /tmp/st2/requirements.txt
+	#. $(VIRTUALENV_DIR)/bin/activate && $(VIRTUALENV_DIR)/bin/pip install --cache-dir $(HOME)/.pip-cache $(PIP_OPTIONS) -r /tmp/st2/test-requirements.txt
+	$(VIRTUALENV_DIR)/bin/pip install --cache-dir $(HOME)/.pip-cache $(PIP_OPTIONS) -r $(ST2_REPO_PATH)/requirements.txt
+	$(VIRTUALENV_DIR)/bin/pip install --cache-dir $(HOME)/.pip-cache $(PIP_OPTIONS) -r $(ST2_REPO_PATH)/test-requirements.txt
+	$(VIRTUALENV_DIR)/bin/pip install --cache-dir $(HOME)/.pip-cache $(PIP_OPTIONS) -r requirements.txt
+	$(VIRTUALENV_DIR)/bin/pip install --cache-dir $(HOME)/.pip-cache $(PIP_OPTIONS) -r test-requirements.txt
 
 .PHONY: virtualenv
 virtualenv: $(VIRTUALENV_DIR)/bin/activate
@@ -215,7 +237,7 @@ $(VIRTUALENV_DIR)/bin/activate:
 	@echo
 	@echo "==================== virtualenv ===================="
 	@echo
-	test -d $(VIRTUALENV_DIR) || virtualenv --no-site-packages $(VIRTUALENV_DIR)
+	test -d $(VIRTUALENV_DIR) || virtualenv $(VIRTUALENV_DIR) -p python3
 
 	# Setup PYTHONPATH in bash activate script...
 	# Delete existing entries (if any)
@@ -235,32 +257,3 @@ endif
 	echo 'PYTHONPATH=$(COMPONENT_PYTHONPATH)' >> $(VIRTUALENV_DIR)/bin/activate
 	echo 'export PYTHONPATH' >> $(VIRTUALENV_DIR)/bin/activate
 	touch $(VIRTUALENV_DIR)/bin/activate
-
-# Package build tasks
-.PHONY: all install install_wheel install_deps deb rpm
-all:
-
-install: install_wheel install_deps
-
-install_wheel:
-	install -d $(DESTDIR)/$(WHEELSDIR)
-	$(PYTHON_BINARY) setup.py bdist_wheel -d $(DESTDIR)/$(WHEELSDIR)
-
-# This step is arch-dependent and must be called only on prepared environment,
-# it's run inside stackstorm/buildpack containers.
-install_deps:
-	$(PIP_BINARY) wheel --wheel-dir=$(DESTDIR)/$(WHEELSDIR) -r requirements.txt
-	# Well welcome to enterprise (rhel).
-	# Hardcore workaround to make wheel installable on any platform.
-	cd $(DESTDIR)/$(WHEELSDIR); \
-		ls -1 *-cp27mu-*.whl | while read f; do \
-			mv $$f $$(echo $$f | sed "s/cp27mu/none/"); \
-		done
-
-deb:
-	[ -z "$(DEB_EPOCH)" ] && _epoch="" || _epoch="$(DEB_EPOCH):"; \
-		dch -m --force-distribution -v$${_epoch}$(PKG_VERSION)-$(PKG_RELEASE) -D$(DEB_DISTRO) $(CHANGELOG_COMMENT)
-	dpkg-buildpackage -b -uc -us -j`_cpunum=$$(nproc); echo "${_cpunum:-1}"`
-
-rpm:
-	rpmbuild -bb rpm/st2-rbac-backend.spec

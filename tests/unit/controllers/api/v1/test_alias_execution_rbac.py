@@ -1,12 +1,22 @@
-# Copyright (C) 2019 Extreme Networks, Inc - All Rights Reserved
+# Copyright 2020 The StackStorm Authors.
+# Copyright (C) 2020 Extreme Networks, Inc - All Rights Reserved
 #
-# Unauthorized copying of this file, via any medium is strictly
-# prohibited. Proprietary and confidential. See the LICENSE file
-# included with this work for details.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 import mock
 
 from st2common.constants.action import LIVEACTION_STATUS_SUCCEEDED
+from st2common.bootstrap import runnersregistrar as runners_registrar
 from st2common.models.db.execution import ActionExecutionDB
 from st2common.services import action as action_service
 from st2tests.fixturesloader import FixturesLoader
@@ -27,7 +37,7 @@ TEST_LOAD_MODELS = {
 
 EXECUTION = ActionExecutionDB(id='54e657d60640fd16887d6855',
                               status=LIVEACTION_STATUS_SUCCEEDED,
-                              result='')
+                              result={})
 
 __all__ = [
     'AliasExecutionWithRBACTestCase'
@@ -43,6 +53,7 @@ class AliasExecutionWithRBACTestCase(APIControllerWithRBACTestCase):
                                                            fixtures_dict=TEST_MODELS)
         self.alias1 = self.models['aliases']['alias1.yaml']
         self.alias2 = self.models['aliases']['alias2.yaml']
+        runners_registrar.register_runners()
 
     @mock.patch.object(action_service, 'request',
                        return_value=(None, EXECUTION))

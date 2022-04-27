@@ -1,8 +1,17 @@
-# Copyright (C) 2019 Extreme Networks, Inc - All Rights Reserved
+# Copyright 2020 The StackStorm Authors
+# Copyright (C) 2020 Extreme Networks, Inc - All Rights Reserved
 #
-# Unauthorized copying of this file, via any medium is strictly
-# prohibited. Proprietary and confidential. See the LICENSE file
-# included with this work for details.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 """
 Module containing utility RBAC service related functions.
@@ -28,9 +37,7 @@ from st2common.exceptions.db import StackStormDBObjectConflictError
 from st2common.rbac.backends.base import BaseRBACService
 
 
-__all__ = [
-    'RBACService'
-]
+__all__ = ["RBACService"]
 
 
 class RBACService(BaseRBACService):
@@ -79,11 +86,12 @@ class RBACService(BaseRBACService):
         else:
             # when upgrading from pre v2.3.0 when this field didn't exist yet
             # Note: We also include None for pre v2.3 when this field didn't exist yet
-            queryset_filter = (Q(user=user_db.name) &
-                               (Q(is_remote=False) | Q(is_remote__exists=False)))
+            queryset_filter = Q(user=user_db.name) & (
+                Q(is_remote=False) | Q(is_remote__exists=False)
+            )
             queryset = UserRoleAssignmentDB.objects(queryset_filter)
 
-        role_names = queryset.only('role').scalar('role')
+        role_names = queryset.only("role").scalar("role")
         result = Role.query(name__in=role_names)
         return result
 
@@ -102,7 +110,7 @@ class RBACService(BaseRBACService):
         else:
             # Note: We also include documents with no "is_remote" field so it also works correctly
             # when upgrading from pre v2.3.0 when this field didn't exist yet
-            queryset_filter = (Q(is_remote=False) | Q(is_remote__exists=False))
+            queryset_filter = Q(is_remote=False) | Q(is_remote__exists=False)
             result = UserRoleAssignmentDB.objects(queryset_filter)
 
         return result
@@ -125,8 +133,9 @@ class RBACService(BaseRBACService):
         else:
             # Note: We also include documents with no "is_remote" field so it also works correctly
             # when upgrading from pre v2.3.0 when this field didn't exist yet
-            queryset_filter = (Q(user=user_db.name) &
-                               (Q(is_remote=False) | Q(is_remote__exists=False)))
+            queryset_filter = Q(user=user_db.name) & (
+                Q(is_remote=False) | Q(is_remote__exists=False)
+            )
             result = UserRoleAssignmentDB.objects(queryset_filter)
 
         return result
@@ -155,19 +164,25 @@ class RBACService(BaseRBACService):
 
     @staticmethod
     def delete_role(name):
-        """"
+        """ "
         Delete role with the provided name.
         """
         if name in SystemRole.get_valid_values():
-            raise ValueError('System roles can\'t be deleted')
+            raise ValueError("System roles can't be deleted")
 
         role_db = Role.get(name=name)
         result = Role.delete(role_db)
         return result
 
     @staticmethod
-    def assign_role_to_user(role_db, user_db, description=None, is_remote=False, source=None,
-                            ignore_already_exists_error=False):
+    def assign_role_to_user(
+        role_db,
+        user_db,
+        description=None,
+        is_remote=False,
+        source=None,
+        ignore_already_exists_error=False,
+    ):
         """
         Assign role to a user.
 
@@ -190,9 +205,13 @@ class RBACService(BaseRBACService):
         :param: ignore_already_exists_error: True to ignore error if an assignment already exists.
         :type ignore_already_exists_error: ``bool``
         """
-        role_assignment_db = UserRoleAssignmentDB(user=user_db.name,
-                                                  role=role_db.name, source=source,
-                                                  description=description, is_remote=is_remote)
+        role_assignment_db = UserRoleAssignmentDB(
+            user=user_db.name,
+            role=role_db.name,
+            source=source,
+            description=description,
+            is_remote=is_remote,
+        )
 
         try:
             role_assignment_db = UserRoleAssignment.add_or_update(role_assignment_db)
@@ -200,9 +219,9 @@ class RBACService(BaseRBACService):
             if not ignore_already_exists_error:
                 raise e
 
-            role_assignment_db = UserRoleAssignment.query(user=user_db.name, role=role_db.name,
-                                                          source=source,
-                                                          description=description).first()
+            role_assignment_db = UserRoleAssignment.query(
+                user=user_db.name, role=role_db.name, source=source, description=description
+            ).first()
 
         return role_assignment_db
 
@@ -223,8 +242,9 @@ class RBACService(BaseRBACService):
             UserRoleAssignment.delete(role_assignment_db)
 
     @staticmethod
-    def get_all_permission_grants_for_user(user_db, resource_uid=None, resource_types=None,
-                                           permission_types=None):
+    def get_all_permission_grants_for_user(
+        user_db, resource_uid=None, resource_types=None, permission_types=None
+    ):
         """
         Retrieve all the permission grants for a particular user optionally filtering on:
 
@@ -237,21 +257,21 @@ class RBACService(BaseRBACService):
 
         :rtype: ``list`` or :class:`PermissionGrantDB`
         """
-        role_names = UserRoleAssignment.query(user=user_db.name).only('role').scalar('role')
-        permission_grant_ids = Role.query(name__in=role_names).scalar('permission_grants')
+        role_names = UserRoleAssignment.query(user=user_db.name).only("role").scalar("role")
+        permission_grant_ids = Role.query(name__in=role_names).scalar("permission_grants")
         permission_grant_ids = sum(permission_grant_ids, [])
 
         permission_grants_filters = {}
-        permission_grants_filters['id__in'] = permission_grant_ids
+        permission_grants_filters["id__in"] = permission_grant_ids
 
         if resource_uid:
-            permission_grants_filters['resource_uid'] = resource_uid
+            permission_grants_filters["resource_uid"] = resource_uid
 
         if resource_types:
-            permission_grants_filters['resource_type__in'] = resource_types
+            permission_grants_filters["resource_type__in"] = resource_types
 
         if permission_types:
-            permission_grants_filters['permission_types__in'] = permission_types
+            permission_grants_filters["permission_types__in"] = permission_types
 
         permission_grant_dbs = PermissionGrant.query(**permission_grants_filters)
         return permission_grant_dbs
@@ -267,15 +287,19 @@ class RBACService(BaseRBACService):
         :param resource_db: Resource to create the permission assignment for.
         :type resource_db: :class:`StormFoundationDB`
         """
-        permission_types = _validate_permission_types(resource_db=resource_db,
-                                                      permission_types=permission_types)
+        permission_types = _validate_permission_types(
+            resource_db=resource_db, permission_types=permission_types
+        )
 
         resource_uid = resource_db.get_uid()
         resource_type = resource_db.get_resource_type()
 
-        result = RBACService.create_permission_grant(role_db=role_db, resource_uid=resource_uid,
-                                                     resource_type=resource_type,
-                                                     permission_types=permission_types)
+        result = RBACService.create_permission_grant(
+            role_db=role_db,
+            resource_uid=resource_uid,
+            resource_type=resource_type,
+            permission_types=permission_types,
+        )
         return result
 
     @staticmethod
@@ -287,9 +311,11 @@ class RBACService(BaseRBACService):
         :type role_db: :class:`RoleDB`
         """
         # Create or update the PermissionGrantDB
-        permission_grant_db = PermissionGrantDB(resource_uid=resource_uid,
-                                                resource_type=resource_type,
-                                                permission_types=permission_types)
+        permission_grant_db = PermissionGrantDB(
+            resource_uid=resource_uid,
+            resource_type=resource_type,
+            permission_types=permission_types,
+        )
         permission_grant_db = PermissionGrant.add_or_update(permission_grant_db)
 
         # Add assignment to the role
@@ -308,13 +334,16 @@ class RBACService(BaseRBACService):
         :param resource_db: Resource to remove the permission assignment from.
         :type resource_db: :class:`StormFoundationDB`
         """
-        permission_types = _validate_permission_types(resource_db=resource_db,
-                                                      permission_types=permission_types)
+        permission_types = _validate_permission_types(
+            resource_db=resource_db, permission_types=permission_types
+        )
         resource_uid = resource_db.get_uid()
         resource_type = resource_db.get_resource_type()
-        permission_grant_db = PermissionGrant.get(resource_uid=resource_uid,
-                                                  resource_type=resource_type,
-                                                  permission_types=permission_types)
+        permission_grant_db = PermissionGrant.get(
+            resource_uid=resource_uid,
+            resource_type=resource_type,
+            permission_types=permission_types,
+        )
 
         # Remove assignment from a role
         role_db.update(pull__permission_grants=str(permission_grant_db.id))
@@ -328,11 +357,9 @@ class RBACService(BaseRBACService):
 
     @staticmethod
     def create_group_to_role_map(group, roles, description=None, enabled=True, source=None):
-        group_to_role_map_db = GroupToRoleMappingDB(group=group,
-                                                    roles=roles,
-                                                    source=source,
-                                                    description=description,
-                                                    enabled=enabled)
+        group_to_role_map_db = GroupToRoleMappingDB(
+            group=group, roles=roles, source=source, description=description, enabled=enabled
+        )
 
         group_to_role_map_db = GroupToRoleMapping.add_or_update(group_to_role_map_db)
 
@@ -364,8 +391,9 @@ def _validate_resource_type(resource_db):
     valid_resource_types = ResourceType.get_valid_values()
 
     if resource_type not in valid_resource_types:
-        raise ValueError('Permissions cannot be manipulated for a resource of type: %s' %
-                         (resource_type))
+        raise ValueError(
+            "Permissions cannot be manipulated for a resource of type: %s" % (resource_type)
+        )
 
     return resource_db
 
@@ -381,7 +409,7 @@ def _validate_permission_types(resource_db, permission_types):
 
     for permission_type in permission_types:
         if permission_type not in valid_permission_types:
-            raise ValueError('Invalid permission type: %s' % (permission_type))
+            raise ValueError("Invalid permission type: %s" % (permission_type))
 
     return permission_types
     pass

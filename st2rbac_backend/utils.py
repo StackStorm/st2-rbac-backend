@@ -1,8 +1,17 @@
-# Copyright (C) 2019 Extreme Networks, Inc - All Rights Reserved
+# Copyright 2020 The StackStorm Authors
+# Copyright (C) 2020 Extreme Networks, Inc - All Rights Reserved
 #
-# Unauthorized copying of this file, via any medium is strictly
-# prohibited. Proprietary and confidential. See the LICENSE file
-# included with this work for details.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 """
 Module containing utility RBAC functions.
@@ -23,15 +32,12 @@ from st2common.util import action_db as action_utils
 from st2common.rbac.backends import get_rbac_backend
 from st2common.rbac.backends.base import BaseRBACUtils
 
-from st2rbac_enterprise_backend.service import RBACService as rbac_service
+from st2rbac_backend.service import RBACService as rbac_service
 
-__all__ = [
-    'RBACUtils'
-]
+__all__ = ["RBACUtils"]
 
 
 class RBACUtils(BaseRBACUtils):
-
     @staticmethod
     def assert_user_is_admin(user_db):
         """
@@ -42,8 +48,7 @@ class RBACUtils(BaseRBACUtils):
         is_admin = RBACUtils.user_is_admin(user_db=user_db)
 
         if not is_admin:
-            raise AccessDeniedError(message='Administrator access required',
-                                    user_db=user_db)
+            raise AccessDeniedError(message="Administrator access required", user_db=user_db)
 
     @staticmethod
     def assert_user_is_system_admin(user_db):
@@ -55,8 +60,7 @@ class RBACUtils(BaseRBACUtils):
         is_system_admin = RBACUtils.user_is_system_admin(user_db=user_db)
 
         if not is_system_admin:
-            raise AccessDeniedError(message='System Administrator access required',
-                                    user_db=user_db)
+            raise AccessDeniedError(message="System Administrator access required", user_db=user_db)
 
     @staticmethod
     def assert_user_is_admin_or_operating_on_own_resource(user_db, user=None):
@@ -71,8 +75,9 @@ class RBACUtils(BaseRBACUtils):
         is_self = user is not None and (user_db.name == user)
 
         if not is_admin and not is_self:
-            raise AccessDeniedError(message='Administrator or self access required',
-                                    user_db=user_db)
+            raise AccessDeniedError(
+                message="Administrator or self access required", user_db=user_db
+            )
 
     @staticmethod
     def assert_user_has_permission(user_db, permission_type):
@@ -81,8 +86,9 @@ class RBACUtils(BaseRBACUtils):
 
         If user doesn't have a required permission, AccessDeniedError is thrown.
         """
-        has_permission = RBACUtils.user_has_permission(user_db=user_db,
-                                                       permission_type=permission_type)
+        has_permission = RBACUtils.user_has_permission(
+            user_db=user_db, permission_type=permission_type
+        )
 
         if not has_permission:
             raise ResourceTypeAccessDeniedError(user_db=user_db, permission_type=permission_type)
@@ -93,14 +99,15 @@ class RBACUtils(BaseRBACUtils):
         Check that currently logged-in user has specified permission for the resource which is to be
         created.
         """
-        has_permission = RBACUtils.user_has_resource_api_permission(user_db=user_db,
-                                                                    resource_api=resource_api,
-                                                                    permission_type=permission_type)
+        has_permission = RBACUtils.user_has_resource_api_permission(
+            user_db=user_db, resource_api=resource_api, permission_type=permission_type
+        )
 
         if not has_permission:
             # TODO: Refactor exception
-            raise ResourceAccessDeniedError(user_db=user_db, resource_api_or_db=resource_api,
-                                            permission_type=permission_type)
+            raise ResourceAccessDeniedError(
+                user_db=user_db, resource_api_or_db=resource_api, permission_type=permission_type
+            )
 
     @staticmethod
     def assert_user_has_resource_db_permission(user_db, resource_db, permission_type):
@@ -109,13 +116,14 @@ class RBACUtils(BaseRBACUtils):
 
         If user doesn't have a required permission, AccessDeniedError is thrown.
         """
-        has_permission = RBACUtils.user_has_resource_db_permission(user_db=user_db,
-                                                         resource_db=resource_db,
-                                                         permission_type=permission_type)
+        has_permission = RBACUtils.user_has_resource_db_permission(
+            user_db=user_db, resource_db=resource_db, permission_type=permission_type
+        )
 
         if not has_permission:
-            raise ResourceAccessDeniedError(user_db=user_db, resource_api_or_db=resource_db,
-                                            permission_type=permission_type)
+            raise ResourceAccessDeniedError(
+                user_db=user_db, resource_api_or_db=resource_db, permission_type=permission_type
+            )
 
     @staticmethod
     def assert_user_has_rule_trigger_and_action_permission(user_db, rule_api):
@@ -128,26 +136,34 @@ class RBACUtils(BaseRBACUtils):
 
         trigger = rule_api.trigger
         action = rule_api.action
-        trigger_type = trigger['type']
-        action_ref = action['ref']
+        trigger_type = trigger["type"]
+        action_ref = action["ref"]
 
         # Check that user has access to the specified trigger - right now we only check for
         # webhook permissions
-        has_trigger_permission = RBACUtils.user_has_rule_trigger_permission(user_db=user_db,
-                                                                            trigger=trigger)
+        has_trigger_permission = RBACUtils.user_has_rule_trigger_permission(
+            user_db=user_db, trigger=trigger
+        )
 
         if not has_trigger_permission:
-            msg = ('User "%s" doesn\'t have required permission (%s) to use trigger %s' %
-                   (user_db.name, PermissionType.WEBHOOK_CREATE, trigger_type))
+            msg = 'User "%s" doesn\'t have required permission (%s) to use trigger %s' % (
+                user_db.name,
+                PermissionType.WEBHOOK_CREATE,
+                trigger_type,
+            )
             raise AccessDeniedError(message=msg, user_db=user_db)
 
         # Check that user has access to the specified action
-        has_action_permission = RBACUtils.user_has_rule_action_permission(user_db=user_db,
-                                                                          action_ref=action_ref)
+        has_action_permission = RBACUtils.user_has_rule_action_permission(
+            user_db=user_db, action_ref=action_ref
+        )
 
         if not has_action_permission:
-            msg = ('User "%s" doesn\'t have required (%s) permission to use action %s' %
-                   (user_db.name, PermissionType.ACTION_EXECUTE, action_ref))
+            msg = 'User "%s" doesn\'t have required (%s) permission to use action %s' % (
+                user_db.name,
+                PermissionType.ACTION_EXECUTE,
+                action_ref,
+            )
             raise AccessDeniedError(message=msg, user_db=user_db)
 
         return True
@@ -226,6 +242,26 @@ class RBACUtils(BaseRBACUtils):
         return role in user_role_names
 
     @staticmethod
+    def user_has_system_role(user_db):
+        """
+        :param user: User object to check for.
+        :type user: :class:`UserDB`
+
+        :rtype: ``bool``
+        """
+        user_role_dbs = rbac_service.get_roles_for_user(user_db=user_db)
+        user_role_names = [role_db.name for role_db in user_role_dbs]
+
+        if (
+            SystemRole.SYSTEM_ADMIN in user_role_names
+            or SystemRole.ADMIN in user_role_names
+            or SystemRole.OBSERVER in user_role_names
+        ):
+            return True
+
+        return False
+
+    @staticmethod
     def user_has_permission(user_db, permission_type):
         """
         Check that the provided user has specified permission.
@@ -252,9 +288,9 @@ class RBACUtils(BaseRBACUtils):
         rbac_backend = get_rbac_backend()
 
         resolver = rbac_backend.get_resolver_for_permission_type(permission_type=permission_type)
-        result = resolver.user_has_resource_api_permission(user_db=user_db,
-                                                           resource_api=resource_api,
-                                                           permission_type=permission_type)
+        result = resolver.user_has_resource_api_permission(
+            user_db=user_db, resource_api=resource_api, permission_type=permission_type
+        )
         return result
 
     @staticmethod
@@ -269,8 +305,9 @@ class RBACUtils(BaseRBACUtils):
         rbac_backend = get_rbac_backend()
 
         resolver = rbac_backend.get_resolver_for_permission_type(permission_type=permission_type)
-        result = resolver.user_has_resource_db_permission(user_db=user_db, resource_db=resource_db,
-                                                          permission_type=permission_type)
+        result = resolver.user_has_resource_db_permission(
+            user_db=user_db, resource_db=resource_db, permission_type=permission_type
+        )
         return result
 
     @staticmethod
@@ -284,8 +321,9 @@ class RBACUtils(BaseRBACUtils):
 
         rbac_backend = get_rbac_backend()
         rules_resolver = rbac_backend.get_resolver_for_resource_type(ResourceType.RULE)
-        has_trigger_permission = rules_resolver.user_has_trigger_permission(user_db=user_db,
-                                                                            trigger=trigger)
+        has_trigger_permission = rules_resolver.user_has_trigger_permission(
+            user_db=user_db, trigger=trigger
+        )
 
         if has_trigger_permission:
             return True
@@ -314,7 +352,8 @@ class RBACUtils(BaseRBACUtils):
         rbac_backend = get_rbac_backend()
         action_resolver = rbac_backend.get_resolver_for_resource_type(ResourceType.ACTION)
         has_action_permission = action_resolver.user_has_resource_db_permission(
-            user_db=user_db, resource_db=action_db, permission_type=PermissionType.ACTION_EXECUTE)
+            user_db=user_db, resource_db=action_db, permission_type=PermissionType.ACTION_EXECUTE
+        )
 
         if has_action_permission:
             return True

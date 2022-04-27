@@ -1,8 +1,17 @@
-# Copyright (C) 2019 Extreme Networks, Inc - All Rights Reserved
+# Copyright 2020 The StackStorm Authors.
+# Copyright (C) 2020 Extreme Networks, Inc - All Rights Reserved
 #
-# Unauthorized copying of this file, via any medium is strictly
-# prohibited. Proprietary and confidential. See the LICENSE file
-# included with this work for details.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 from __future__ import absolute_import
 import os
@@ -13,7 +22,7 @@ import jsonschema
 
 from st2tests import config
 from st2tests.fixturesloader import get_fixtures_base_path
-from st2rbac_enterprise_backend.loader import RBACDefinitionsLoader
+from st2rbac_backend.loader import RBACDefinitionsLoader
 
 __all__ = [
     'RBACDefinitionsLoaderTestCase'

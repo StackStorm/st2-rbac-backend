@@ -1,5 +1,6 @@
 #!/usr/bin/env python2.7
 
+# Copyright 2020 The StackStorm Authors
 # Copyright (C) 2019 Extreme Networks, Inc - All Rights Reserved
 #
 # Unauthorized copying of this file, via any medium is strictly
@@ -8,7 +9,7 @@
 
 import sys
 
-from st2rbac_enterprise_backend.cmd import apply_rbac_definitions
+from st2rbac_backend.cmd import apply_rbac_definitions
 
 if __name__ == '__main__':
     sys.exit(apply_rbac_definitions.main(sys.argv[1:]))

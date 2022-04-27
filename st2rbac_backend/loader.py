@@ -1,8 +1,17 @@
-# Copyright (C) 2019 Extreme Networks, Inc - All Rights Reserved
+# Copyright 2020 The StackStorm Authors.
+# Copyright (C) 2020 Extreme Networks, Inc - All Rights Reserved
 #
-# Unauthorized copying of this file, via any medium is strictly
-# prohibited. Proprietary and confidential. See the LICENSE file
-# included with this work for details.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 """
 Module for loading RBAC role definitions and grants from the filesystem.
@@ -25,9 +34,7 @@ from st2common.util.misc import compare_path_file_name
 
 LOG = logging.getLogger(__name__)
 
-__all__ = [
-    'RBACDefinitionsLoader'
-]
+__all__ = ["RBACDefinitionsLoader"]
 
 
 class RBACDefinitionsLoader(object):
@@ -39,10 +46,10 @@ class RBACDefinitionsLoader(object):
     def __init__(self):
         base_path = cfg.CONF.system.base_path
 
-        self._rbac_definitions_path = os.path.join(base_path, 'rbac/')
-        self._role_definitions_path = os.path.join(self._rbac_definitions_path, 'roles/')
-        self._role_assignments_path = os.path.join(self._rbac_definitions_path, 'assignments/')
-        self._role_maps_path = os.path.join(self._rbac_definitions_path, 'mappings/')
+        self._rbac_definitions_path = os.path.join(base_path, "rbac/")
+        self._role_definitions_path = os.path.join(self._rbac_definitions_path, "roles/")
+        self._role_assignments_path = os.path.join(self._rbac_definitions_path, "assignments/")
+        self._role_maps_path = os.path.join(self._rbac_definitions_path, "mappings/")
         self._meta_loader = MetaLoader()
 
     def load(self):
@@ -51,9 +58,9 @@ class RBACDefinitionsLoader(object):
         :rtype: ``dict``
         """
         result = {}
-        result['roles'] = self.load_role_definitions()
-        result['role_assignments'] = self.load_user_role_assignments()
-        result['group_to_role_maps'] = self.load_group_to_role_maps()
+        result["roles"] = self.load_role_definitions()
+        result["role_assignments"] = self.load_user_role_assignments()
+        result["group_to_role_maps"] = self.load_group_to_role_maps()
 
         return result
 
@@ -68,10 +75,10 @@ class RBACDefinitionsLoader(object):
 
         result = {}
         for file_path in file_paths:
-            LOG.debug('Loading role definition from: %s' % (file_path))
+            LOG.debug("Loading role definition from: %s" % (file_path))
             role_definition_api = self.load_role_definition_from_file(file_path=file_path)
             role_name = role_definition_api.name
-            enabled = getattr(role_definition_api, 'enabled', True)
+            enabled = getattr(role_definition_api, "enabled", True)
 
             if role_name in result:
                 raise ValueError('Duplicate definition file found for role "%s"' % (role_name))
@@ -95,10 +102,10 @@ class RBACDefinitionsLoader(object):
 
         result = {}
         for file_path in file_paths:
-            LOG.debug('Loading user role assignments from: %s' % (file_path))
+            LOG.debug("Loading user role assignments from: %s" % (file_path))
             role_assignment_api = self.load_user_role_assignments_from_file(file_path=file_path)
-            username = role_assignment_api.username
-            enabled = getattr(role_assignment_api, 'enabled', True)
+            username = role_assignment_api.username  # pylint: disable=no-member
+            enabled = getattr(role_assignment_api, "enabled", True)
 
             if username in result:
                 raise ValueError('Duplicate definition file found for user "%s"' % (username))
@@ -122,11 +129,12 @@ class RBACDefinitionsLoader(object):
 
         result = {}
         for file_path in file_paths:
-            LOG.debug('Loading group to role mapping from: %s' % (file_path))
+            LOG.debug("Loading group to role mapping from: %s" % (file_path))
             group_to_role_map_api = self.load_group_to_role_map_assignment_from_file(
-                file_path=file_path)
+                file_path=file_path
+            )
 
-            group_name = group_to_role_map_api.group
+            group_name = group_to_role_map_api.group  # pylint: disable=no-member
             result[group_name] = group_to_role_map_api
 
         return result
@@ -144,7 +152,7 @@ class RBACDefinitionsLoader(object):
         content = self._meta_loader.load(file_path)
 
         if not content:
-            msg = ('Role definition file "%s" is empty and invalid' % file_path)
+            msg = 'Role definition file "%s" is empty and invalid' % file_path
             raise ValueError(msg)
 
         role_definition_api = RoleDefinitionFileFormatAPI(**content)
@@ -165,11 +173,11 @@ class RBACDefinitionsLoader(object):
         content = self._meta_loader.load(file_path)
 
         if not content:
-            msg = ('Role assignment file "%s" is empty and invalid' % file_path)
+            msg = 'Role assignment file "%s" is empty and invalid' % file_path
             raise ValueError(msg)
 
         user_role_assignment_api = UserRoleAssignmentFileFormatAPI(**content)
-        user_role_assignment_api.file_path = file_path[file_path.rfind('assignments/'):]
+        user_role_assignment_api.file_path = file_path[file_path.rfind("assignments/") :]
         user_role_assignment_api = user_role_assignment_api.validate()
 
         return user_role_assignment_api
@@ -178,11 +186,11 @@ class RBACDefinitionsLoader(object):
         content = self._meta_loader.load(file_path)
 
         if not content:
-            msg = ('Group to role map assignment file "%s" is empty and invalid' % (file_path))
+            msg = 'Group to role map assignment file "%s" is empty and invalid' % (file_path)
             raise ValueError(msg)
 
         group_to_role_map_api = AuthGroupToRoleMapAssignmentFileFormatAPI(**content)
-        group_to_role_map_api.file_path = file_path[file_path.rfind('mappings/'):]
+        group_to_role_map_api.file_path = file_path[file_path.rfind("mappings/") :]
         group_to_role_map_api = group_to_role_map_api.validate()
 
         return group_to_role_map_api
@@ -195,7 +203,7 @@ class RBACDefinitionsLoader(object):
 
         :rtype: ``list``
         """
-        glob_str = self._role_definitions_path + '*.yaml'
+        glob_str = self._role_definitions_path + "*.yaml"
         file_paths = glob.glob(glob_str)
         file_paths = sorted(file_paths, key=functools.cmp_to_key(compare_path_file_name))
         return file_paths
@@ -208,7 +216,7 @@ class RBACDefinitionsLoader(object):
 
         :rtype: ``list``
         """
-        glob_str = self._role_assignments_path + '*.yaml'
+        glob_str = self._role_assignments_path + "*.yaml"
         file_paths = glob.glob(glob_str)
         file_paths = sorted(file_paths, key=functools.cmp_to_key(compare_path_file_name))
         return file_paths
@@ -219,7 +227,7 @@ class RBACDefinitionsLoader(object):
 
         :rtype: ``list``
         """
-        glob_str = self._role_maps_path + '*.yaml'
+        glob_str = self._role_maps_path + "*.yaml"
         file_paths = glob.glob(glob_str)
         file_paths = sorted(file_paths, key=functools.cmp_to_key(compare_path_file_name))
         return file_paths

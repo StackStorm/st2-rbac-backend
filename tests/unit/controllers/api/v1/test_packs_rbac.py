@@ -1,17 +1,30 @@
-# Copyright (C) 2019 Extreme Networks, Inc - All Rights Reserved
+# Copyright 2020 The StackStorm Authors.
+# Copyright (C) 2020 Extreme Networks, Inc - All Rights Reserved
 #
-# Unauthorized copying of this file, via any medium is strictly
-# prohibited. Proprietary and confidential. See the LICENSE file
-# included with this work for details.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 import mock
 import six
 
 from st2common.router import Response
+from st2common.models.db.pack import PackDB
+from st2common.persistence.pack import Pack
 from st2common.services import packs as pack_service
 from st2api.controllers.v1.actionexecutions import ActionExecutionsControllerMixin
+from st2api.controllers.v1.packs import PacksController
 
 from tests.base import APIControllerWithRBACTestCase
+from st2tests.api import APIControllerWithIncludeAndExcludeFilterTestCase
 
 http_client = six.moves.http_client
 
@@ -41,7 +54,30 @@ PACK_INDEX = {
 }
 
 
-class PackControllerRBACTestCase(APIControllerWithRBACTestCase):
+class PackControllerRBACTestCase(APIControllerWithRBACTestCase,
+                                 APIControllerWithIncludeAndExcludeFilterTestCase):
+
+    # Attributes used by APIControllerWithIncludeAndExcludeFilterTestCase
+    get_all_path = '/v1/packs'
+    controller_cls = PacksController
+    include_attribute_field_name = 'version'
+    exclude_attribute_field_name = 'author'
+    rbac_enabled = True
+
+    def setUp(cls):
+        super(PackControllerRBACTestCase, cls).setUp()
+
+        cls.pack_db_1 = PackDB(name='pack1', description='foo', version='0.1.0', author='foo',
+                               email='test@example.com', ref='pack1')
+        cls.pack_db_2 = PackDB(name='pack2', description='foo', version='0.1.0', author='foo',
+                               email='test@example.com', ref='pack2')
+        cls.pack_db_3 = PackDB(name='pack3-name', ref='pack3-ref', description='foo',
+                               version='0.1.0', author='foo',
+                               email='test@example.com')
+        Pack.add_or_update(cls.pack_db_1)
+        Pack.add_or_update(cls.pack_db_2)
+        Pack.add_or_update(cls.pack_db_3)
+
     @mock.patch.object(ActionExecutionsControllerMixin, '_handle_schedule_execution')
     def test_install(self, _handle_schedule_execution):
         user_db = self.users['system_admin']
@@ -125,3 +161,9 @@ class PackControllerRBACTestCase(APIControllerWithRBACTestCase):
         data = {'query': 'test'}
         resp = self.app.post_json('/v1/packs/index/search', data)
         self.assertEqual(resp.status_code, http_client.OK)
+
+    def test_get_all_invalid_exclude_and_include_parameter(self):
+        pass
+
+    def _insert_mock_models(self):
+        return [self.pack_db_1['id'], self.pack_db_2['id'], self.pack_db_3['id']]
