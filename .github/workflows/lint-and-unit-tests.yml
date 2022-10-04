@@ -1,0 +1,63 @@
+name: lint-and-unit-tests
+
+on:
+  pull_request:
+  push:
+    branches:
+      - github
+      - main
+      - master
+  schedule:
+    - cron: 0 1 * * *
+  workflow_dispatch:
+
+jobs:
+  build-and-test-python:
+    runs-on: ubuntu-latest
+    # NOTE: Lifted from https://github.com/StackStorm/st2/blob/master/.github/workflows/ci.yaml#L183
+    services:
+      mongo:
+        image: mongo:4.4
+        ports:
+          - 27017:27017
+      rabbitmq:
+        image: rabbitmq:3.8-management
+        options: >-
+          --name rabbitmq
+        ports:
+          - 5671:5671/tcp # AMQP SSL port
+          - 5672:5672/tcp # AMQP standard port
+          - 15672:15672/tcp # Management: HTTP, CLI
+    strategy:
+      fail-fast: false
+      matrix:
+        version:
+          - "3.6"
+          - "3.8"
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.version }}
+
+      - name: Clone StackStorm/st2 repo
+        run: |
+          make .clone_st2_repo
+
+      - name: Reconfigure RabbitMQ
+        timeout-minutes: 2  # may die if rabbitmq fails to start
+        run: |
+          /tmp/st2/scripts/github/configure-rabbitmq.sh
+
+      - name: Download and install depedencies
+        run: |
+          sudo apt-get update
+          sudo apt-get -y install libldap2-dev libsasl2-dev
+          sudo apt-get -y install python3-virtualenv
+          make requirements
+
+      - name: Run lint and tests (Python ${{ matrix.version }})
+        run: |
+          make .lint
+          make .unit-tests

@@ -1,5 +1,6 @@
 # RBAC Backend for StackStorm
-[![RBAC Unit Tests Status](https://circleci.com/gh/StackStorm/st2-rbac-backend/tree/master.svg?style=shield)](https://circleci.com/gh/StackStorm/st2-rbac-backend) 
+
+[![RBAC Unit Tests Status](https://github.com/StackStorm/st2-rbac-backend/actions/workflows/lint-and-unit-tests.yml/badge.svg)](https://github.com/StackStorm/st2-rbac-backend/actions/workflows/lint-and-unit-tests.yml)
 
 The RBAC backend started as part of StackStorm core repo and then moved out into a separate
 repo for enterprise purposes. Some enterprise features such as RBAC has been made open
