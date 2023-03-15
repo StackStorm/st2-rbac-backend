@@ -12,7 +12,7 @@ on:
 
 jobs:
   build-and-test-python:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     # NOTE: Lifted from https://github.com/StackStorm/st2/blob/master/.github/workflows/ci.yaml#L183
     services:
       mongo:
