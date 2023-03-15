@@ -17,7 +17,6 @@ import os
 
 from setuptools import setup, find_packages
 
-from dist_utils import fetch_requirements
 from dist_utils import parse_version_string
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -25,7 +24,6 @@ REQUIREMENTS_FILE = os.path.join(BASE_DIR, "requirements.txt")
 INIT_FILE = os.path.join(BASE_DIR, "st2rbac_backend", "__init__.py")
 
 version = parse_version_string(INIT_FILE)
-install_reqs, dep_links = fetch_requirements(REQUIREMENTS_FILE)
 
 setup(
     name="st2-rbac-backend",
@@ -50,8 +48,8 @@ setup(
     provides=["st2rbac_backend"],
     packages=find_packages(),
     include_package_data=True,
-    install_requires=install_reqs,
-    dependency_links=dep_links,
+    install_requires=[],
+    dependency_links=[],
     test_suite="tests",
     entry_points={
         "st2common.rbac.backend": [
