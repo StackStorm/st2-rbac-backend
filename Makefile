@@ -149,7 +149,7 @@ compilepy3:
 	@echo
 	@echo "==================== unit-tests-py3 ===================="
 	@echo
-	NOSE_WITH_TIMER=$(NOSE_WITH_TIMER) tox -e py36-unit -vv
+	NOSE_WITH_TIMER=$(NOSE_WITH_TIMER) tox -e py38-unit -vv
 
 .PHONY: .clone_st2_repo
 .clone_st2_repo: /tmp/st2
