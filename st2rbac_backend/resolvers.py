@@ -829,21 +829,22 @@ class ExecutionPermissionsResolver(PermissionsResolver):
         action_uid = action["uid"]
         action_pack_uid = pack_db.get_uid()
 
-        # Note: "action_execute" also grants / implies "execution_re_run" and "execution_stop"
+        # NOTE: "action_execute" also grants / implies "execution_re_run" and "execution_stop"
         if permission_type == PermissionType.EXECUTION_VIEW:
-            action_permission_type = PermissionType.ACTION_VIEW
+            # NOTE: action_execute also grants action_view
+            action_permission_types = [PermissionType.ACTION_VIEW, PermissionType.ACTION_EXECUTE]
         elif permission_type in [PermissionType.EXECUTION_RE_RUN, PermissionType.EXECUTION_STOP]:
-            action_permission_type = PermissionType.ACTION_EXECUTE
+            action_permission_types = [PermissionType.ACTION_EXECUTE]
         elif permission_type == PermissionType.EXECUTION_ALL:
-            action_permission_type = PermissionType.ACTION_ALL
+            action_permission_types = [PermissionType.ACTION_ALL]
         elif permission_type == PermissionType.EXECUTION_VIEWS_FILTERS_LIST:
-            action_permission_type = PermissionType.EXECUTION_VIEWS_FILTERS_LIST
+            action_permission_types = [PermissionType.EXECUTION_VIEWS_FILTERS_LIST]
         else:
             raise ValueError("Invalid permission type: %s" % (permission_type))
 
         # Check grants on the pack of the action to which execution belongs to
         resource_types = [ResourceType.PACK]
-        permission_types = [PermissionType.ACTION_ALL, action_permission_type]
+        permission_types = [PermissionType.ACTION_ALL] + action_permission_types
         permission_grants = rbac_service.get_all_permission_grants_for_user(
             user_db=user_db,
             resource_uid=action_pack_uid,
@@ -857,7 +858,7 @@ class ExecutionPermissionsResolver(PermissionsResolver):
 
         # Check grants on the action the execution belongs to
         resource_types = [ResourceType.ACTION]
-        permission_types = [PermissionType.ACTION_ALL, action_permission_type]
+        permission_types = [PermissionType.ACTION_ALL] + action_permission_types
         permission_grants = rbac_service.get_all_permission_grants_for_user(
             user_db=user_db,
             resource_uid=action_uid,

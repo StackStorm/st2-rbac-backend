@@ -230,6 +230,11 @@ class BasePermissionsResolverTestCase(CleanDbTestCase):
         pack_2_db = Pack.add_or_update(pack_2_db)
         self.resources['pack_2'] = pack_2_db
 
+        pack_3_db = PackDB(name='test_pack_3', ref='test_pack_3', description='',
+                           version='0.1.0', author='foo', email='test@example.com')
+        pack_3_db = Pack.add_or_update(pack_3_db)
+        self.resources['pack_3'] = pack_3_db
+
     def _insert_common_mock_roles(self):
         # Insert common mock roles
         admin_role_db = rbac_service.get_role_by_name(name=SystemRole.ADMIN)
