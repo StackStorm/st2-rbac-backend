@@ -82,6 +82,9 @@ lint: requirements flake8 pylint black-check
 .PHONY: .lint
 .lint: compile .flake8 .pylint .black-check
 
+.PHONY: black-check
+black-check: requirements .clone_st2_repo .black-check
+
 .PHONY: flake8
 flake8: requirements .clone_st2_repo .flake8
 
