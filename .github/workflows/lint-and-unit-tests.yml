@@ -16,11 +16,11 @@ jobs:
     # NOTE: Lifted from https://github.com/StackStorm/st2/blob/master/.github/workflows/ci.yaml#L183
     services:
       mongo:
-        image: mongo:4.4
+        image: mongo:7.0
         ports:
           - 27017:27017
       rabbitmq:
-        image: rabbitmq:3.8-management
+        image: rabbitmq:3.13
         options: >-
           --name rabbitmq
         ports:
