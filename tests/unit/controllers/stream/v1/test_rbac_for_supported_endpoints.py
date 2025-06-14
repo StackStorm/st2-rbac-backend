@@ -64,7 +64,7 @@ class APIControllersRBACTestCase(APIControllerWithRBACTestCase):
                                                                         endpoint['path'],
                                                                         response.body)
             self.assertEqual(response.status_code, http_client.FORBIDDEN, msg)
-            self.assertRegexpMatches(response.json['faultstring'], expected_msg)
+            self.assertRegex(response.json['faultstring'], expected_msg)
 
     def _perform_request_for_endpoint(self, endpoint):
         if endpoint['method'] == 'GET':

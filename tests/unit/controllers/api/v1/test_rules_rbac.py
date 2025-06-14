@@ -352,12 +352,12 @@ class BaseRuleControllerRBACTestCase(APIControllerWithRBACTestCase):
         for rule_id in result['admin']:
             resp = self.app.get('%s/%s' % (self.api_endpoint, rule_id), expect_errors=True)
             self.assertEqual(resp.status_code, http_client.FORBIDDEN)
-            self.assertRegexpMatches(resp.json['faultstring'], expected_msg)
+            self.assertRegex(resp.json['faultstring'], expected_msg)
 
         for rule_id in result['user_three']:
             resp = self.app.get('%s/%s' % (self.api_endpoint, rule_id), expect_errors=True)
             self.assertEqual(resp.status_code, http_client.FORBIDDEN)
-            self.assertRegexpMatches(resp.json['faultstring'], expected_msg)
+            self.assertRegex(resp.json['faultstring'], expected_msg)
 
         # 4. User three can only view their own
         user_db = self.users['user_three']
@@ -375,12 +375,12 @@ class BaseRuleControllerRBACTestCase(APIControllerWithRBACTestCase):
         for rule_id in result['admin']:
             resp = self.app.get('%s/%s' % (self.api_endpoint, rule_id), expect_errors=True)
             self.assertEqual(resp.status_code, http_client.FORBIDDEN)
-            self.assertRegexpMatches(resp.json['faultstring'], expected_msg)
+            self.assertRegex(resp.json['faultstring'], expected_msg)
 
         for rule_id in result['user_two']:
             resp = self.app.get('%s/%s' % (self.api_endpoint, rule_id), expect_errors=True)
             self.assertEqual(resp.status_code, http_client.FORBIDDEN)
-            self.assertRegexpMatches(resp.json['faultstring'], expected_msg)
+            self.assertRegex(resp.json['faultstring'], expected_msg)
 
         # 5. Observer can only view their own
         user_db = self.users['observer']
@@ -393,7 +393,7 @@ class BaseRuleControllerRBACTestCase(APIControllerWithRBACTestCase):
             for rule_id in rule_ids:
                 resp = self.app.get('%s/%s' % (self.api_endpoint, rule_id), expect_errors=True)
                 self.assertEqual(resp.status_code, http_client.FORBIDDEN)
-                self.assertRegexpMatches(resp.json['faultstring'], expected_msg)
+                self.assertRegex(resp.json['faultstring'], expected_msg)
 
     @mock.patch.object(PoolPublisher, 'publish', mock.MagicMock())
     def _do_post(self, rule):

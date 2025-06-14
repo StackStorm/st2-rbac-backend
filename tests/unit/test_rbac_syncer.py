@@ -102,8 +102,8 @@ class RBACDefinitionsDBSyncerTestCase(BaseRBACDefinitionsDBSyncerTestCase):
 
         # No definitions
         created_role_dbs, deleted_role_dbs = syncer.sync_roles(role_definition_apis=[])
-        self.assertItemsEqual(created_role_dbs, [])
-        self.assertItemsEqual(deleted_role_dbs, [])
+        self.assertCountEqual(created_role_dbs, [])
+        self.assertCountEqual(deleted_role_dbs, [])
 
     def test_sync_roles_single_role_definition_no_grants(self):
         syncer = RBACDefinitionsDBSyncer()
@@ -113,10 +113,10 @@ class RBACDefinitionsDBSyncerTestCase(BaseRBACDefinitionsDBSyncerTestCase):
                                           permission_grants=[])
         created_role_dbs, deleted_role_dbs = syncer.sync_roles(role_definition_apis=[api])
         self.assertEqual(len(created_role_dbs), 1)
-        self.assertItemsEqual(deleted_role_dbs, [])
+        self.assertCountEqual(deleted_role_dbs, [])
         self.assertEqual(created_role_dbs[0].name, 'test_role_1')
         self.assertEqual(created_role_dbs[0].description, 'test description 1')
-        self.assertItemsEqual(created_role_dbs[0].permission_grants, [])
+        self.assertCountEqual(created_role_dbs[0].permission_grants, [])
 
         # Assert role has been created in the DB
         self.assertRoleDBObjectExists(role_db=created_role_dbs[0])
@@ -142,7 +142,7 @@ class RBACDefinitionsDBSyncerTestCase(BaseRBACDefinitionsDBSyncerTestCase):
                                           permission_grants=permission_grants)
         created_role_dbs, deleted_role_dbs = syncer.sync_roles(role_definition_apis=[api])
         self.assertEqual(len(created_role_dbs), 1)
-        self.assertItemsEqual(deleted_role_dbs, [])
+        self.assertCountEqual(deleted_role_dbs, [])
         self.assertEqual(created_role_dbs[0].name, 'test_role_2')
         self.assertEqual(created_role_dbs[0].description, 'test description 2')
         self.assertEqual(len(created_role_dbs[0].permission_grants), 3)
@@ -175,7 +175,7 @@ class RBACDefinitionsDBSyncerTestCase(BaseRBACDefinitionsDBSyncerTestCase):
                                            permission_grants=[])
         created_role_dbs, deleted_role_dbs = syncer.sync_roles(role_definition_apis=[api1, api2])
         self.assertEqual(len(created_role_dbs), 2)
-        self.assertItemsEqual(deleted_role_dbs, [])
+        self.assertCountEqual(deleted_role_dbs, [])
 
         # Assert role and grants have been created in the DB
         self.assertEqual(len(Role.get_all()), 2)
@@ -199,7 +199,7 @@ class RBACDefinitionsDBSyncerTestCase(BaseRBACDefinitionsDBSyncerTestCase):
 
         # Initial state, no roles
         role_dbs = rbac_service.get_roles_for_user(user_db=self.users['user_1'])
-        self.assertItemsEqual(role_dbs, [])
+        self.assertCountEqual(role_dbs, [])
 
         # Do the sync with a single role defined
         api = UserRoleAssignmentFileFormatAPI(username='user_1',
@@ -208,7 +208,7 @@ class RBACDefinitionsDBSyncerTestCase(BaseRBACDefinitionsDBSyncerTestCase):
         syncer.sync_users_role_assignments(role_assignment_apis=[api])
 
         role_dbs = rbac_service.get_roles_for_user(user_db=self.users['user_1'])
-        self.assertItemsEqual(role_dbs, [self.roles['role_1']])
+        self.assertCountEqual(role_dbs, [self.roles['role_1']])
         role_assignment_dbs = rbac_service.get_role_assignments_for_user(
             user_db=self.users['user_1'])
         self.assertEqual(len(role_assignment_dbs), 1)
@@ -241,7 +241,7 @@ class RBACDefinitionsDBSyncerTestCase(BaseRBACDefinitionsDBSyncerTestCase):
 
         # Initial state, no roles
         role_dbs = rbac_service.get_roles_for_user(user_db=self.users['user_2'])
-        self.assertItemsEqual(role_dbs, [])
+        self.assertCountEqual(role_dbs, [])
 
         # Do the sync with two roles defined
         api = UserRoleAssignmentFileFormatAPI(username='user_2',
@@ -266,7 +266,7 @@ class RBACDefinitionsDBSyncerTestCase(BaseRBACDefinitionsDBSyncerTestCase):
 
         # Initial state, no roles
         role_dbs = rbac_service.get_roles_for_user(user_db=self.users['user_2'])
-        self.assertItemsEqual(role_dbs, [])
+        self.assertCountEqual(role_dbs, [])
 
         # Do the sync with role defined in separate files
         assignment1 = UserRoleAssignmentFileFormatAPI(
@@ -274,7 +274,7 @@ class RBACDefinitionsDBSyncerTestCase(BaseRBACDefinitionsDBSyncerTestCase):
 
         expected_msg = ('Role "doesnt_exist" referenced in assignment file '
                         '"assignments/user2.yaml" doesn\'t exist')
-        self.assertRaisesRegexp(ValueError, expected_msg, syncer.sync_users_role_assignments,
+        self.assertRaisesRegex(ValueError, expected_msg, syncer.sync_users_role_assignments,
                                 role_assignment_apis=[assignment1])
 
     def test_sync_user_assignments_multiple_sources_same_role_assignment(self):
@@ -284,7 +284,7 @@ class RBACDefinitionsDBSyncerTestCase(BaseRBACDefinitionsDBSyncerTestCase):
 
         # Initial state, no roles
         role_dbs = rbac_service.get_roles_for_user(user_db=self.users['user_2'])
-        self.assertItemsEqual(role_dbs, [])
+        self.assertCountEqual(role_dbs, [])
 
         # Do the sync with role defined in separate files
         assignment1 = UserRoleAssignmentFileFormatAPI(
@@ -328,7 +328,7 @@ class RBACDefinitionsDBSyncerTestCase(BaseRBACDefinitionsDBSyncerTestCase):
 
         # Initial state, no roles
         role_dbs = rbac_service.get_roles_for_user(user_db=self.users['user_2'])
-        self.assertItemsEqual(role_dbs, [])
+        self.assertCountEqual(role_dbs, [])
 
         # Do the sync with two roles defined
         api = UserRoleAssignmentFileFormatAPI(
@@ -363,7 +363,7 @@ class RBACDefinitionsDBSyncerTestCase(BaseRBACDefinitionsDBSyncerTestCase):
         user_db = UserDB(name=username)
         self.assertEqual(len(User.query(name=username)), 0)
         role_dbs = rbac_service.get_roles_for_user(user_db=user_db)
-        self.assertItemsEqual(role_dbs, [])
+        self.assertCountEqual(role_dbs, [])
 
         # Do the sync with two roles defined
         api = UserRoleAssignmentFileFormatAPI(
@@ -389,7 +389,7 @@ class RBACDefinitionsDBSyncerTestCase(BaseRBACDefinitionsDBSyncerTestCase):
         user_db = UserDB(name=username)
         self.assertEqual(len(User.query(name=username)), 0)
         role_dbs = rbac_service.get_roles_for_user(user_db=user_db)
-        self.assertItemsEqual(role_dbs, [])
+        self.assertCountEqual(role_dbs, [])
 
         # Do the sync with two roles defined
         api = UserRoleAssignmentFileFormatAPI(
@@ -416,7 +416,7 @@ class RBACDefinitionsDBSyncerTestCase(BaseRBACDefinitionsDBSyncerTestCase):
         user_db = UserDB(name=username)
         self.assertEqual(len(User.query(name=username)), 0)
         role_dbs = rbac_service.get_roles_for_user(user_db=user_db)
-        self.assertItemsEqual(role_dbs, [])
+        self.assertCountEqual(role_dbs, [])
 
         # Do the sync with three roles defined
         api = UserRoleAssignmentFileFormatAPI(
@@ -454,7 +454,7 @@ class RBACDefinitionsDBSyncerTestCase(BaseRBACDefinitionsDBSyncerTestCase):
         # Initial state, no roles
         user_db = UserDB(name='doesntexistwhaha')
         role_dbs = rbac_service.get_roles_for_user(user_db=user_db)
-        self.assertItemsEqual(role_dbs, [])
+        self.assertCountEqual(role_dbs, [])
 
         # Create mock remote role assignment
         role_db = self.roles['role_3']
@@ -465,7 +465,7 @@ class RBACDefinitionsDBSyncerTestCase(BaseRBACDefinitionsDBSyncerTestCase):
 
         # Verify assignment has been created
         role_dbs = rbac_service.get_roles_for_user(user_db=user_db)
-        self.assertItemsEqual(role_dbs, [self.roles['role_3']])
+        self.assertCountEqual(role_dbs, [self.roles['role_3']])
 
         # Do the sync with two roles defined - verify remote role assignment hasn't been
         # manipulated with.
@@ -500,7 +500,7 @@ class RBACDefinitionsDBSyncerTestCase(BaseRBACDefinitionsDBSyncerTestCase):
         # Initial state, no roles
         user_db = self.users['user_3']
         role_dbs = rbac_service.get_roles_for_user(user_db=user_db)
-        self.assertItemsEqual(role_dbs, [])
+        self.assertCountEqual(role_dbs, [])
 
         # Do the sync with two roles defined
         api = UserRoleAssignmentFileFormatAPI(

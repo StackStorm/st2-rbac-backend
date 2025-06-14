@@ -16,7 +16,7 @@
 from __future__ import absolute_import
 import os
 
-import unittest2
+import unittest
 import mock
 import jsonschema
 
@@ -29,7 +29,7 @@ __all__ = [
 ]
 
 
-class RBACDefinitionsLoaderTestCase(unittest2.TestCase):
+class RBACDefinitionsLoaderTestCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         config.parse_args()
@@ -61,20 +61,20 @@ class RBACDefinitionsLoaderTestCase(unittest2.TestCase):
         # Invalid permission which doesn't apply to the resource in question
         file_path = os.path.join(get_fixtures_base_path(), 'rbac_invalid/roles/role_one.yaml')
         expected_msg = 'Invalid permission type "rule_all" for resource type "action"'
-        self.assertRaisesRegexp(ValueError, expected_msg, loader.load_role_definition_from_file,
+        self.assertRaisesRegex(ValueError, expected_msg, loader.load_role_definition_from_file,
                                 file_path=file_path)
 
         # Invalid permission type which doesn't exist
         file_path = os.path.join(get_fixtures_base_path(), 'rbac_invalid/roles/role_two.yaml')
         expected_msg = '.*Failed validating \'enum\'.*'
-        self.assertRaisesRegexp(jsonschema.ValidationError, expected_msg,
+        self.assertRaisesRegex(jsonschema.ValidationError, expected_msg,
                                 loader.load_role_definition_from_file, file_path=file_path)
 
         # Only list permissions can be used without a resource_uid
         file_path = os.path.join(get_fixtures_base_path(), 'rbac_invalid/roles/role_four.yaml')
         expected_msg = ('Invalid permission type "action_create". Valid global '
                         'permission types which can be used without a resource id are:')
-        self.assertRaisesRegexp(ValueError, expected_msg,
+        self.assertRaisesRegex(ValueError, expected_msg,
                                 loader.load_role_definition_from_file, file_path=file_path)
 
     def test_load_role_definition_with_all_global_permission_types(self):
@@ -108,7 +108,7 @@ class RBACDefinitionsLoaderTestCase(unittest2.TestCase):
         loader._get_role_definitions_file_paths.return_value = file_paths
 
         expected_msg = 'Duplicate definition file found for role "role_three_name_conflict"'
-        self.assertRaisesRegexp(ValueError, expected_msg, loader.load_role_definitions)
+        self.assertRaisesRegex(ValueError, expected_msg, loader.load_role_definitions)
 
     def test_load_role_definitions_disabled_role_definition(self):
         loader = RBACDefinitionsLoader()
@@ -121,7 +121,7 @@ class RBACDefinitionsLoaderTestCase(unittest2.TestCase):
         loader._get_role_definitions_file_paths.return_value = file_paths
 
         result = loader.load_role_definitions()
-        self.assertItemsEqual(result, [])
+        self.assertCountEqual(result, [])
 
     def test_load_role_definitions_empty_definition_file(self):
         loader = RBACDefinitionsLoader()
@@ -133,7 +133,7 @@ class RBACDefinitionsLoaderTestCase(unittest2.TestCase):
         loader._get_role_definitions_file_paths.return_value = file_paths
 
         expected_msg = 'Role definition file .+? is empty and invalid'
-        self.assertRaisesRegexp(ValueError, expected_msg, loader.load_role_definitions)
+        self.assertRaisesRegex(ValueError, expected_msg, loader.load_role_definitions)
 
     def test_load_user_role_assignments_duplicate_user_definition(self):
         loader = RBACDefinitionsLoader()
@@ -150,7 +150,7 @@ class RBACDefinitionsLoaderTestCase(unittest2.TestCase):
         loader._get_role_assiginments_file_paths.return_value = file_paths
 
         expected_msg = 'Duplicate definition file found for user "userfoo"'
-        self.assertRaisesRegexp(ValueError, expected_msg, loader.load_user_role_assignments)
+        self.assertRaisesRegex(ValueError, expected_msg, loader.load_user_role_assignments)
 
     def test_load_user_role_assignments_disabled_assignment(self):
         loader = RBACDefinitionsLoader()
@@ -163,7 +163,7 @@ class RBACDefinitionsLoaderTestCase(unittest2.TestCase):
         loader._get_role_assiginments_file_paths.return_value = file_paths
 
         result = loader.load_user_role_assignments()
-        self.assertItemsEqual(result, [])
+        self.assertCountEqual(result, [])
 
     def test_load_user_role_assignments_empty_definition_file(self):
         loader = RBACDefinitionsLoader()
@@ -176,7 +176,7 @@ class RBACDefinitionsLoaderTestCase(unittest2.TestCase):
         loader._get_role_assiginments_file_paths.return_value = file_paths
 
         expected_msg = 'Role assignment file .+? is empty and invalid'
-        self.assertRaisesRegexp(ValueError, expected_msg, loader.load_user_role_assignments)
+        self.assertRaisesRegex(ValueError, expected_msg, loader.load_user_role_assignments)
 
     def test_load_sample_role_definition(self):
         """
@@ -212,7 +212,7 @@ class RBACDefinitionsLoaderTestCase(unittest2.TestCase):
         loader._get_group_to_role_maps_file_paths.return_value = file_paths
 
         expected_msg = 'Group to role map assignment file .+? is empty and invalid'
-        self.assertRaisesRegexp(ValueError, expected_msg, loader.load_group_to_role_maps)
+        self.assertRaisesRegex(ValueError, expected_msg, loader.load_group_to_role_maps)
 
     def test_load_group_to_role_mappings_missing_mandatory_attribute(self):
         loader = RBACDefinitionsLoader()
@@ -221,7 +221,7 @@ class RBACDefinitionsLoaderTestCase(unittest2.TestCase):
                                  'rbac_invalid/mappings/mapping_one_missing_roles.yaml')
 
         expected_msg = '\'roles\' is a required property'
-        self.assertRaisesRegexp(jsonschema.ValidationError, expected_msg,
+        self.assertRaisesRegex(jsonschema.ValidationError, expected_msg,
                                 loader.load_group_to_role_map_assignment_from_file,
                                 file_path=file_path)
 
@@ -229,7 +229,7 @@ class RBACDefinitionsLoaderTestCase(unittest2.TestCase):
                                  'rbac_invalid/mappings/mapping_two_missing_group.yaml')
 
         expected_msg = '\'group\' is a required property'
-        self.assertRaisesRegexp(jsonschema.ValidationError, expected_msg,
+        self.assertRaisesRegex(jsonschema.ValidationError, expected_msg,
                                 loader.load_group_to_role_map_assignment_from_file,
                                 file_path=file_path)
 

@@ -68,7 +68,7 @@ class AliasExecutionWithRBACTestCase(APIControllerWithRBACTestCase):
         self.assertEqual(post_resp.status_int, 201)
 
         live_action_db = request.call_args[0][0]
-        self.assertEquals(live_action_db.context['user'], 'admin')
+        self.assertEqual(live_action_db.context['user'], 'admin')
 
     def _do_post(self, alias_execution, command, expect_errors=False):
         if (isinstance(alias_execution.formats[0], dict) and
