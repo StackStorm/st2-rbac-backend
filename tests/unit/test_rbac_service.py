@@ -32,9 +32,7 @@ from st2common.exceptions.db import StackStormDBObjectConflictError
 
 from st2rbac_backend.service import RBACService as rbac_service
 
-__all__ = [
-    'RBACServiceTestCase'
-]
+__all__ = ["RBACServiceTestCase"]
 
 
 class RBACServiceTestCase(CleanDbTestCase):
@@ -42,8 +40,8 @@ class RBACServiceTestCase(CleanDbTestCase):
         super(RBACServiceTestCase, self).setUp()
 
         # Make sure RBAC is enabeld
-        cfg.CONF.set_override(name='enable', override=True, group='rbac')
-        cfg.CONF.set_override(name='backend', override='default', group='rbac')
+        cfg.CONF.set_override(name="enable", override=True, group="rbac")
+        cfg.CONF.set_override(name="backend", override="default", group="rbac")
 
         # TODO: Share mocks
 
@@ -52,80 +50,85 @@ class RBACServiceTestCase(CleanDbTestCase):
         self.resources = {}
 
         # Create some mock users
-        user_1_db = UserDB(name='admin')
+        user_1_db = UserDB(name="admin")
         user_1_db = User.add_or_update(user_1_db)
-        self.users['admin'] = user_1_db
+        self.users["admin"] = user_1_db
 
-        user_2_db = UserDB(name='observer')
+        user_2_db = UserDB(name="observer")
         user_2_db = User.add_or_update(user_2_db)
-        self.users['observer'] = user_2_db
+        self.users["observer"] = user_2_db
 
-        user_3_db = UserDB(name='no_roles')
+        user_3_db = UserDB(name="no_roles")
         user_3_db = User.add_or_update(user_3_db)
-        self.users['no_roles'] = user_3_db
+        self.users["no_roles"] = user_3_db
 
-        user_5_db = UserDB(name='user_5')
+        user_5_db = UserDB(name="user_5")
         user_5_db = User.add_or_update(user_5_db)
-        self.users['user_5'] = user_5_db
+        self.users["user_5"] = user_5_db
 
-        user_4_db = UserDB(name='custom_role')
+        user_4_db = UserDB(name="custom_role")
         user_4_db = User.add_or_update(user_4_db)
-        self.users['1_custom_role'] = user_4_db
+        self.users["1_custom_role"] = user_4_db
 
         # Create some mock roles
-        role_1_db = rbac_service.create_role(name='custom_role_1')
-        role_2_db = rbac_service.create_role(name='custom_role_2',
-                                             description='custom role 2')
-        self.roles['custom_role_1'] = role_1_db
-        self.roles['custom_role_2'] = role_2_db
+        role_1_db = rbac_service.create_role(name="custom_role_1")
+        role_2_db = rbac_service.create_role(name="custom_role_2", description="custom role 2")
+        self.roles["custom_role_1"] = role_1_db
+        self.roles["custom_role_2"] = role_2_db
 
-        rbac_service.create_role(name='role_1')
-        rbac_service.create_role(name='role_2')
-        rbac_service.create_role(name='role_3')
-        rbac_service.create_role(name='role_4')
+        rbac_service.create_role(name="role_1")
+        rbac_service.create_role(name="role_2")
+        rbac_service.create_role(name="role_3")
+        rbac_service.create_role(name="role_4")
 
         # Create some mock role assignments
         role_assignment_1 = UserRoleAssignmentDB(
-            user=self.users['1_custom_role'].name, role=self.roles['custom_role_1'].name,
-            source='assignments/%s.yaml' % self.users['1_custom_role'].name)
+            user=self.users["1_custom_role"].name,
+            role=self.roles["custom_role_1"].name,
+            source="assignments/%s.yaml" % self.users["1_custom_role"].name,
+        )
         role_assignment_1 = UserRoleAssignment.add_or_update(role_assignment_1)
 
         # Note: User use pymongo to insert mock data because we want to insert a
         # raw document and skip mongoengine to leave is_remote field unpopulated
         client = MongoClient()
-        db = client['st2-test']
-        db.user_role_assignment_d_b.insert_one({'user': 'user_5', 'role': 'role_1'})
-        db.user_role_assignment_d_b.insert_one({'user': 'user_5', 'role': 'role_2'})
-        db.user_role_assignment_d_b.insert_one({'user': 'user_5', 'role': 'role_3',
-                                               'is_remote': False})
-        db.user_role_assignment_d_b.insert_one({'user': 'user_5', 'role': 'role_4',
-                                               'is_remote': True})
+        db = client["st2-test"]
+        db.user_role_assignment_d_b.insert_one({"user": "user_5", "role": "role_1"})
+        db.user_role_assignment_d_b.insert_one({"user": "user_5", "role": "role_2"})
+        db.user_role_assignment_d_b.insert_one(
+            {"user": "user_5", "role": "role_3", "is_remote": False}
+        )
+        db.user_role_assignment_d_b.insert_one(
+            {"user": "user_5", "role": "role_4", "is_remote": True}
+        )
 
         # Create some mock resources on which permissions can be granted
-        rule_1_db = RuleDB(pack='test1', name='rule1', ref='test1.rule1')
+        rule_1_db = RuleDB(pack="test1", name="rule1", ref="test1.rule1")
         rule_1_db = Rule.add_or_update(rule_1_db)
 
-        self.resources['rule_1'] = rule_1_db
+        self.resources["rule_1"] = rule_1_db
 
     def test_get_role_assignments_for_user(self):
         # Test a case where a document doesn't exist is_remote field and when it
         # does
-        user_db = self.users['user_5']
-        role_assignment_dbs = rbac_service.get_role_assignments_for_user(user_db=user_db,
-                                                                         include_remote=False)
+        user_db = self.users["user_5"]
+        role_assignment_dbs = rbac_service.get_role_assignments_for_user(
+            user_db=user_db, include_remote=False
+        )
         self.assertEqual(len(role_assignment_dbs), 3)
-        self.assertEqual(role_assignment_dbs[0].role, 'role_1')
-        self.assertEqual(role_assignment_dbs[1].role, 'role_2')
-        self.assertEqual(role_assignment_dbs[2].role, 'role_3')
+        self.assertEqual(role_assignment_dbs[0].role, "role_1")
+        self.assertEqual(role_assignment_dbs[1].role, "role_2")
+        self.assertEqual(role_assignment_dbs[2].role, "role_3")
         self.assertEqual(role_assignment_dbs[0].is_remote, False)
         self.assertEqual(role_assignment_dbs[1].is_remote, False)
         self.assertEqual(role_assignment_dbs[2].is_remote, False)
 
-        user_db = self.users['user_5']
-        role_assignment_dbs = rbac_service.get_role_assignments_for_user(user_db=user_db,
-                                                                         include_remote=True)
+        user_db = self.users["user_5"]
+        role_assignment_dbs = rbac_service.get_role_assignments_for_user(
+            user_db=user_db, include_remote=True
+        )
         self.assertEqual(len(role_assignment_dbs), 4)
-        self.assertEqual(role_assignment_dbs[3].role, 'role_4')
+        self.assertEqual(role_assignment_dbs[3].role, "role_4")
         self.assertEqual(role_assignment_dbs[3].is_remote, True)
 
     def test_get_all_roles(self):
@@ -134,7 +137,7 @@ class RBACServiceTestCase(CleanDbTestCase):
 
     def test_get_roles_for_user(self):
         # User with no roles
-        user_db = self.users['no_roles']
+        user_db = self.users["no_roles"]
         role_dbs = rbac_service.get_roles_for_user(user_db=user_db)
         self.assertCountEqual(role_dbs, [])
 
@@ -142,23 +145,23 @@ class RBACServiceTestCase(CleanDbTestCase):
         self.assertCountEqual(role_dbs, [])
 
         # User with one custom role
-        user_db = self.users['1_custom_role']
+        user_db = self.users["1_custom_role"]
         role_dbs = rbac_service.get_roles_for_user(user_db=user_db)
-        self.assertCountEqual(role_dbs, [self.roles['custom_role_1']])
+        self.assertCountEqual(role_dbs, [self.roles["custom_role_1"]])
 
         role_dbs = user_db.get_roles()
-        self.assertCountEqual(role_dbs, [self.roles['custom_role_1']])
+        self.assertCountEqual(role_dbs, [self.roles["custom_role_1"]])
 
         # User with remote roles
-        user_db = self.users['user_5']
+        user_db = self.users["user_5"]
         role_dbs = user_db.get_roles()
         self.assertEqual(len(role_dbs), 4)
 
-        user_db = self.users['user_5']
+        user_db = self.users["user_5"]
         role_dbs = user_db.get_roles(include_remote=True)
         self.assertEqual(len(role_dbs), 4)
 
-        user_db = self.users['user_5']
+        user_db = self.users["user_5"]
         role_dbs = user_db.get_roles(include_remote=False)
         self.assertEqual(len(role_dbs), 3)
 
@@ -175,20 +178,20 @@ class RBACServiceTestCase(CleanDbTestCase):
     def test_create_role_with_system_role_name(self):
         # Roles with names which match system role names can't be created
         expected_msg = '"observer" role name is blacklisted'
-        self.assertRaisesRegex(ValueError, expected_msg, rbac_service.create_role,
-                                name=SystemRole.OBSERVER)
+        self.assertRaisesRegex(
+            ValueError, expected_msg, rbac_service.create_role, name=SystemRole.OBSERVER
+        )
 
     def test_delete_system_role(self):
         # System roles can't be deleted
         system_roles = SystemRole.get_valid_values()
 
         for name in system_roles:
-            expected_msg = 'System roles can\'t be deleted'
-            self.assertRaisesRegex(ValueError, expected_msg, rbac_service.delete_role,
-                                    name=name)
+            expected_msg = "System roles can't be deleted"
+            self.assertRaisesRegex(ValueError, expected_msg, rbac_service.delete_role, name=name)
 
     def test_grant_and_revoke_role(self):
-        user_db = UserDB(name='test-user-1')
+        user_db = UserDB(name="test-user-1")
         user_db = User.add_or_update(user_db)
 
         # Initial state, no roles
@@ -200,18 +203,19 @@ class RBACServiceTestCase(CleanDbTestCase):
 
         # Assign a role, should have one role assigned
         rbac_service.assign_role_to_user(
-            role_db=self.roles['custom_role_1'], user_db=user_db,
-            source='assignments/%s.yaml' % user_db.name)
+            role_db=self.roles["custom_role_1"],
+            user_db=user_db,
+            source="assignments/%s.yaml" % user_db.name,
+        )
 
         role_dbs = rbac_service.get_roles_for_user(user_db=user_db)
-        self.assertCountEqual(role_dbs, [self.roles['custom_role_1']])
+        self.assertCountEqual(role_dbs, [self.roles["custom_role_1"]])
 
         role_dbs = user_db.get_roles()
-        self.assertCountEqual(role_dbs, [self.roles['custom_role_1']])
+        self.assertCountEqual(role_dbs, [self.roles["custom_role_1"]])
 
         # Revoke previously assigned role, should have no roles again
-        rbac_service.revoke_role_from_user(role_db=self.roles['custom_role_1'],
-                                           user_db=user_db)
+        rbac_service.revoke_role_from_user(role_db=self.roles["custom_role_1"], user_db=user_db)
 
         role_dbs = rbac_service.get_roles_for_user(user_db=user_db)
         self.assertCountEqual(role_dbs, [])
@@ -219,7 +223,7 @@ class RBACServiceTestCase(CleanDbTestCase):
         self.assertCountEqual(role_dbs, [])
 
     def test_grant_duplicate_role(self):
-        user_db = UserDB(name='test-user-1')
+        user_db = UserDB(name="test-user-1")
         user_db = User.add_or_update(user_db)
 
         # Initial state, no roles
@@ -231,28 +235,32 @@ class RBACServiceTestCase(CleanDbTestCase):
 
         # Assign a role, should have one role assigned
         rbac_service.assign_role_to_user(
-            role_db=self.roles['custom_role_1'], user_db=user_db,
-            source='assignments/%s_1.yaml' % user_db.name)
+            role_db=self.roles["custom_role_1"],
+            user_db=user_db,
+            source="assignments/%s_1.yaml" % user_db.name,
+        )
 
         role_dbs = rbac_service.get_roles_for_user(user_db=user_db)
-        self.assertCountEqual(role_dbs, [self.roles['custom_role_1']])
+        self.assertCountEqual(role_dbs, [self.roles["custom_role_1"]])
 
         role_dbs = user_db.get_roles()
-        self.assertCountEqual(role_dbs, [self.roles['custom_role_1']])
+        self.assertCountEqual(role_dbs, [self.roles["custom_role_1"]])
 
         # Assign the same role again.
         rbac_service.assign_role_to_user(
-            role_db=self.roles['custom_role_1'], user_db=user_db,
-            source='assignments/%s_2.yaml' % user_db.name)
+            role_db=self.roles["custom_role_1"],
+            user_db=user_db,
+            source="assignments/%s_2.yaml" % user_db.name,
+        )
 
         role_dbs_2 = rbac_service.get_roles_for_user(user_db=user_db)
-        self.assertCountEqual(role_dbs_2, [self.roles['custom_role_1']])
+        self.assertCountEqual(role_dbs_2, [self.roles["custom_role_1"]])
 
         role_dbs = user_db.get_roles()
-        self.assertCountEqual(role_dbs_2, [self.roles['custom_role_1']])
+        self.assertCountEqual(role_dbs_2, [self.roles["custom_role_1"]])
 
         # Revoke previously assigned role, should have no roles again
-        rbac_service.revoke_role_from_user(role_db=self.roles['custom_role_1'], user_db=user_db)
+        rbac_service.revoke_role_from_user(role_db=self.roles["custom_role_1"], user_db=user_db)
 
         role_dbs = rbac_service.get_roles_for_user(user_db=user_db)
         self.assertCountEqual(role_dbs, [])
@@ -260,23 +268,31 @@ class RBACServiceTestCase(CleanDbTestCase):
         self.assertCountEqual(role_dbs, [])
 
     def test_assign_role_to_user_ignore_already_exists_error(self):
-        user_db = UserDB(name='test-user-10')
+        user_db = UserDB(name="test-user-10")
         user_db = User.add_or_update(user_db)
 
         role_assignment_db_1 = rbac_service.assign_role_to_user(
-            role_db=self.roles['custom_role_1'], user_db=user_db,
-            source='assignments/%s_10.yaml' % user_db.name)
+            role_db=self.roles["custom_role_1"],
+            user_db=user_db,
+            source="assignments/%s_10.yaml" % user_db.name,
+        )
 
         # 1. Without ignore errors
-        self.assertRaises(StackStormDBObjectConflictError, rbac_service.assign_role_to_user,
-            role_db=self.roles['custom_role_1'], user_db=user_db,
-            source='assignments/%s_10.yaml' % user_db.name)
+        self.assertRaises(
+            StackStormDBObjectConflictError,
+            rbac_service.assign_role_to_user,
+            role_db=self.roles["custom_role_1"],
+            user_db=user_db,
+            source="assignments/%s_10.yaml" % user_db.name,
+        )
 
         # 2. With ignore errors
         role_assignment_db_2 = rbac_service.assign_role_to_user(
-            role_db=self.roles['custom_role_1'], user_db=user_db,
-            source='assignments/%s_10.yaml' % user_db.name,
-            ignore_already_exists_error=True)
+            role_db=self.roles["custom_role_1"],
+            user_db=user_db,
+            source="assignments/%s_10.yaml" % user_db.name,
+            ignore_already_exists_error=True,
+        )
 
         self.assertEqual(role_assignment_db_1, role_assignment_db_2)
         self.assertEqual(role_assignment_db_1.id, role_assignment_db_2.id)
@@ -284,87 +300,104 @@ class RBACServiceTestCase(CleanDbTestCase):
         self.assertEqual(role_assignment_db_1.role, role_assignment_db_2.role)
 
     def test_get_all_permission_grants_for_user(self):
-        user_db = self.users['1_custom_role']
-        role_db = self.roles['custom_role_1']
+        user_db = self.users["1_custom_role"]
+        role_db = self.roles["custom_role_1"]
         permission_grants = rbac_service.get_all_permission_grants_for_user(user_db=user_db)
         self.assertCountEqual(permission_grants, [])
 
         # Grant some permissions
-        resource_db = self.resources['rule_1']
+        resource_db = self.resources["rule_1"]
         permission_types = [PermissionType.RULE_CREATE, PermissionType.RULE_MODIFY]
 
         permission_grant = rbac_service.create_permission_grant_for_resource_db(
-            role_db=role_db,
-            resource_db=resource_db,
-            permission_types=permission_types)
+            role_db=role_db, resource_db=resource_db, permission_types=permission_types
+        )
 
         # Retrieve all grants
         permission_grants = rbac_service.get_all_permission_grants_for_user(user_db=user_db)
         self.assertCountEqual(permission_grants, [permission_grant])
 
         # Retrieve all grants, filter on resource with no grants
-        permission_grants = rbac_service.get_all_permission_grants_for_user(user_db=user_db,
-            resource_types=[ResourceType.PACK])
+        permission_grants = rbac_service.get_all_permission_grants_for_user(
+            user_db=user_db, resource_types=[ResourceType.PACK]
+        )
         self.assertCountEqual(permission_grants, [])
 
         # Retrieve all grants, filter on resource with grants
-        permission_grants = rbac_service.get_all_permission_grants_for_user(user_db=user_db,
-            resource_types=[ResourceType.RULE])
+        permission_grants = rbac_service.get_all_permission_grants_for_user(
+            user_db=user_db, resource_types=[ResourceType.RULE]
+        )
         self.assertCountEqual(permission_grants, [permission_grant])
 
     def test_create_and_remove_permission_grant(self):
-        role_db = self.roles['custom_role_2']
-        resource_db = self.resources['rule_1']
+        role_db = self.roles["custom_role_2"]
+        resource_db = self.resources["rule_1"]
 
         # Grant "ALL" permission to the resource
         permission_types = [PermissionType.RULE_ALL]
-        rbac_service.create_permission_grant_for_resource_db(role_db=role_db,
-                                                             resource_db=resource_db,
-                                                             permission_types=permission_types)
+        rbac_service.create_permission_grant_for_resource_db(
+            role_db=role_db, resource_db=resource_db, permission_types=permission_types
+        )
 
         role_db.reload()
         self.assertCountEqual(role_db.permission_grants, role_db.permission_grants)
 
         # Remove the previously granted permission
-        rbac_service.remove_permission_grant_for_resource_db(role_db=role_db,
-                                                             resource_db=resource_db,
-                                                             permission_types=permission_types)
+        rbac_service.remove_permission_grant_for_resource_db(
+            role_db=role_db, resource_db=resource_db, permission_types=permission_types
+        )
 
         role_db.reload()
         self.assertCountEqual(role_db.permission_grants, [])
 
     def test_manipulate_permission_grants_unsupported_resource_type(self):
         # Try to manipulate permissions on an unsupported resource
-        role_db = self.roles['custom_role_2']
+        role_db = self.roles["custom_role_2"]
         resource_db = UserDB()
         permission_types = [PermissionType.RULE_ALL]
 
-        expected_msg = 'Permissions cannot be manipulated for a resource of type'
-        self.assertRaisesRegex(ValueError, expected_msg,
-                                rbac_service.create_permission_grant_for_resource_db,
-                                role_db=role_db, resource_db=resource_db,
-                                permission_types=permission_types)
+        expected_msg = "Permissions cannot be manipulated for a resource of type"
+        self.assertRaisesRegex(
+            ValueError,
+            expected_msg,
+            rbac_service.create_permission_grant_for_resource_db,
+            role_db=role_db,
+            resource_db=resource_db,
+            permission_types=permission_types,
+        )
 
-        expected_msg = 'Permissions cannot be manipulated for a resource of type'
-        self.assertRaisesRegex(ValueError, expected_msg,
-                                rbac_service.remove_permission_grant_for_resource_db,
-                                role_db=role_db, resource_db=resource_db,
-                                permission_types=permission_types)
+        expected_msg = "Permissions cannot be manipulated for a resource of type"
+        self.assertRaisesRegex(
+            ValueError,
+            expected_msg,
+            rbac_service.remove_permission_grant_for_resource_db,
+            role_db=role_db,
+            resource_db=resource_db,
+            permission_types=permission_types,
+        )
 
     def test_manipulate_permission_grants_invalid_permission_types(self):
         # Try to assign / revoke a permission which is not supported for a particular resource
-        role_db = self.roles['custom_role_2']
-        resource_db = self.resources['rule_1']
+        role_db = self.roles["custom_role_2"]
+        resource_db = self.resources["rule_1"]
         permission_types = [PermissionType.ACTION_EXECUTE]
 
-        expected_msg = 'Invalid permission type'
-        self.assertRaisesRegex(ValueError, expected_msg,
-                                rbac_service.create_permission_grant_for_resource_db,
-                                role_db=role_db, resource_db=resource_db,
-                                permission_types=permission_types)
+        expected_msg = "Invalid permission type"
+        self.assertRaisesRegex(
+            ValueError,
+            expected_msg,
+            rbac_service.create_permission_grant_for_resource_db,
+            role_db=role_db,
+            resource_db=resource_db,
+            permission_types=permission_types,
+        )
 
-        expected_msg = 'Invalid permission type'
-        self.assertRaisesRegex(ValueError, expected_msg,
-                                rbac_service.remove_permission_grant_for_resource_db,
-                                role_db=role_db, resource_db=resource_db,
-                                permission_types=permission_types)
+        expected_msg = "Invalid permission type"
+        self.assertRaisesRegex(
+            ValueError,
+            expected_msg,
+            rbac_service.remove_permission_grant_for_resource_db,
+            role_db=role_db,
+            resource_db=resource_db,
+            permission_types=permission_types,
+        )

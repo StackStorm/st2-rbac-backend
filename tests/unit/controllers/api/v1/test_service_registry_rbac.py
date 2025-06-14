@@ -25,9 +25,7 @@ from tests.base import APIControllerWithRBACTestCase
 
 http_client = six.moves.http_client
 
-__all__ = [
-    'ServiceRegistryControllerRBACTestCase'
-]
+__all__ = ["ServiceRegistryControllerRBACTestCase"]
 
 
 class ServiceRegistryControllerRBACTestCase(APIControllerWithRBACTestCase):
@@ -43,10 +41,11 @@ class ServiceRegistryControllerRBACTestCase(APIControllerWithRBACTestCase):
         cls.coordinator = coordination.get_coordinator(use_cache=False)
 
         # Register mock service in the service registry for testing purposes
-        register_service_in_service_registry(service='mock_service',
-                                             capabilities={'key1': 'value1',
-                                                           'name': 'mock_service'},
-                                             start_heart=True)
+        register_service_in_service_registry(
+            service="mock_service",
+            capabilities={"key1": "value1", "name": "mock_service"},
+            start_heart=True,
+        )
 
     @classmethod
     def tearDownClass(cls):
@@ -56,37 +55,38 @@ class ServiceRegistryControllerRBACTestCase(APIControllerWithRBACTestCase):
 
     def test_get_groups(self):
         # Non admin users can't access that API endpoint
-        for user_db in [self.users['no_permissions'], self.users['observer']]:
+        for user_db in [self.users["no_permissions"], self.users["observer"]]:
             self.use_user(user_db)
 
-            resp = self.app.get('/v1/service_registry/groups', expect_errors=True)
-            expected_msg = ('Administrator access required')
+            resp = self.app.get("/v1/service_registry/groups", expect_errors=True)
+            expected_msg = "Administrator access required"
             self.assertEqual(resp.status_code, http_client.FORBIDDEN)
-            self.assertEqual(resp.json['faultstring'], expected_msg)
+            self.assertEqual(resp.json["faultstring"], expected_msg)
 
         # Admin user can access it
-        user_db = self.users['admin']
+        user_db = self.users["admin"]
         self.use_user(user_db)
 
-        resp = self.app.get('/v1/service_registry/groups')
+        resp = self.app.get("/v1/service_registry/groups")
         self.assertEqual(resp.status_code, http_client.OK)
-        self.assertEqual(resp.json, {'groups': ['mock_service']})
+        self.assertEqual(resp.json, {"groups": ["mock_service"]})
 
     def test_get_group_members(self):
         # Non admin users can't access that API endpoint
-        for user_db in [self.users['no_permissions'], self.users['observer']]:
+        for user_db in [self.users["no_permissions"], self.users["observer"]]:
             self.use_user(user_db)
 
-            resp = self.app.get('/v1/service_registry/groups/mock_service/members',
-                                expect_errors=True)
-            expected_msg = ('Administrator access required')
+            resp = self.app.get(
+                "/v1/service_registry/groups/mock_service/members", expect_errors=True
+            )
+            expected_msg = "Administrator access required"
             self.assertEqual(resp.status_code, http_client.FORBIDDEN)
-            self.assertEqual(resp.json['faultstring'], expected_msg)
+            self.assertEqual(resp.json["faultstring"], expected_msg)
 
         # Admin user can access it
-        user_db = self.users['admin']
+        user_db = self.users["admin"]
         self.use_user(user_db)
 
-        resp = self.app.get('/v1/service_registry/groups/mock_service/members')
+        resp = self.app.get("/v1/service_registry/groups/mock_service/members")
         self.assertEqual(resp.status_code, http_client.OK)
-        self.assertTrue('members' in resp.json)
+        self.assertTrue("members" in resp.json)
