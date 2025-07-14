@@ -125,8 +125,6 @@ compilepy3:
 	@echo "==================== unit-tests ===================="
 	@echo
 	. $(VIRTUALENV_DIR)/bin/activate; pytest -rx --verbose tests/unit/
-	. $(VIRTUALENV_DIR)/bin/activate; pytest -rx --verbose tests/unit/controllers/api/v1/
-	. $(VIRTUALENV_DIR)/bin/activate; pytest -rx --verbose tests/unit/controllers/stream/v1/
 
 .PHONY: .integration-tests
 .integration-tests:

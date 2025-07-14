@@ -28,7 +28,10 @@ from st2common.rbac.migrations import insert_system_roles
 from st2rbac_backend.utils import RBACUtils as rbac_utils
 from st2rbac_backend.service import RBACService as rbac_service
 
-__all__ = ["RBACUtilsTestCase", "RBACMigrationsTestCase"]
+__all__ = [
+    'RBACUtilsTestCase',
+    'RBACMigrationsTestCase'
+]
 
 
 class RBACUtilsTestCase(CleanDbTestCase):
@@ -36,26 +39,26 @@ class RBACUtilsTestCase(CleanDbTestCase):
     def setUpClass(cls):
         super(RBACUtilsTestCase, cls).setUpClass()
         config.parse_args()
-        cfg.CONF.set_override(name="backend", override="default", group="rbac")
+        cfg.CONF.set_override(name='backend', override='default', group='rbac')
 
     def setUp(self):
         super(RBACUtilsTestCase, self).setUp()
         self.mocks = {}
 
-        user_db = UserDB(name="test1")
-        self.mocks["user_db"] = user_db
+        user_db = UserDB(name='test1')
+        self.mocks['user_db'] = user_db
 
     def test_feature_flag_returns_true_on_rbac_disabled(self):
         # When feature RBAC is disabled, all the functions should return True
-        cfg.CONF.set_override(name="enable", override=False, group="rbac")
+        cfg.CONF.set_override(name='enable', override=False, group='rbac')
 
-        result = rbac_utils.user_is_admin(user_db=self.mocks["user_db"])
+        result = rbac_utils.user_is_admin(user_db=self.mocks['user_db'])
         self.assertTrue(result)
 
     def test_feature_flag_returns_false_on_rbac_enabled(self):
-        cfg.CONF.set_override(name="enable", override=True, group="rbac")
+        cfg.CONF.set_override(name='enable', override=True, group='rbac')
 
-        result = rbac_utils.user_is_admin(user_db=self.mocks["user_db"])
+        result = rbac_utils.user_is_admin(user_db=self.mocks['user_db'])
         self.assertFalse(result)
 
 
@@ -67,7 +70,7 @@ class RBACMigrationsTestCase(CleanDbTestCase):
 
     def test_insert_system_roles(self):
         role_dbs = rbac_service.get_all_roles()
-        self.assertCountEqual(role_dbs, [])
+        self.assertEqual(list(role_dbs), [])
 
         insert_system_roles()
 
@@ -75,18 +78,17 @@ class RBACMigrationsTestCase(CleanDbTestCase):
         self.assertTrue(len(role_dbs), 3)
 
         role_names = [role_db.name for role_db in role_dbs]
-        self.assertTrue("system_admin" in role_names)
-        self.assertTrue("admin" in role_names)
-        self.assertTrue("observer" in role_names)
+        self.assertTrue('system_admin' in role_names)
+        self.assertTrue('admin' in role_names)
+        self.assertTrue('observer' in role_names)
 
 
 class NoOpRBACBackendTestCase(unittest.TestCase):
     def test_noop_backend(self):
-        backend = get_backend_instance(name="noop")
+        backend = get_backend_instance(name='noop')
 
         resolver = backend.get_resolver_for_permission_type(
-            permission_type=PermissionType.ACTION_VIEW
-        )
+            permission_type=PermissionType.ACTION_VIEW)
         self.assertTrue(resolver.user_has_permission(None, None))
         self.assertTrue(resolver.user_has_resource_api_permission(None, None, None))
         self.assertTrue(resolver.user_has_resource_db_permission(None, None, None))

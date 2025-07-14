@@ -36,6 +36,9 @@ __all__ = ["RBACServiceTestCase"]
 
 
 class RBACServiceTestCase(CleanDbTestCase):
+    ensure_indexes = True
+    ensure_indexes_models = [UserRoleAssignmentDB]
+
     def setUp(self):
         super(RBACServiceTestCase, self).setUp()
 

@@ -16,11 +16,11 @@
 import copy
 import unittest
 
-import mock
+# import mock
 import six
 from oslo_config import cfg
 
-from st2common.transport.publishers import PoolPublisher
+# from st2common.transport.publishers import PoolPublisher
 from st2common.rbac.types import PermissionType
 from st2common.rbac.types import ResourceType
 from st2common.persistence.auth import User
@@ -61,14 +61,14 @@ class BaseRuleControllerRBACTestCase(APIControllerWithRBACTestCase):
     """
 
     fixtures_loader = FixturesLoader()
-    api_endpoint = None
+    api_endpoint = "/v1/rules"
 
     @classmethod
     def setUpClass(cls):
+        super(BaseRuleControllerRBACTestCase, cls).setUpClass()
+
         if cls.__name__ == "BaseRuleControllerRBACTestCase":
             raise unittest.SkipTest("Skip base test class tests")
-
-        super(BaseRuleControllerRBACTestCase, cls).setUpClass()
 
     def setUp(self):
         super(BaseRuleControllerRBACTestCase, self).setUp()
@@ -443,7 +443,7 @@ class BaseRuleControllerRBACTestCase(APIControllerWithRBACTestCase):
                 self.assertEqual(resp.status_code, http_client.FORBIDDEN)
                 self.assertRegex(resp.json["faultstring"], expected_msg)
 
-    @mock.patch.object(PoolPublisher, "publish", mock.MagicMock())
+    # @mock.patch.object(PoolPublisher, "publish", mock.MagicMock())
     def _do_post(self, rule):
         return self.app.post_json("/v1/rules", rule, expect_errors=True)
 

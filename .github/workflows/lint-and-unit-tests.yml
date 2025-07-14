@@ -83,10 +83,12 @@ jobs:
         run: |
           make .clone_st2_repo
 
-      - name: Reconfigure RabbitMQ
+      - name: reconfigure rabbitmq
         timeout-minutes: 2  # may die if rabbitmq fails to start
         run: |
-          /tmp/st2/scripts/github/configure-rabbitmq.sh
+          pushd /tmp/st2
+          scripts/github/configure-rabbitmq.sh
+          popd
 
       - name: Download and install depedencies
         run: |

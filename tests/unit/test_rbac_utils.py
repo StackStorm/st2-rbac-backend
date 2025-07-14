@@ -27,7 +27,9 @@ from st2common.rbac.migrations import insert_system_roles
 
 from st2rbac_backend.utils import RBACUtils as rbac_utils
 
-__all__ = ["RBACUtilsTestCase"]
+__all__ = [
+    'RBACUtilsTestCase'
+]
 
 
 class RBACUtilsTestCase(DbTestCase):
@@ -39,29 +41,25 @@ class RBACUtilsTestCase(DbTestCase):
         insert_system_roles()
 
         # Add mock users - system admin, admin, non-admin
-        cls.system_admin_user = UserDB(name="system_admin_user")
+        cls.system_admin_user = UserDB(name='system_admin_user')
         cls.system_admin_user.save()
 
-        cls.admin_user = UserDB(name="admin_user")
+        cls.admin_user = UserDB(name='admin_user')
         cls.admin_user.save()
 
-        cls.regular_user = UserDB(name="regular_user")
+        cls.regular_user = UserDB(name='regular_user')
         cls.regular_user.save()
 
         # Add system admin role assignment
         role_assignment_1 = UserRoleAssignmentDB(
-            user=cls.system_admin_user.name,
-            role=SystemRole.SYSTEM_ADMIN,
-            source="assignments/%s.yaml" % cls.system_admin_user.name,
-        )
+            user=cls.system_admin_user.name, role=SystemRole.SYSTEM_ADMIN,
+            source='assignments/%s.yaml' % cls.system_admin_user.name)
         role_assignment_1.save()
 
         # Add admin role assignment
         role_assignment_2 = UserRoleAssignmentDB(
-            user=cls.admin_user.name,
-            role=SystemRole.ADMIN,
-            source="assignments/%s.yaml" % cls.admin_user.name,
-        )
+            user=cls.admin_user.name, role=SystemRole.ADMIN,
+            source='assignments/%s.yaml' % cls.admin_user.name)
         role_assignment_2.save()
 
     def setUp(self):
@@ -69,7 +67,7 @@ class RBACUtilsTestCase(DbTestCase):
 
     def test_is_system_admin(self):
         # Make sure RBAC is enabled for the tests
-        cfg.CONF.set_override(name="enable", override=True, group="rbac")
+        cfg.CONF.set_override(name='enable', override=True, group='rbac')
 
         # System Admin user
         self.assertTrue(rbac_utils.user_is_system_admin(user_db=self.system_admin_user))
@@ -82,7 +80,7 @@ class RBACUtilsTestCase(DbTestCase):
 
     def test_is_admin(self):
         # Make sure RBAC is enabled for the tests
-        cfg.CONF.set_override(name="enable", override=True, group="rbac")
+        cfg.CONF.set_override(name='enable', override=True, group='rbac')
 
         # Admin user
         self.assertTrue(rbac_utils.user_is_admin(user_db=self.admin_user))
@@ -92,7 +90,7 @@ class RBACUtilsTestCase(DbTestCase):
 
     def test_has_role(self):
         # Make sure RBAC is enabled for the tests
-        cfg.CONF.set_override(name="enable", override=True, group="rbac")
+        cfg.CONF.set_override(name='enable', override=True, group='rbac')
 
         # Admin user
         self.assertTrue(rbac_utils.user_has_role(user_db=self.admin_user, role=SystemRole.ADMIN))
@@ -102,7 +100,7 @@ class RBACUtilsTestCase(DbTestCase):
 
     def test_has_system_role(self):
         # Make sure RBAC is enabled for the tests
-        cfg.CONF.set_override(name="enable", override=True, group="rbac")
+        cfg.CONF.set_override(name='enable', override=True, group='rbac')
 
         # Admin user
         self.assertTrue(rbac_utils.user_has_system_role(user_db=self.admin_user))
