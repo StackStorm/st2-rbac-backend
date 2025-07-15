@@ -770,11 +770,11 @@ class KeyValueUserScopeControllerRBACTestCase(KeyValuesControllerRBACTestCase):
         self.use_user(self.users[user_1_db.name])
 
         # User should be able to list the system and user scoped kvps that user has permission to.
-        resp = self.app.get("/v1/keys?limit=-1")    # server defaults no scope to system scope
+        resp = self.app.get("/v1/keys?limit=-1")  # server defaults no scope to system scope
         self.assertEqual(resp.status_int, http_client.OK)
         self.assertEqual(len(resp.json), 0)
 
-        resp = self.app.get("/v1/keys/")    # server defaults no scope to system scope
+        resp = self.app.get("/v1/keys/")  # server defaults no scope to system scope
         self.assertEqual(resp.status_int, http_client.OK)
         self.assertEqual(len(resp.json), 0)
 
@@ -868,11 +868,11 @@ class KeyValueUserScopeControllerRBACTestCase(KeyValuesControllerRBACTestCase):
         self.use_user(self.users[user_2_db.name])
 
         # User2 should not be able to list user1's kvp.
-        resp = self.app.get("/v1/keys?limit=-1")    # server defaults no scope to system scope
+        resp = self.app.get("/v1/keys?limit=-1")  # server defaults no scope to system scope
         self.assertEqual(resp.status_int, http_client.OK)
         self.assertEqual(len(resp.json), 0)
 
-        resp = self.app.get("/v1/keys/")    # server defaults no scope to system scope
+        resp = self.app.get("/v1/keys/")  # server defaults no scope to system scope
         self.assertEqual(resp.status_int, http_client.OK)
         self.assertEqual(len(resp.json), 0)
 

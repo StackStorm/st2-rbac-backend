@@ -42,17 +42,6 @@ ifndef PYLINT_CONCURRENCY
 	PYLINT_CONCURRENCY := 1
 endif
 
-NOSE_OPTS := --rednose --immediate --with-parallel
-
-ifndef NOSE_TIME
-	NOSE_TIME := yes
-endif
-
-ifeq ($(NOSE_TIME),yes)
-	NOSE_OPTS := --rednose --immediate --with-parallel --with-timer
-	NOSE_WITH_TIMER := 1
-endif
-
 ifndef PIP_OPTIONS
 	PIP_OPTIONS :=
 endif
@@ -65,7 +54,6 @@ play:
 	@echo COMPONENTS_WITH_RUNNERS=$(COMPONENTS_WITH_RUNNERS)
 	@echo COMPONENT_PYTHONPATH=$(COMPONENT_PYTHONPATH)
 	@echo TRAVIS_PULL_REQUEST=$(TRAVIS_PULL_REQUEST)
-	@echo NOSE_OPTS=$(NOSE_OPTS)
 	@echo
 	@echo "`cat /etc/os-release`"
 	@echo
@@ -81,6 +69,9 @@ lint: requirements flake8 pylint black-check
 
 .PHONY: .lint
 .lint: compile .flake8 .pylint .black-check
+
+.PHONY: black-check
+black-check: requirements .clone_st2_repo .black-check
 
 .PHONY: flake8
 flake8: requirements .clone_st2_repo .flake8
@@ -133,23 +124,21 @@ compilepy3:
 	@echo
 	@echo "==================== unit-tests ===================="
 	@echo
-	. $(VIRTUALENV_DIR)/bin/activate; nosetests $(NOSE_OPTS) -s -v tests/unit/
-	. $(VIRTUALENV_DIR)/bin/activate; nosetests $(NOSE_OPTS) -s -v tests/unit/controllers/api/v1/
-	. $(VIRTUALENV_DIR)/bin/activate; nosetests $(NOSE_OPTS) -s -v tests/unit/controllers/stream/v1/
+	. $(VIRTUALENV_DIR)/bin/activate; pytest -rx --verbose tests/unit/
 
 .PHONY: .integration-tests
 .integration-tests:
 	@echo
 	@echo "==================== integration-tests ===================="
 	@echo
-	. $(VIRTUALENV_DIR)/bin/activate; nosetests $(NOSE_OPTS) -s -v tests/integration/
+	. $(VIRTUALENV_DIR)/bin/activate; pytest -rx --verbose tests/integration/
 
 .PHONY: .unit-tests-py3
 .unit-tests-py3:
 	@echo
 	@echo "==================== unit-tests-py3 ===================="
 	@echo
-	NOSE_WITH_TIMER=$(NOSE_WITH_TIMER) tox -e py38-unit -vv
+	tox -e py38-unit -vv
 
 .PHONY: .clone_st2_repo
 .clone_st2_repo: /tmp/st2

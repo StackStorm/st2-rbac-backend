@@ -33,150 +33,163 @@ from st2tests.api import APIControllerWithIncludeAndExcludeFilterTestCase
 
 http_client = six.moves.http_client
 
-__all__ = [
-    'TraceControllerRBACTestCase'
-]
+__all__ = ["TraceControllerRBACTestCase"]
 
-FIXTURES_PACK = 'generic'
+FIXTURES_PACK = "generic"
 TEST_FIXTURES = {
-    'traces': ['trace_for_test_enforce.yaml', 'trace_for_test_enforce_2.yaml',
-               'trace_for_test_enforce_3.yaml'],
+    "traces": [
+        "trace_for_test_enforce.yaml",
+        "trace_for_test_enforce_2.yaml",
+        "trace_for_test_enforce_3.yaml",
+    ],
 }
 
 
-class TraceControllerRBACTestCase(APIControllerWithRBACTestCase,
-                                  APIControllerWithIncludeAndExcludeFilterTestCase):
+class TraceControllerRBACTestCase(
+    APIControllerWithRBACTestCase, APIControllerWithIncludeAndExcludeFilterTestCase
+):
 
     # Attributes used by APIControllerWithIncludeAndExcludeFilterTestCase
-    get_all_path = '/v1/traces'
+    get_all_path = "/v1/traces"
     controller_cls = TracesController
-    include_attribute_field_name = 'trace_tag'
-    exclude_attribute_field_name = 'start_timestamp'
+    include_attribute_field_name = "trace_tag"
+    exclude_attribute_field_name = "start_timestamp"
     rbac_enabled = True
 
     fixtures_loader = FixturesLoader()
 
     def setUp(self):
         super(TraceControllerRBACTestCase, self).setUp()
-        self.models = self.fixtures_loader.save_fixtures_to_db(fixtures_pack=FIXTURES_PACK,
-                                                               fixtures_dict=TEST_FIXTURES)
+        self.models = self.fixtures_loader.save_fixtures_to_db(
+            fixtures_pack=FIXTURES_PACK, fixtures_dict=TEST_FIXTURES
+        )
 
-        file_name = 'trace_for_test_enforce.yaml'
+        file_name = "trace_for_test_enforce.yaml"
         TraceControllerRBACTestCase.TRACE_1 = self.fixtures_loader.load_fixtures(
-            fixtures_pack=FIXTURES_PACK,
-            fixtures_dict={'traces': [file_name]})['traces'][file_name]
+            fixtures_pack=FIXTURES_PACK, fixtures_dict={"traces": [file_name]}
+        )["traces"][file_name]
 
-        file_name = 'trace_for_test_enforce_2.yaml'
+        file_name = "trace_for_test_enforce_2.yaml"
         TraceControllerRBACTestCase.TRACE_1 = self.fixtures_loader.load_fixtures(
-            fixtures_pack=FIXTURES_PACK,
-            fixtures_dict={'traces': [file_name]})['traces'][file_name]
+            fixtures_pack=FIXTURES_PACK, fixtures_dict={"traces": [file_name]}
+        )["traces"][file_name]
 
-        file_name = 'trace_for_test_enforce_3.yaml'
+        file_name = "trace_for_test_enforce_3.yaml"
         TraceControllerRBACTestCase.TRACE_1 = self.fixtures_loader.load_fixtures(
-            fixtures_pack=FIXTURES_PACK,
-            fixtures_dict={'traces': [file_name]})['traces'][file_name]
+            fixtures_pack=FIXTURES_PACK, fixtures_dict={"traces": [file_name]}
+        )["traces"][file_name]
 
         # Insert mock users, roles and assignments
 
         # Users
-        user_1_db = UserDB(name='trace_list')
+        user_1_db = UserDB(name="trace_list")
         user_1_db = User.add_or_update(user_1_db)
-        self.users['trace_list'] = user_1_db
+        self.users["trace_list"] = user_1_db
 
-        user_2_db = UserDB(name='trace_view')
+        user_2_db = UserDB(name="trace_view")
         user_2_db = User.add_or_update(user_2_db)
-        self.users['trace_view'] = user_2_db
+        self.users["trace_view"] = user_2_db
 
         # Roles
         # trace_list
-        grant_db = PermissionGrantDB(resource_uid=None,
-                                     resource_type=ResourceType.TRACE,
-                                     permission_types=[PermissionType.TRACE_LIST])
+        grant_db = PermissionGrantDB(
+            resource_uid=None,
+            resource_type=ResourceType.TRACE,
+            permission_types=[PermissionType.TRACE_LIST],
+        )
         grant_db = PermissionGrant.add_or_update(grant_db)
         permission_grants = [str(grant_db.id)]
-        role_1_db = RoleDB(name='trace_list', permission_grants=permission_grants)
+        role_1_db = RoleDB(name="trace_list", permission_grants=permission_grants)
         role_1_db = Role.add_or_update(role_1_db)
-        self.roles['trace_list'] = role_1_db
+        self.roles["trace_list"] = role_1_db
 
         # trace_view on trace 1
-        trace_uid = self.models['traces']['trace_for_test_enforce.yaml'].get_uid()
-        grant_db = PermissionGrantDB(resource_uid=trace_uid,
-                                     resource_type=ResourceType.TRACE,
-                                     permission_types=[PermissionType.TRACE_VIEW])
+        trace_uid = self.models["traces"]["trace_for_test_enforce.yaml"].get_uid()
+        grant_db = PermissionGrantDB(
+            resource_uid=trace_uid,
+            resource_type=ResourceType.TRACE,
+            permission_types=[PermissionType.TRACE_VIEW],
+        )
         grant_db = PermissionGrant.add_or_update(grant_db)
         permission_grants = [str(grant_db.id)]
-        role_1_db = RoleDB(name='trace_view', permission_grants=permission_grants)
+        role_1_db = RoleDB(name="trace_view", permission_grants=permission_grants)
         role_1_db = Role.add_or_update(role_1_db)
-        self.roles['trace_view'] = role_1_db
+        self.roles["trace_view"] = role_1_db
 
         # Role assignments
         role_assignment_db = UserRoleAssignmentDB(
-            user=self.users['trace_list'].name,
-            role=self.roles['trace_list'].name,
-            source='assignments/%s.yaml' % self.users['trace_list'].name)
+            user=self.users["trace_list"].name,
+            role=self.roles["trace_list"].name,
+            source="assignments/%s.yaml" % self.users["trace_list"].name,
+        )
         UserRoleAssignment.add_or_update(role_assignment_db)
 
         role_assignment_db = UserRoleAssignmentDB(
-            user=self.users['trace_view'].name,
-            role=self.roles['trace_view'].name,
-            source='assignments/%s.yaml' % self.users['trace_view'].name)
+            user=self.users["trace_view"].name,
+            role=self.roles["trace_view"].name,
+            source="assignments/%s.yaml" % self.users["trace_view"].name,
+        )
         UserRoleAssignment.add_or_update(role_assignment_db)
 
     def test_get_all_no_permissions(self):
-        user_db = self.users['no_permissions']
+        user_db = self.users["no_permissions"]
         self.use_user(user_db)
 
-        resp = self.app.get('/v1/traces', expect_errors=True)
-        expected_msg = ('User "no_permissions" doesn\'t have required permission "trace_list"')
+        resp = self.app.get("/v1/traces", expect_errors=True)
+        expected_msg = 'User "no_permissions" doesn\'t have required permission "trace_list"'
         self.assertEqual(resp.status_code, http_client.FORBIDDEN)
-        self.assertEqual(resp.json['faultstring'], expected_msg)
+        self.assertEqual(resp.json["faultstring"], expected_msg)
 
     def test_get_one_no_permissions(self):
-        user_db = self.users['no_permissions']
+        user_db = self.users["no_permissions"]
         self.use_user(user_db)
 
-        trace_id = self.models['traces']['trace_for_test_enforce.yaml'].id
-        trace_uid = self.models['traces']['trace_for_test_enforce.yaml'].get_uid()
-        resp = self.app.get('/v1/traces/%s' % (trace_id), expect_errors=True)
-        expected_msg = ('User "no_permissions" doesn\'t have required permission "trace_view"'
-                        ' on resource "%s"' % (trace_uid))
+        trace_id = self.models["traces"]["trace_for_test_enforce.yaml"].id
+        trace_uid = self.models["traces"]["trace_for_test_enforce.yaml"].get_uid()
+        resp = self.app.get("/v1/traces/%s" % (trace_id), expect_errors=True)
+        expected_msg = (
+            'User "no_permissions" doesn\'t have required permission "trace_view"'
+            ' on resource "%s"' % (trace_uid)
+        )
         self.assertEqual(resp.status_code, http_client.FORBIDDEN)
-        self.assertEqual(resp.json['faultstring'], expected_msg)
+        self.assertEqual(resp.json["faultstring"], expected_msg)
 
     def test_get_all_permission_success_get_one_no_permission_failure(self):
-        user_db = self.users['trace_list']
+        user_db = self.users["trace_list"]
         self.use_user(user_db)
 
         # trace_list permission, but no trace_view permission
-        resp = self.app.get('/v1/traces')
+        resp = self.app.get("/v1/traces")
         self.assertEqual(resp.status_code, http_client.OK)
         self.assertEqual(len(resp.json), 3)
 
-        trace_id = self.models['traces']['trace_for_test_enforce.yaml'].id
-        trace_uid = self.models['traces']['trace_for_test_enforce.yaml'].get_uid()
-        resp = self.app.get('/v1/traces/%s' % (trace_id), expect_errors=True)
-        expected_msg = ('User "trace_list" doesn\'t have required permission "trace_view"'
-                        ' on resource "%s"' % (trace_uid))
+        trace_id = self.models["traces"]["trace_for_test_enforce.yaml"].id
+        trace_uid = self.models["traces"]["trace_for_test_enforce.yaml"].get_uid()
+        resp = self.app.get("/v1/traces/%s" % (trace_id), expect_errors=True)
+        expected_msg = (
+            'User "trace_list" doesn\'t have required permission "trace_view"'
+            ' on resource "%s"' % (trace_uid)
+        )
         self.assertEqual(resp.status_code, http_client.FORBIDDEN)
-        self.assertEqual(resp.json['faultstring'], expected_msg)
+        self.assertEqual(resp.json["faultstring"], expected_msg)
 
     def test_get_one_permission_success_get_all_no_permission_failure(self):
-        user_db = self.users['trace_view']
+        user_db = self.users["trace_view"]
         self.use_user(user_db)
 
         # trace_view permission, but no trace_list permission
-        trace_id = self.models['traces']['trace_for_test_enforce.yaml'].id
-        trace_uid = self.models['traces']['trace_for_test_enforce.yaml'].get_uid()
+        trace_id = self.models["traces"]["trace_for_test_enforce.yaml"].id
+        trace_uid = self.models["traces"]["trace_for_test_enforce.yaml"].get_uid()
 
-        resp = self.app.get('/v1/traces/%s' % (trace_id))
+        resp = self.app.get("/v1/traces/%s" % (trace_id))
         self.assertEqual(resp.status_code, http_client.OK)
-        self.assertEqual(resp.json['uid'], trace_uid)
+        self.assertEqual(resp.json["uid"], trace_uid)
 
-        resp = self.app.get('/v1/traces', expect_errors=True)
-        expected_msg = ('User "trace_view" doesn\'t have required permission "trace_list"')
+        resp = self.app.get("/v1/traces", expect_errors=True)
+        expected_msg = 'User "trace_view" doesn\'t have required permission "trace_list"'
         self.assertEqual(resp.status_code, http_client.FORBIDDEN)
-        self.assertEqual(resp.json['faultstring'], expected_msg)
+        self.assertEqual(resp.json["faultstring"], expected_msg)
 
     def _insert_mock_models(self):
-        trace_ids = [trace['id'] for trace in self.models['traces'].values()]
+        trace_ids = [trace["id"] for trace in self.models["traces"].values()]
         return trace_ids

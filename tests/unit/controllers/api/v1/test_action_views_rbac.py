@@ -36,132 +36,144 @@ from st2tests.api import APIControllerWithIncludeAndExcludeFilterTestCase
 
 http_client = six.moves.http_client
 
-__all__ = [
-    'ActionViewsControllerRBACTestCase'
-]
+__all__ = ["ActionViewsControllerRBACTestCase"]
 
-FIXTURES_PACK = 'generic'
+FIXTURES_PACK = "generic"
 TEST_FIXTURES = {
-    'runners': ['testrunner2.yaml'],
-    'actions': ['a1.yaml', 'a2.yaml'],
+    "runners": ["testrunner2.yaml"],
+    "actions": ["a1.yaml", "a2.yaml"],
 }
 
 
-class ActionViewsControllerRBACTestCase(APIControllerWithRBACTestCase,
-                                        APIControllerWithIncludeAndExcludeFilterTestCase):
+class ActionViewsControllerRBACTestCase(
+    APIControllerWithRBACTestCase, APIControllerWithIncludeAndExcludeFilterTestCase
+):
 
     # Attributes used by APIControllerWithIncludeAndExcludeFilterTestCase
-    get_all_path = '/v1/actions/views/overview'
+    get_all_path = "/v1/actions/views/overview"
     controller_cls = OverviewController
-    include_attribute_field_name = 'entry_point'
-    exclude_attribute_field_name = 'parameters'
+    include_attribute_field_name = "entry_point"
+    exclude_attribute_field_name = "parameters"
     rbac_enabled = True
 
     fixtures_loader = FixturesLoader()
 
     def setUp(self):
         super(ActionViewsControllerRBACTestCase, self).setUp()
-        self.models = self.fixtures_loader.save_fixtures_to_db(fixtures_pack=FIXTURES_PACK,
-                                                               fixtures_dict=TEST_FIXTURES)
+        self.models = self.fixtures_loader.save_fixtures_to_db(
+            fixtures_pack=FIXTURES_PACK, fixtures_dict=TEST_FIXTURES
+        )
 
-        file_name = 'a1.yaml'
+        file_name = "a1.yaml"
         ActionViewsControllerRBACTestCase.ACTION_1 = self.fixtures_loader.load_fixtures(
-            fixtures_pack=FIXTURES_PACK,
-            fixtures_dict={'actions': [file_name]})['actions'][file_name]
+            fixtures_pack=FIXTURES_PACK, fixtures_dict={"actions": [file_name]}
+        )["actions"][file_name]
 
-        file_name = 'a2.yaml'
+        file_name = "a2.yaml"
         ActionViewsControllerRBACTestCase.ACTION_1 = self.fixtures_loader.load_fixtures(
-            fixtures_pack=FIXTURES_PACK,
-            fixtures_dict={'actions': [file_name]})['actions'][file_name]
+            fixtures_pack=FIXTURES_PACK, fixtures_dict={"actions": [file_name]}
+        )["actions"][file_name]
 
         # Insert mock users, roles and assignments
 
         # Users
-        user_2_db = UserDB(name='action_view_a1')
+        user_2_db = UserDB(name="action_view_a1")
         user_2_db = User.add_or_update(user_2_db)
-        self.users['action_view_a1'] = user_2_db
+        self.users["action_view_a1"] = user_2_db
 
         # Roles
 
         # action_view on a1
-        action_uid = self.models['actions']['a1.yaml'].get_uid()
-        grant_db = PermissionGrantDB(resource_uid=action_uid,
-                                     resource_type=ResourceType.ACTION,
-                                     permission_types=[PermissionType.ACTION_VIEW])
+        action_uid = self.models["actions"]["a1.yaml"].get_uid()
+        grant_db = PermissionGrantDB(
+            resource_uid=action_uid,
+            resource_type=ResourceType.ACTION,
+            permission_types=[PermissionType.ACTION_VIEW],
+        )
         grant_db = PermissionGrant.add_or_update(grant_db)
         permission_grants = [str(grant_db.id)]
-        role_1_db = RoleDB(name='action_view_a1', permission_grants=permission_grants)
+        role_1_db = RoleDB(name="action_view_a1", permission_grants=permission_grants)
         role_1_db = Role.add_or_update(role_1_db)
-        self.roles['action_view_a1'] = role_1_db
+        self.roles["action_view_a1"] = role_1_db
 
         # Role assignments
         role_assignment_db = UserRoleAssignmentDB(
-            user=self.users['action_view_a1'].name,
-            role=self.roles['action_view_a1'].name,
-            source='assignments/%s.yaml' % self.users['action_view_a1'].name)
+            user=self.users["action_view_a1"].name,
+            role=self.roles["action_view_a1"].name,
+            source="assignments/%s.yaml" % self.users["action_view_a1"].name,
+        )
         UserRoleAssignment.add_or_update(role_assignment_db)
 
     def test_get_entry_point_view_no_permission(self):
-        user_db = self.users['no_permissions']
+        user_db = self.users["no_permissions"]
         self.use_user(user_db)
 
-        action_id = self.models['actions']['a1.yaml'].id
-        action_uid = self.models['actions']['a1.yaml'].get_uid()
-        resp = self.app.get('/v1/actions/views/entry_point/%s' % (action_id), expect_errors=True)
-        expected_msg = ('User "no_permissions" doesn\'t have required permission "action_view"'
-                        ' on resource "%s"' % (action_uid))
+        action_id = self.models["actions"]["a1.yaml"].id
+        action_uid = self.models["actions"]["a1.yaml"].get_uid()
+        resp = self.app.get("/v1/actions/views/entry_point/%s" % (action_id), expect_errors=True)
+        expected_msg = (
+            'User "no_permissions" doesn\'t have required permission "action_view"'
+            ' on resource "%s"' % (action_uid)
+        )
         self.assertEqual(resp.status_code, http_client.FORBIDDEN)
-        self.assertEqual(resp.json['faultstring'], expected_msg)
+        self.assertEqual(resp.json["faultstring"], expected_msg)
 
-    @mock.patch.object(content_utils, 'get_entry_point_abs_path', mock.MagicMock(
-        return_value='/path/to/file'))
-    @mock.patch(mock_open_name, mock.mock_open(read_data='file content'), create=True)
+    @mock.patch.object(
+        content_utils, "get_entry_point_abs_path", mock.MagicMock(return_value="/path/to/file")
+    )
+    @mock.patch(mock_open_name, mock.mock_open(read_data="file content"), create=True)
     def test_get_entry_point_view_success(self):
-        user_db = self.users['action_view_a1']
+        user_db = self.users["action_view_a1"]
         self.use_user(user_db)
 
         # action_view on a1, but no permissions on a2
-        action_id = self.models['actions']['a1.yaml'].id
-        resp = self.app.get('/v1/actions/views/entry_point/%s' % (action_id))
+        action_id = self.models["actions"]["a1.yaml"].id
+        resp = self.app.get("/v1/actions/views/entry_point/%s" % (action_id))
         self.assertEqual(resp.status_code, http_client.OK)
 
-        action_id = self.models['actions']['a2.yaml'].id
-        action_uid = self.models['actions']['a2.yaml'].get_uid()
-        resp = self.app.get('/v1/actions/views/entry_point/%s' % (action_id), expect_errors=True)
-        expected_msg = ('User "action_view_a1" doesn\'t have required permission "action_view"'
-                        ' on resource "%s"' % (action_uid))
+        action_id = self.models["actions"]["a2.yaml"].id
+        action_uid = self.models["actions"]["a2.yaml"].get_uid()
+        resp = self.app.get("/v1/actions/views/entry_point/%s" % (action_id), expect_errors=True)
+        expected_msg = (
+            'User "action_view_a1" doesn\'t have required permission "action_view"'
+            ' on resource "%s"' % (action_uid)
+        )
         self.assertEqual(resp.status_code, http_client.FORBIDDEN)
-        self.assertEqual(resp.json['faultstring'], expected_msg)
+        self.assertEqual(resp.json["faultstring"], expected_msg)
 
     def test_get_parameters_view_no_permission(self):
-        user_db = self.users['no_permissions']
+        user_db = self.users["no_permissions"]
         self.use_user(user_db)
 
-        action_id = self.models['actions']['a1.yaml'].id
-        action_uid = self.models['actions']['a1.yaml'].get_uid()
-        resp = self.app.get('/v1/actions/views/parameters/%s' % (action_id), expect_errors=True)
-        expected_msg = ('User "no_permissions" doesn\'t have required permission "action_view"'
-                        ' on resource "%s"' % (action_uid))
+        action_id = self.models["actions"]["a1.yaml"].id
+        action_uid = self.models["actions"]["a1.yaml"].get_uid()
+        resp = self.app.get("/v1/actions/views/parameters/%s" % (action_id), expect_errors=True)
+        expected_msg = (
+            'User "no_permissions" doesn\'t have required permission "action_view"'
+            ' on resource "%s"' % (action_uid)
+        )
         self.assertEqual(resp.status_code, http_client.FORBIDDEN)
-        self.assertEqual(resp.json['faultstring'], expected_msg)
+        self.assertEqual(resp.json["faultstring"], expected_msg)
 
     def test_get_parameters_view_success(self):
-        user_db = self.users['action_view_a1']
+        user_db = self.users["action_view_a1"]
         self.use_user(user_db)
 
         # action_view on a1, but no permissions on a2
-        action_id = self.models['actions']['a1.yaml'].id
-        resp = self.app.get('/v1/actions/views/parameters/%s' % (action_id))
+        action_id = self.models["actions"]["a1.yaml"].id
+        resp = self.app.get("/v1/actions/views/parameters/%s" % (action_id))
         self.assertEqual(resp.status_code, http_client.OK)
 
-        action_id = self.models['actions']['a2.yaml'].id
-        action_uid = self.models['actions']['a2.yaml'].get_uid()
-        resp = self.app.get('/v1/actions/views/parameters/%s' % (action_id), expect_errors=True)
-        expected_msg = ('User "action_view_a1" doesn\'t have required permission "action_view"'
-                        ' on resource "%s"' % (action_uid))
+        action_id = self.models["actions"]["a2.yaml"].id
+        action_uid = self.models["actions"]["a2.yaml"].get_uid()
+        resp = self.app.get("/v1/actions/views/parameters/%s" % (action_id), expect_errors=True)
+        expected_msg = (
+            'User "action_view_a1" doesn\'t have required permission "action_view"'
+            ' on resource "%s"' % (action_uid)
+        )
         self.assertEqual(resp.status_code, http_client.FORBIDDEN)
-        self.assertEqual(resp.json['faultstring'], expected_msg)
+        self.assertEqual(resp.json["faultstring"], expected_msg)
 
     def _insert_mock_models(self):
-        action_ids = [action['id'] for action in self.models['actions'].values()]
+        action_ids = [action["id"] for action in self.models["actions"].values()]
         return action_ids

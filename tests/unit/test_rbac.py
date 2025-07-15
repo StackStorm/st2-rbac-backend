@@ -15,7 +15,7 @@
 
 from __future__ import absolute_import
 
-import unittest2
+import unittest
 from oslo_config import cfg
 
 from st2tests import config
@@ -70,7 +70,7 @@ class RBACMigrationsTestCase(CleanDbTestCase):
 
     def test_insert_system_roles(self):
         role_dbs = rbac_service.get_all_roles()
-        self.assertItemsEqual(role_dbs, [])
+        self.assertEqual(list(role_dbs), [])
 
         insert_system_roles()
 
@@ -83,7 +83,7 @@ class RBACMigrationsTestCase(CleanDbTestCase):
         self.assertTrue('observer' in role_names)
 
 
-class NoOpRBACBackendTestCase(unittest2.TestCase):
+class NoOpRBACBackendTestCase(unittest.TestCase):
     def test_noop_backend(self):
         backend = get_backend_instance(name='noop')
 

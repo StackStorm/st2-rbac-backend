@@ -12,21 +12,58 @@ on:
 
 jobs:
   build-and-test-python:
-    runs-on: ubuntu-20.04
-    # NOTE: Lifted from https://github.com/StackStorm/st2/blob/master/.github/workflows/ci.yaml#L183
+    runs-on: ubuntu-22.04
+    # NOTE: Copied from https://github.com/StackStorm/st2/blob/ea35b8cd8fb80317c241b106a2e55dc6e7f421e9/.github/workflows/ci.yaml#L409
     services:
       mongo:
-        image: mongo:4.4
+        image: mongo:7.0
         ports:
           - 27017:27017
+
+      # In GHA, these services are started first before the code is checked out.
+      # We use bitnami images to facilitate reconfiguring RabbitMQ during ci-integration tests.
+      # We rely on custom config and SSL certs that are in the repo.
+      # Many images require config in env vars (which we can't change during the test job)
+      # or they require config in entrypoint args (which we can't override for GHA services)
+      # bitnami builds ways to get config files from mounted volumes.
       rabbitmq:
-        image: rabbitmq:3.8-management
+        image: bitnami/rabbitmq:3.8
+        volumes:
+          - /home/runner/rabbitmq_conf:/bitnami/conf  # RABBITMQ_MOUNTED_CONF_DIR
+        env:
+          # tell bitnami/rabbitmq to enable this by default
+          RABBITMQ_PLUGINS: rabbitmq_management
+          RABBITMQ_USERNAME: guest
+          RABBITMQ_PASSWORD: guest
+
+        # These are strictly docker options, not entrypoint args (GHA restriction)
         options: >-
           --name rabbitmq
+
         ports:
-          - 5671:5671/tcp # AMQP SSL port
-          - 5672:5672/tcp # AMQP standard port
+          # These 6 ports are exposed by bitnami/rabbitmq (see https://www.rabbitmq.com/networking.html#ports)
+          # host_port:container_port/protocol
+          - 5671:5671/tcp   # AMQP SSL port
+          - 5672:5672/tcp   # AMQP standard port
           - 15672:15672/tcp # Management: HTTP, CLI
+          #- 15671:15671/tcp # Management: SSL port
+          #- 25672:25672/tcp # inter-node or CLI
+          #- 4369:4369/tcp   # epmd
+          #
+
+      redis:
+        # Docker Hub image
+        image: redis
+        # Set health checks to wait until redis has started
+        options: >-
+          --name "redis"
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379/tcp
+
     strategy:
       fail-fast: false
       matrix:
@@ -46,16 +83,22 @@ jobs:
         run: |
           make .clone_st2_repo
 
-      - name: Reconfigure RabbitMQ
+      - name: reconfigure rabbitmq
         timeout-minutes: 2  # may die if rabbitmq fails to start
         run: |
-          /tmp/st2/scripts/github/configure-rabbitmq.sh
+          pushd /tmp/st2
+          scripts/github/configure-rabbitmq.sh
+          popd
 
       - name: Download and install depedencies
         run: |
+          PKGS=(
+            libldap2-dev
+            libsasl2-dev
+            python3-virtualenv
+          )
           sudo apt-get update
-          sudo apt-get -y install libldap2-dev libsasl2-dev
-          sudo apt-get -y install python3-virtualenv
+          sudo apt-get -y install ${PKGS[@]}
           make requirements
 
       - name: Run lint and tests (Python ${{ matrix.version }})
