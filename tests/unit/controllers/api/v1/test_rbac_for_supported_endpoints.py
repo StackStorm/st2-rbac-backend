@@ -268,6 +268,11 @@ class APIControllersRBACTestCase(APIControllerWithRBACTestCase):
                 "method": "GET",
             },
             {"path": "/v1/executions/%s/children" % (execution_model.id), "method": "GET"},
+            {
+                "path": "/v1/executions/%s/attribute/result" % (execution_model.id),
+                "method": "GET",
+            },
+            {"path": "/v1/executions/%s/result" % (execution_model.id), "method": "GET"},
             # Alias executions
             {
                 "path": "/v1/aliasexecution",

@@ -350,6 +350,29 @@ class ActionExecutionRBACControllerTestCase(
                 self.assertEqual(resp.status_code, http_client.FORBIDDEN)
                 self.assertEqual(resp.json["faultstring"], expected_msg % (execution_id))
 
+    def test_get_result_requires_execution_view(self):
+        user_db = self.users["admin"]
+        self.use_user(user_db)
+
+        data = {"action": "wolfpack.action-1", "parameters": {"actionstr": "foo"}}
+        wolfpack_execution_id = self._get_actionexecution_id(self._do_post(data))
+        core_execution_id = self._get_actionexecution_id(self._do_post(LIVE_ACTION_1))
+
+        # user_two has action_view on the wolfpack pack only
+        user_db = self.users["user_two"]
+        self.use_user(user_db)
+
+        resp = self.app.get("/v1/executions/%s/result" % (wolfpack_execution_id))
+        self.assertEqual(resp.status_code, http_client.OK)
+
+        resp = self.app.get("/v1/executions/%s/result" % (core_execution_id), expect_errors=True)
+        expected_msg = (
+            'User "user_two" doesn\'t have required permission "execution_view" on resource '
+            '"execution:%s"' % (core_execution_id)
+        )
+        self.assertEqual(resp.status_code, http_client.FORBIDDEN)
+        self.assertEqual(resp.json["faultstring"], expected_msg)
+
     def test_get_one_include_attributes_filter_provided(self):
         user_db = self.users["admin"]
         self.use_user(user_db)
