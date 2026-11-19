@@ -49,6 +49,7 @@ TEST_FIXTURES = OrderedDict(
         ("triggers", ["trigger1.yaml", "cron1.yaml"]),
         ("rules", ["rule1.yaml"]),
         ("triggertypes", ["triggertype1.yaml"]),
+        ("triggerinstances", ["trigger_instance_1.yaml"]),
         ("executions", ["execution1.yaml"]),
         ("liveactions", ["liveaction1.yaml", "parentliveaction.yaml", "childliveaction.yaml"]),
         ("enforcements", ["enforcement1.yaml"]),
@@ -91,6 +92,20 @@ MOCK_RULE_1 = {
         "parameters": {"ip2": "{{rule.k1}}", "ip1": "{{trigger.t1_p}}"},
     },
     "description": "",
+}
+
+MOCK_TRIGGER_TYPE_1 = {
+    "name": "triggertype-3",
+    "pack": "wolfpack",
+    "parameters_schema": {},
+    "payload_schema": {},
+}
+
+MOCK_TRIGGER_1 = {
+    "name": "trigger-3",
+    "pack": "wolfpack",
+    "type": "wolfpack.triggertype-1",
+    "parameters": {},
 }
 
 # 1. Trigger which references a system webhook trigger type
@@ -163,6 +178,9 @@ class APIControllersRBACTestCase(APIControllerWithRBACTestCase):
         execution_model = self.models["executions"]["execution1.yaml"]
         trace_model = self.models["traces"]["trace_for_test_enforce.yaml"]
         timer_model = self.models["triggers"]["cron1.yaml"]
+        trigger_type_model = self.models["triggertypes"]["triggertype1.yaml"]
+        trigger_model = self.models["triggers"]["trigger1.yaml"]
+        trigger_instance_model = self.models["triggerinstances"]["trigger_instance_1.yaml"]
 
         supported_endpoints = [
             # Runners
@@ -250,6 +268,11 @@ class APIControllersRBACTestCase(APIControllerWithRBACTestCase):
                 "method": "GET",
             },
             {"path": "/v1/executions/%s/children" % (execution_model.id), "method": "GET"},
+            {
+                "path": "/v1/executions/%s/attribute/result" % (execution_model.id),
+                "method": "GET",
+            },
+            {"path": "/v1/executions/%s/result" % (execution_model.id), "method": "GET"},
             # Alias executions
             {
                 "path": "/v1/aliasexecution",
@@ -274,6 +297,34 @@ class APIControllersRBACTestCase(APIControllerWithRBACTestCase):
             # Timers
             {"path": "/v1/timers", "method": "GET"},
             {"path": "/v1/timers/%s" % (timer_model.id), "method": "GET"},
+            # Trigger types
+            {"path": "/v1/triggertypes", "method": "GET", "is_getall": True},
+            {"path": "/v1/triggertypes/%s" % (trigger_type_model.ref), "method": "GET"},
+            {"path": "/v1/triggertypes", "method": "POST", "payload": MOCK_TRIGGER_TYPE_1},
+            {
+                "path": "/v1/triggertypes/%s" % (trigger_type_model.ref),
+                "method": "PUT",
+                "payload": MOCK_TRIGGER_TYPE_1,
+            },
+            {"path": "/v1/triggertypes/%s" % (trigger_type_model.ref), "method": "DELETE"},
+            # Triggers
+            {"path": "/v1/triggers", "method": "GET"},
+            {"path": "/v1/triggers/%s" % (trigger_model.id), "method": "GET"},
+            {"path": "/v1/triggers", "method": "POST", "payload": MOCK_TRIGGER_1},
+            {
+                "path": "/v1/triggers/%s" % (trigger_model.id),
+                "method": "PUT",
+                "payload": MOCK_TRIGGER_1,
+            },
+            {"path": "/v1/triggers/%s" % (trigger_model.id), "method": "DELETE"},
+            # Trigger instances
+            {"path": "/v1/triggerinstances", "method": "GET", "is_getall": True},
+            {"path": "/v1/triggerinstances/%s" % (trigger_instance_model.id), "method": "GET"},
+            {
+                "path": "/v1/triggerinstances/%s/re_emit" % (trigger_instance_model.id),
+                "method": "POST",
+                "payload": {},
+            },
             # Webhooks
             {"path": "/v1/webhooks", "method": "GET"},
             {"path": "/v1/webhooks/git", "method": "GET"},
